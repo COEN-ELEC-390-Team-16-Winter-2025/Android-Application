@@ -1,19 +1,67 @@
-#define MQ3pin 0
 
-float sensorValue;  //variable to store sensor value
+#define MQ_PIN A0
 
-void setup() {
-	Serial.begin(115200); // sets the serial port to 9600
-	Serial.println("MQ3 warming up!");
-	delay(5000); // allow the MQ3 to warm up
+const int RL = 200000; //200k ohms for RL as per datasheet
+const float m = -0.62;
+const float b = 0.38;
+
+float R0_air;
+
+float getVoltage(){
+  int adc_value = analogRead(MQ_PIN);
+  float voltage = (adc_value*5.0)/1024;
+  return voltage;
 }
 
-void loop() {
-	sensorValue = analogRead(MQ3pin); // read analog input pin 0
+float getRS(float voltage){
+  float RS = ((5.0*RL)/voltage) - RL;
+  return RS;
+} 
 
-	Serial.print("Sensor Value: ");
-	Serial.println(sensorValue);
-	Serial.print("Voltage : ");
-  Serial.println(sensorValue*5/1023);
-	delay(2000); // wait 2s for next reading
+float getR0(float RS_air, float voltage){
+  return RS_air/60;
+}
+
+double getAlcoholConcentration(float RS_gas, float R0_air){
+  
+  float ratio = RS_gas / R0_air;
+  double log_concentration = (log10(ratio)-b)/m;
+  double concentration = pow(10, log_concentration);
+
+  return concentration;
+}
+
+
+void setup()
+{
+  Serial.begin(115200);
+  Serial.println("Preparing the sensor...");
+  delay(20000); //waits for 20 seconds to heat up the sensor
+  Serial.println("Sensor heated.");
+
+
+  //calibration
+  float voltage = 0;
+  for(int i =0; i<500; i++){
+    voltage += getVoltage();
+  }
+  voltage = voltage/500;
+  float RS_air = getRS(voltage); 
+  R0_air = getR0(RS_air, voltage);
+
+  Serial.print("R0 value in clean air: ");
+  Serial.println(R0_air);
+}
+
+void loop()
+{
+  float voltage = getVoltage(); //gets voltage values from the sensor
+  float RS_gas = getRS(voltage); //calculates Rs from the voltage
+  
+  double concentration = getAlcoholConcentration(RS_gas, R0_air); //calculates the alcohol concentration mg/l
+
+  Serial.print("Alcohol Concentration (mg/L): ");
+  Serial.println(concentration);
+  delay(500);
+
 }
