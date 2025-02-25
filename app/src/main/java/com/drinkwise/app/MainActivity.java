@@ -9,8 +9,8 @@ import androidx.navigation.ui.AppBarConfiguration;
 import androidx.navigation.ui.NavigationUI;
 import com.drinkwise.app.databinding.ActivityMainBinding;
 import com.google.firebase.FirebaseApp;
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.firestore.FirebaseFirestore;
+
+
 
 
 public class MainActivity extends AppCompatActivity {
