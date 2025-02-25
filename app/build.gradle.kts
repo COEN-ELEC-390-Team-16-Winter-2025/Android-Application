@@ -51,5 +51,7 @@ dependencies {
     androidTestImplementation(libs.espresso.core)
     implementation("com.google.firebase:firebase-auth:21.0.1")
     implementation("com.google.firebase:firebase-firestore:24.0.1")
+    implementation("androidx.appcompat:appcompat:1.7.0")
+
 }
 

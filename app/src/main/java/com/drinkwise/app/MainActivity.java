@@ -1,6 +1,9 @@
 package com.drinkwise.app;
 
+import android.content.Intent;
 import android.os.Bundle;
+import android.widget.Button;
+
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.navigation.NavController;
@@ -34,6 +37,17 @@ public class MainActivity extends AppCompatActivity {
         NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment_activity_main);
         NavigationUI.setupActionBarWithNavController(this, navController, appBarConfiguration);
         NavigationUI.setupWithNavController(binding.navView, navController);
+
+        //Sign up and sign in buttons
+
+        Button signUp = findViewById(R.id.signup_button);
+        Button signIn = findViewById(R.id.signin_button);
+
+        signUp.setOnClickListener(v -> startActivity(new Intent(MainActivity.this, SignUpActivity.class))
+        );
+
+        signIn.setOnClickListener(v -> startActivity(new Intent(MainActivity.this, SignInActivity.class))
+        );
     }
 }
 
