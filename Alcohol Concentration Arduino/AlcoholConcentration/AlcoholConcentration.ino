@@ -1,6 +1,8 @@
 
 #define MQ_PIN A0
 
+//Optimal R0 = 1230.37
+
 const int RL = 200000; //200k ohms for RL as per datasheet
 const float m = -0.62;
 const float b = 0.38;
@@ -22,6 +24,10 @@ float getR0(float RS_air, float voltage){
   return RS_air/60;
 }
 
+void setR0(float R0){
+  R0_air = R0;
+}
+
 double getAlcoholConcentration(float RS_gas, float R0_air){
   
   float ratio = RS_gas / R0_air;
@@ -31,6 +37,9 @@ double getAlcoholConcentration(float RS_gas, float R0_air){
   return concentration;
 }
 
+double getBAC(double concentration){
+  return concentration*0.21;
+}
 
 void setup()
 {
@@ -42,11 +51,12 @@ void setup()
 
   //calibration
   float voltage = 0;
-  for(int i =0; i<500; i++){
+  for(int i =0; i<1000; i++){
     voltage += getVoltage();
   }
-  voltage = voltage/500;
+  voltage = voltage/1000;
   float RS_air = getRS(voltage); 
+
   R0_air = getR0(RS_air, voltage);
 
   Serial.print("R0 value in clean air: ");
@@ -60,8 +70,19 @@ void loop()
   
   double concentration = getAlcoholConcentration(RS_gas, R0_air); //calculates the alcohol concentration mg/l
 
+  //filters out false positives
+  if(concentration < 0.05){
+    concentration = 0;
+  }
+  /*
   Serial.print("Alcohol Concentration (mg/L): ");
   Serial.println(concentration);
+
+  Serial.print("BAC%: ");
+  */
+  
+  Serial.println(getBAC(concentration), 4);
+  
   delay(500);
 
 }
