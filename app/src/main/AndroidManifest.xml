@@ -27,6 +27,9 @@
         <activity
             android:name=".ScanningActivity"
             android:exported="true" />
+
+        <activity android:name=".HistoryActivity" />
+
         <activity
             android:name=".MainActivity"
             android:exported="true"
