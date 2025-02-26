@@ -1,6 +1,7 @@
 package com.drinkwise.app;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.widget.Button;
 
@@ -25,6 +26,18 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         FirebaseApp.initializeApp(this);
 
+        // Check if this is the first time the user is opening the app
+        SharedPreferences preferences = getSharedPreferences("AppPrefs", MODE_PRIVATE);
+        boolean isFirstTime = preferences.getBoolean("isFirstTime", true);
+
+        if (isFirstTime) {
+            // Open the Landing Page
+            startActivity(new Intent(this, LandingActivity.class));
+            finish(); // Close MainActivity so it doesn't stay in the back stack
+            return;
+        }
+
+        // Normal behavior if it's not the first time
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
