@@ -3,6 +3,8 @@ package com.drinkwise.app;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.widget.Button;
+
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.navigation.NavController;
@@ -10,6 +12,10 @@ import androidx.navigation.Navigation;
 import androidx.navigation.ui.AppBarConfiguration;
 import androidx.navigation.ui.NavigationUI;
 import com.drinkwise.app.databinding.ActivityMainBinding;
+import com.google.firebase.FirebaseApp;
+
+
+
 
 public class MainActivity extends AppCompatActivity {
 
@@ -18,6 +24,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        FirebaseApp.initializeApp(this);
 
         // Check if this is the first time the user is opening the app
         SharedPreferences preferences = getSharedPreferences("AppPrefs", MODE_PRIVATE);
@@ -43,6 +50,17 @@ public class MainActivity extends AppCompatActivity {
         NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment_activity_main);
         NavigationUI.setupActionBarWithNavController(this, navController, appBarConfiguration);
         NavigationUI.setupWithNavController(binding.navView, navController);
-    }
 
+        //Sign up and sign in buttons
+
+        Button signUp = findViewById(R.id.signup_button);
+        Button signIn = findViewById(R.id.signin_button);
+
+        signUp.setOnClickListener(v -> startActivity(new Intent(MainActivity.this, SignUpActivity.class))
+        );
+
+        signIn.setOnClickListener(v -> startActivity(new Intent(MainActivity.this, SignInActivity.class))
+        );
+    }
 }
+
