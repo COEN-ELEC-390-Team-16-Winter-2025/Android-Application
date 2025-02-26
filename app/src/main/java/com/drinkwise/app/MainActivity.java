@@ -1,6 +1,9 @@
 package com.drinkwise.app;
 
+import android.content.Intent;
 import android.os.Bundle;
+import android.widget.Button;
+
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.navigation.NavController;
@@ -9,20 +12,21 @@ import androidx.navigation.ui.AppBarConfiguration;
 import androidx.navigation.ui.NavigationUI;
 import com.drinkwise.app.databinding.ActivityMainBinding;
 import com.google.firebase.FirebaseApp;
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.firestore.FirebaseFirestore;
+
+
+
 
 public class MainActivity extends AppCompatActivity {
 
-private ActivityMainBinding binding;
+    private ActivityMainBinding binding;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         FirebaseApp.initializeApp(this);
 
-     binding = ActivityMainBinding.inflate(getLayoutInflater());
-     setContentView(binding.getRoot());
+        binding = ActivityMainBinding.inflate(getLayoutInflater());
+        setContentView(binding.getRoot());
 
         BottomNavigationView navView = findViewById(R.id.nav_view);
         // Passing each menu ID as a set of Ids because each
@@ -33,6 +37,17 @@ private ActivityMainBinding binding;
         NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment_activity_main);
         NavigationUI.setupActionBarWithNavController(this, navController, appBarConfiguration);
         NavigationUI.setupWithNavController(binding.navView, navController);
-    }
 
+        //Sign up and sign in buttons
+
+        Button signUp = findViewById(R.id.signup_button);
+        Button signIn = findViewById(R.id.signin_button);
+
+        signUp.setOnClickListener(v -> startActivity(new Intent(MainActivity.this, SignUpActivity.class))
+        );
+
+        signIn.setOnClickListener(v -> startActivity(new Intent(MainActivity.this, SignInActivity.class))
+        );
+    }
 }
+
