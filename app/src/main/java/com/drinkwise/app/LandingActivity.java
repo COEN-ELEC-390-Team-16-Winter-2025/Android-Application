@@ -36,5 +36,8 @@ public class LandingActivity extends AppCompatActivity {
                 finish(); // Close LandingActivity
             }
         });
+
+        Button signIn = findViewById(R.id.signInButton);
+        signIn.setOnClickListener(v -> startActivity(new Intent(LandingActivity.this, SignInActivity.class)));
     }
 }

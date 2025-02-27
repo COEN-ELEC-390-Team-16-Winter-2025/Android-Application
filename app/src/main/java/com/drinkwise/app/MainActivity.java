@@ -46,12 +46,6 @@ public class MainActivity extends AppCompatActivity {
         NavigationUI.setupActionBarWithNavController(this, navController, appBarConfiguration);
         NavigationUI.setupWithNavController(binding.navView, navController);
 
-        // Sign up and sign in buttons
-        Button signUp = findViewById(R.id.signUp);
-        Button signIn = findViewById(R.id.signIn);
-
-        signUp.setOnClickListener(v -> startActivity(new Intent(MainActivity.this, SignUpActivity.class)));
-        signIn.setOnClickListener(v -> startActivity(new Intent(MainActivity.this, SignInActivity.class)));
     }
 
 
