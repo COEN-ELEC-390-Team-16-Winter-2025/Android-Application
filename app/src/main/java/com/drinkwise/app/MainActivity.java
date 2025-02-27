@@ -14,9 +14,6 @@ import androidx.navigation.ui.NavigationUI;
 import com.drinkwise.app.databinding.ActivityMainBinding;
 import com.google.firebase.FirebaseApp;
 
-
-
-
 public class MainActivity extends AppCompatActivity {
 
     private ActivityMainBinding binding;
@@ -26,14 +23,14 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         FirebaseApp.initializeApp(this);
 
-        // Check if this is the first time the user is opening the app
+        // Retrieve SharedPreferences
         SharedPreferences preferences = getSharedPreferences("AppPrefs", MODE_PRIVATE);
-        boolean isFirstTime = preferences.getBoolean("isFirstTime", true);
+        boolean isFirstTime = preferences.getBoolean("isFirstTime", true); // Default: true (first time)
 
+        // If first time, show Landing Page
         if (isFirstTime) {
-            // Open the Landing Page
             startActivity(new Intent(this, LandingActivity.class));
-            finish(); // Close MainActivity so it doesn't stay in the back stack
+            finish(); // Close MainActivity so it doesn't stay in back stack
             return;
         }
 
@@ -42,8 +39,6 @@ public class MainActivity extends AppCompatActivity {
         setContentView(binding.getRoot());
 
         BottomNavigationView navView = findViewById(R.id.nav_view);
-        // Passing each menu ID as a set of Ids because each
-        // menu should be considered as top level destinations.
         AppBarConfiguration appBarConfiguration = new AppBarConfiguration.Builder(
                 R.id.navigation_home, R.id.navigation_dashboard, R.id.navigation_notifications)
                 .build();
@@ -51,16 +46,23 @@ public class MainActivity extends AppCompatActivity {
         NavigationUI.setupActionBarWithNavController(this, navController, appBarConfiguration);
         NavigationUI.setupWithNavController(binding.navView, navController);
 
-        //Sign up and sign in buttons
+        // Sign up and sign in buttons
+        Button signUp = findViewById(R.id.signUp);
+        Button signIn = findViewById(R.id.signIn);
 
-        Button signUp = findViewById(R.id.signup_button);
-        Button signIn = findViewById(R.id.signin_button);
-
-        signUp.setOnClickListener(v -> startActivity(new Intent(MainActivity.this, SignUpActivity.class))
-        );
-
-        signIn.setOnClickListener(v -> startActivity(new Intent(MainActivity.this, SignInActivity.class))
-        );
+        signUp.setOnClickListener(v -> startActivity(new Intent(MainActivity.this, SignUpActivity.class)));
+        signIn.setOnClickListener(v -> startActivity(new Intent(MainActivity.this, SignInActivity.class)));
     }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+
+        // Reset on app background/close
+        SharedPreferences preferences = getSharedPreferences("AppPrefs", MODE_PRIVATE);
+        preferences.edit().putBoolean("isFirstTime", true).apply();
+    }
+
 }
+
 

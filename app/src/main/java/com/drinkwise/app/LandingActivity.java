@@ -13,22 +13,27 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 
+
 public class LandingActivity extends AppCompatActivity {
-    private Button getStartedButton;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_landing);
 
-        getStartedButton = findViewById(R.id.getStartedButton);
-
+        Button getStartedButton = findViewById(R.id.getStartedButton);
         getStartedButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                // Navigate to User Profile Page 1
-                Intent intent = new Intent(LandingActivity.this, UserProfileActivity1.class);
-                startActivity(intent);
+                // Save preference so Landing Page is not shown again
+                SharedPreferences preferences = getSharedPreferences("AppPrefs", MODE_PRIVATE);
+                SharedPreferences.Editor editor = preferences.edit();
+                editor.putBoolean("isFirstTime", false); // Mark that landing page was shown
+                editor.apply();
+
+                // Open UserProfileActivity1
+                startActivity(new Intent(LandingActivity.this, UserProfileActivity1.class));
+                finish(); // Close LandingActivity
             }
         });
     }
