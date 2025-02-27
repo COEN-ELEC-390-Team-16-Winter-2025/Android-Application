@@ -22,6 +22,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.auth.FirebaseAuth;
+
+
 public class ScanningActivity extends AppCompatActivity {
 
     private static final String TAG = "ScanningActivity";
@@ -38,10 +44,18 @@ public class ScanningActivity extends AppCompatActivity {
     private BluetoothGatt mBluetoothGatt;
     private BluetoothDevice mBluetoothDevice;
 
+    private FirebaseFirestore db;
+    private int userHeight = 170;  // Default height (cm)
+    private int userWeight = 70;   // Default weight (kg)
+    private String userId = "USER_ID_HERE"; // Replace with actual user ID
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_scanning);
+
+        userId = FirebaseAuth.getInstance().getCurrentUser().getUid();
+        fetchUserData();
 
         bacListView = findViewById(R.id.bacListView);
         handler = new Handler(Looper.getMainLooper());
@@ -59,6 +73,8 @@ public class ScanningActivity extends AppCompatActivity {
 
         // Connect to the Bluno device
         connectToBluno();
+
+
     }
 
     @SuppressLint("MissingPermission")
@@ -141,6 +157,12 @@ public class ScanningActivity extends AppCompatActivity {
                     final String completeMessage = receivedDataBuffer.toString().trim(); // Get full message
                     receivedDataBuffer.setLength(0); // Clear buffer for next message
 
+                    // Perform calculations using retrieved weight
+                    double bacValue = extractBACValue(completeMessage);
+                    double adjustedBAC = adjustBAC(bacValue, userWeight, userHeight);
+
+                    String finalMessage = completeMessage + " | Adjusted BAC: " + String.format("%.3f", adjustedBAC);
+
                     // Update UI on main thread
                     handler.post(() -> {
                         bacList.add(completeMessage.trim()); // Append new reading instead of replacing
@@ -152,9 +174,6 @@ public class ScanningActivity extends AppCompatActivity {
                 }
             }
         }
-
-
-
 
 
         @Override
@@ -196,6 +215,45 @@ public class ScanningActivity extends AppCompatActivity {
             mBluetoothGatt = null;
         }
     }
+
+    private void fetchUserData() {
+        db = FirebaseFirestore.getInstance();
+
+        db.collection("users").document(userId)
+                .get()
+                .addOnSuccessListener(documentSnapshot -> {
+                    if (documentSnapshot.exists()) {
+                        userHeight = documentSnapshot.getLong("height").intValue();
+                        userWeight = documentSnapshot.getLong("weight").intValue();
+                        Log.d(TAG, "User Data Retrieved: Height=" + userHeight + ", Weight=" + userWeight);
+                    } else {
+                        Log.d(TAG, "User document does not exist");
+                    }
+                })
+                .addOnFailureListener(e -> Log.e(TAG, "Error fetching user data", e));
+    }
+
+    private double adjustBAC(double bac, int weight, int height) {
+        double bodyWaterConstant = 0.58; // Avg for males; 0.49 for females
+        double metabolismRate = 0.017; // Per hour
+        double bmiFactor = (height / 100.0) / Math.sqrt(weight); // Simplified BMI effect
+
+        return (bac * (70.0 / weight)) * bodyWaterConstant * bmiFactor - metabolismRate;
+    }
+
+
+    private double extractBACValue(String message) {
+        try {
+            String[] parts = message.split(":");
+            if (parts.length > 1) {
+                return Double.parseDouble(parts[1].trim());
+            }
+        } catch (Exception e) {
+            Log.e(TAG, "Error parsing BAC value", e);
+        }
+        return 0.0;
+    }
+
 
     @Override
     protected void onDestroy() {
