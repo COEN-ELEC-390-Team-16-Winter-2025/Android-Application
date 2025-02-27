@@ -36,6 +36,10 @@ android {
 }
 
 dependencies {
+    implementation(platform("com.google.firebase:firebase-bom:32.8.0")) // Use latest BOM version
+
+    implementation("com.google.firebase:firebase-auth") // Version managed by BOM
+    implementation("com.google.firebase:firebase-firestore") // Version managed by BOM
 
     implementation(libs.appcompat)
     implementation(libs.material)
@@ -44,14 +48,11 @@ dependencies {
     implementation(libs.lifecycle.viewmodel.ktx)
     implementation(libs.navigation.fragment)
     implementation(libs.navigation.ui)
-    implementation(libs.firebase.auth)
     implementation(libs.activity)
+
     testImplementation(libs.junit)
     androidTestImplementation(libs.ext.junit)
     androidTestImplementation(libs.espresso.core)
-    implementation("com.google.firebase:firebase-auth:21.0.1")
-    implementation("com.google.firebase:firebase-firestore:24.0.1")
-    implementation("androidx.appcompat:appcompat:1.7.0")
-
 }
+
 

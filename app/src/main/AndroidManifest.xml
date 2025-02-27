@@ -26,12 +26,13 @@
             android:exported="false" />
         <activity
             android:name=".LandingActivity"
-            android:exported="false" />
+            android:exported="false"
+            android:theme="@style/Theme.AppCompat.Light.NoActionBar"/>
         <activity
             android:name=".ScanningActivity"
             android:exported="true" />
 
-        <activity android:name=".HistoryActivity" />
+<!--        <activity android:name=".HistoryActivity" />-->
 
         <activity
             android:name=".MainActivity"
