@@ -54,6 +54,8 @@ public class MainActivity extends AppCompatActivity {
         signIn.setOnClickListener(v -> startActivity(new Intent(MainActivity.this, SignInActivity.class)));
     }
 
+
+    // delete later
     @Override
     protected void onStop() {
         super.onStop();
