@@ -37,6 +37,15 @@ public class SignInActivity extends AppCompatActivity {
 
     }
 
+    @Override
+    protected void onStart(){
+        super.onStart();
+        if(auth.getCurrentUser() !=null){
+            startActivity(new Intent(SignInActivity.this, MainActivity.class));
+            finish();
+        }
+    }
+
     private void SignInUserAccount() {
         String email = emailTextView.getText().toString().trim();
         String password = passwordTextView.getText().toString().trim();
@@ -50,11 +59,14 @@ public class SignInActivity extends AppCompatActivity {
             public void onComplete(@NonNull Task<AuthResult> task) {
                 if (task.isSuccessful()) {
                     //Sign in successful
-                    Toast.makeText(SignInActivity.this, "Sign in successful", Toast.LENGTH_LONG).show();
                     startActivity(new Intent(SignInActivity.this, MainActivity.class));
                     finish();
                 } else {
-                    Toast.makeText(SignInActivity.this, "Sign in failed", Toast.LENGTH_LONG).show();
+                    if (task.getException() != null) {
+                        Toast.makeText(SignInActivity.this, "Sign in failed: " +task.getException().getMessage(), Toast.LENGTH_LONG).show();
+                    } else {
+                        Toast.makeText(SignInActivity.this, "Sign in failed", Toast.LENGTH_LONG).show();
+                    }
                 }
             }
         });
