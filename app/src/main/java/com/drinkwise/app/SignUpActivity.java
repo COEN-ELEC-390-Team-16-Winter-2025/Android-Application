@@ -35,7 +35,14 @@ public class SignUpActivity extends AppCompatActivity {
         button.setOnClickListener(v -> registerNewUser());
 
     }
-
+    @Override
+    protected void onStart(){
+        super.onStart();
+        if(auth.getCurrentUser() !=null){
+            startActivity(new Intent(SignUpActivity.this, MainActivity.class));
+            finish();
+        }
+    }
     private void registerNewUser(){
         //get values from user input
         String email = emailTextView.getText().toString().trim();
@@ -53,7 +60,11 @@ public class SignUpActivity extends AppCompatActivity {
                     startActivity(new Intent(SignUpActivity.this, MainActivity.class));
                     finish();
                 } else {
-                    Toast.makeText(SignUpActivity.this, "Registration failed", Toast.LENGTH_LONG).show();
+                    if (task.getException() != null) {
+                        Toast.makeText(SignUpActivity.this, "Registration failed: " +task.getException().getMessage(), Toast.LENGTH_LONG).show();
+                    } else {
+                        Toast.makeText(SignUpActivity.this, "Registration failed", Toast.LENGTH_LONG).show();
+                    }
                 }
             }
         });
