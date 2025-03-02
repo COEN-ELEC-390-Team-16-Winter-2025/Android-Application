@@ -25,6 +25,10 @@
             android:name=".UserProfileActivity1"
             android:exported="false" />
         <activity
+            android:name=".UserProfileActivity2"
+            android:exported="false"
+            android:theme="@style/Theme.AppCompat.Light.NoActionBar"/>
+        <activity
             android:name=".LandingActivity"
             android:exported="false"
             android:theme="@style/Theme.AppCompat.Light.NoActionBar"/>
