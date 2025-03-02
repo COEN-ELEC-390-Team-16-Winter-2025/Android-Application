@@ -50,6 +50,7 @@ public class UserProfileActivity2 extends AppCompatActivity {
         //Open date picker for birthday
         BirthdayTextView.setOnClickListener(v -> showDatePicker());
 
+        validInputs();
         //Save to database once the save button is pressed
         SaveButton.setOnClickListener(v -> {
             if(validInputs()) {
