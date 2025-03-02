@@ -37,7 +37,7 @@ public class UserProfileActivity1 extends AppCompatActivity {
         editTextHeight = findViewById(R.id.editTextHeight);
         editTextWeight = findViewById(R.id.editTextWeight);
         Button saveButton = findViewById(R.id.saveButton);
-        Button homeButton = findViewById(R.id.homeButton);
+        Button nextButton = findViewById(R.id.nextButton);
 
         unitSwitch.setOnCheckedChangeListener((buttonView, isChecked) -> {
             if (isChecked) {
@@ -61,9 +61,9 @@ public class UserProfileActivity1 extends AppCompatActivity {
             }
         });
 
-        // Home Button logic
-        homeButton.setOnClickListener(v -> {
-            Intent intent = new Intent(UserProfileActivity1.this, MainActivity.class);
+        // Next Button logic : goes to user profile activity 2
+        nextButton.setOnClickListener(v -> {
+            Intent intent = new Intent(UserProfileActivity1.this, UserProfileActivity2.class);
             startActivity(intent);
             finish();
         });

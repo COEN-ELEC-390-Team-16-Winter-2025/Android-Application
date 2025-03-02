@@ -84,10 +84,10 @@
 
     <!-- Temporary Home Button to go back to MainActivity -->
     <Button
-        android:id="@+id/homeButton"
+        android:id="@+id/nextButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Back to Home"
+        android:text="Next"
         app:layout_constraintTop_toBottomOf="@+id/editTextWeight"
         app:layout_constraintEnd_toEndOf="parent"
         android:layout_marginTop="24dp"
