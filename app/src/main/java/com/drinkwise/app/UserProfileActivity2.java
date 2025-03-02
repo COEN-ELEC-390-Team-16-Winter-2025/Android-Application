@@ -2,6 +2,7 @@ package com.drinkwise.app;
 
 import android.annotation.SuppressLint;
 import android.app.DatePickerDialog;
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
@@ -24,7 +25,7 @@ public class UserProfileActivity2 extends AppCompatActivity {
 
     private EditText NameTextView;
     private TextView BirthdayTextView, NameErrorTextView, BirthdayErrorTextView;
-    private Button SaveButton;
+    private Button SaveButton, NextButton;
     private FirebaseFirestore db;
     private FirebaseAuth auth;
     private String selectedDate;
@@ -40,6 +41,7 @@ public class UserProfileActivity2 extends AppCompatActivity {
         NameErrorTextView = findViewById(R.id.NameErrorTextView);
         BirthdayErrorTextView = findViewById(R.id.BirthdayErrorTextView);
         SaveButton = findViewById(R.id.SaveButton);
+        NextButton = findViewById(R.id.NextButton);
 
         //Initialize Firebase references
         auth = FirebaseAuth.getInstance();
@@ -54,6 +56,13 @@ public class UserProfileActivity2 extends AppCompatActivity {
                 saveToFirebase();
             }
         });
+
+        //Navigate to the sign up activity
+        NextButton.setOnClickListener(v -> {
+            Intent intent = new Intent(UserProfileActivity2.this, SignUpActivity.class);
+            startActivity(intent);
+        });
+
     }
 
     private void showDatePicker(){
