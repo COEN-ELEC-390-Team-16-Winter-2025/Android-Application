@@ -9,10 +9,13 @@ import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothGattDescriptor;
 import android.bluetooth.BluetoothGattService;
 import android.bluetooth.BluetoothProfile;
+import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
+import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 
@@ -27,6 +30,9 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.auth.FirebaseAuth;
 
+import android.view.View;
+import android.widget.TextView;
+
 
 public class ScanningActivity extends AppCompatActivity {
 
@@ -39,6 +45,8 @@ public class ScanningActivity extends AppCompatActivity {
     private BluetoothAdapter bluetoothAdapter;
     private Handler handler;
     private ListView bacListView;
+    private TextView loadingTextView;
+
     private ArrayAdapter<String> bacListAdapter;
     private final List<String> bacList = new ArrayList<>();
     private BluetoothGatt mBluetoothGatt;
@@ -54,21 +62,40 @@ public class ScanningActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_scanning);
 
-        userId = FirebaseAuth.getInstance().getCurrentUser().getUid();
-        fetchUserData();
+        String mode = getIntent().getStringExtra("mode");
+
+
+        FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
+        if (currentUser != null) {
+            userId = currentUser.getUid();
+            fetchUserData();
+        } else {
+            Log.e(TAG, "No logged-in user found.");
+        }
+
 
         bacListView = findViewById(R.id.bacListView);
+        loadingTextView = findViewById(R.id.loadingTextView);
+
         handler = new Handler(Looper.getMainLooper());
 
         // Set up the ListView adapter
         bacListAdapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, bacList);
         bacListView.setAdapter(bacListAdapter);
 
+
         // Initialize Bluetooth
         bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
         if (bluetoothAdapter == null) {
             Log.e(TAG, "Bluetooth not supported");
             return;
+        }
+
+        // Hide the list if we are in refresh mode
+        if ("refreshBAC".equals(mode)) {
+            bacListView.setVisibility(View.GONE);
+            loadingTextView.setVisibility(View.VISIBLE);
+            loadingTextView.setText("Loading latest BAC reading...");
         }
 
         // Connect to the Bluno device
@@ -223,15 +250,26 @@ public class ScanningActivity extends AppCompatActivity {
                 .get()
                 .addOnSuccessListener(documentSnapshot -> {
                     if (documentSnapshot.exists()) {
-                        userHeight = documentSnapshot.getLong("height").intValue();
-                        userWeight = documentSnapshot.getLong("weight").intValue();
+                        Long heightValue = documentSnapshot.getLong("height");
+                        Long weightValue = documentSnapshot.getLong("weight");
+
+                        if (heightValue != null) {
+                            userHeight = heightValue.intValue();
+                        }
+                        if (weightValue != null) {
+                            userWeight = weightValue.intValue();
+                        }
+
                         Log.d(TAG, "User Data Retrieved: Height=" + userHeight + ", Weight=" + userWeight);
                     } else {
-                        Log.d(TAG, "User document does not exist");
+                        Log.d(TAG, "User document does not exist. Using defaults.");
                     }
                 })
-                .addOnFailureListener(e -> Log.e(TAG, "Error fetching user data", e));
+                .addOnFailureListener(e -> {
+                    Log.e(TAG, "Error fetching user data. Using defaults.", e);
+                });
     }
+
 
     private double adjustBAC(double bac, int weight, int height) {
         double bodyWaterConstant = 0.58; // Avg for males; 0.49 for females
@@ -252,6 +290,18 @@ public class ScanningActivity extends AppCompatActivity {
             Log.e(TAG, "Error parsing BAC value", e);
         }
         return 0.0;
+    }
+
+    private void saveLatestBAC(String bacValue) {
+        SharedPreferences prefs = getSharedPreferences("DrinkWisePrefs", MODE_PRIVATE);
+        SharedPreferences.Editor editor = prefs.edit();
+        editor.putString("latestBAC", bacValue);
+        editor.apply();
+
+        Intent resultIntent = new Intent();
+        resultIntent.putExtra("latestBAC", bacValue);
+        setResult(RESULT_OK, resultIntent);
+        finish();
     }
 
 
