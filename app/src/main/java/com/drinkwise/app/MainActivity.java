@@ -23,6 +23,7 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         FirebaseApp.initializeApp(this);
 
+
         // Retrieve SharedPreferences
         SharedPreferences preferences = getSharedPreferences("AppPrefs", MODE_PRIVATE);
         boolean isFirstTime = preferences.getBoolean("isFirstTime", true); // Default: true (first time)
