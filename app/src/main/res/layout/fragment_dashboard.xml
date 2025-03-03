@@ -145,37 +145,39 @@
         android:text="See List"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.498"
+        app:layout_constraintHorizontal_bias="0.775"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.6" />
+        app:layout_constraintVertical_bias="0.597" />
+
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="200dp"
         android:orientation="horizontal"
-        app:layout_constraintTop_toBottomOf="@id/scanNowButton"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
 
-        >
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="1.0">
 
         <LinearLayout
             android:layout_width="120dp"
             android:layout_height="120dp"
+            android:layout_marginLeft="5dp"
             android:layout_marginTop="40dp"
             android:background="@drawable/dashboard_boarder_orange"
-            android:orientation="vertical"
-            android:layout_marginLeft="5dp"
-            >
+            android:orientation="vertical">
+
             <LinearLayout
                 android:layout_width="40dp"
                 android:layout_height="40dp"
-                android:background="@drawable/dashboard_border_drawable"
-                android:gravity="center"
                 android:layout_marginLeft="10dp"
-                android:layout_marginTop="10dp">
+                android:layout_marginTop="10dp"
+                android:background="@drawable/dashboard_border_drawable"
+                android:gravity="center">
 
                 <ImageView
                     android:layout_width="69dp"
@@ -191,105 +193,96 @@
                 android:fontFamily="@font/montserrat_semibold"
                 android:text="Drinking Activity"
                 android:textColor="@color/white"
-                android:textSize="13dp">
-            </TextView>
+                android:textSize="13dp"></TextView>
 
             <TextView
+                android:id="@+id/drinking_activity"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:id="@+id/drinking_activity"
+                android:layout_marginLeft="10dp"
+                android:fontFamily="@font/montserrat_semibold"
                 android:text="1h 30 min"
                 android:textColor="@color/white"
-                android:textSize="19dp"
-                android:fontFamily="@font/montserrat_semibold"
-                android:layout_marginLeft="10dp">
-            </TextView>
+                android:textSize="19dp"></TextView>
 
         </LinearLayout>
 
         <LinearLayout
             android:layout_width="120dp"
             android:layout_height="120dp"
+            android:layout_marginLeft="20dp"
             android:layout_marginTop="40dp"
             android:background="@drawable/dashboard_boarder_orange"
-            android:orientation="vertical"
-            android:layout_marginLeft="20dp">
+            android:orientation="vertical">
 
             <ImageView
                 android:layout_width="30dp"
                 android:layout_height="30dp"
-                android:src="@drawable/baseline_bedtime_24"
+                android:layout_marginLeft="10dp"
                 android:layout_marginTop="10dp"
-                android:layout_marginLeft="10dp">
-            </ImageView>
+                android:src="@drawable/baseline_bedtime_24"></ImageView>
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_marginLeft="10dp"
+                android:layout_marginTop="13dp"
+                android:fontFamily="@font/montserrat_semibold"
                 android:text="Hours of sleep"
                 android:textColor="@color/white"
-                android:textSize="13dp"
-                android:fontFamily="@font/montserrat_semibold"
-                android:layout_marginTop="13dp"
-                android:layout_marginLeft="10dp">
-            </TextView>
+                android:textSize="13dp"></TextView>
 
             <TextView
+                android:id="@+id/hours_of_sleep"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:id="@+id/hours_of_sleep"
+                android:layout_marginLeft="10dp"
+                android:layout_marginTop="10dp"
+                android:fontFamily="@font/montserrat_semibold"
                 android:text="8h 20 min"
                 android:textColor="@color/white"
-                android:textSize="19dp"
-                android:fontFamily="@font/montserrat_semibold"
-                android:layout_marginTop="10dp"
-                android:layout_marginLeft="10dp">
-            </TextView>
+                android:textSize="19dp"></TextView>
 
         </LinearLayout>
 
         <LinearLayout
             android:layout_width="120dp"
             android:layout_height="120dp"
+            android:layout_marginLeft="20dp"
             android:layout_marginTop="40dp"
             android:background="@drawable/dashboard_boarder_orange"
-            android:orientation="vertical"
-            android:layout_marginLeft="20dp">
+            android:orientation="vertical">
 
             <ImageView
                 android:layout_width="30dp"
                 android:layout_height="30dp"
-                android:src="@drawable/baseline_bloodtype_24"
                 android:layout_marginLeft="10dp"
-                android:layout_marginTop="10dp">
-            </ImageView>
+                android:layout_marginTop="10dp"
+                android:src="@drawable/baseline_bloodtype_24"></ImageView>
 
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_marginLeft="10dp"
+                android:layout_marginTop="10dp"
+                android:fontFamily="@font/montserrat_semibold"
                 android:text="Blood oxygen SpO2"
                 android:textColor="@color/white"
-                android:textSize="13dp"
-                android:fontFamily="@font/montserrat_semibold"
-                android:layout_marginTop="10dp"
-                android:layout_marginLeft="10dp">
-            </TextView>
+                android:textSize="13dp"></TextView>
 
             <TextView
+                android:id="@+id/blood_oxygen"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:id="@+id/blood_oxygen"
+                android:layout_marginLeft="10dp"
+                android:fontFamily="@font/montserrat_semibold"
                 android:text="80%"
                 android:textColor="@color/white"
-                android:textSize="19dp"
-                android:fontFamily="@font/montserrat_semibold"
-                android:layout_marginLeft="10dp">
-            </TextView>
+                android:textSize="19dp"></TextView>
 
         </LinearLayout>
 
     </LinearLayout>
-
 
     <Button
         android:id="@+id/btnRefreshBAC"
@@ -301,9 +294,10 @@
         android:text="Refresh BAC"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.148"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.657" />
+        app:layout_constraintVertical_bias="0.598" />
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>
