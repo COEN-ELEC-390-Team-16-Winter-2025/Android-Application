@@ -136,13 +136,13 @@
     </LinearLayout>
 
     <Button
-        android:id="@+id/scanNowButton"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:id="@+id/btnSeeList"
+        android:layout_width="131dp"
+        android:layout_height="61dp"
         android:layout_gravity="center"
         android:backgroundTint="#AE1414"
         android:padding="16dp"
-        android:text="Get BAC Measurement"
+        android:text="See List"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.498"
@@ -290,6 +290,20 @@
 
     </LinearLayout>
 
+
+    <Button
+        android:id="@+id/btnRefreshBAC"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:backgroundTint="#AE1414"
+        android:padding="16dp"
+        android:text="Refresh BAC"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.657" />
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>

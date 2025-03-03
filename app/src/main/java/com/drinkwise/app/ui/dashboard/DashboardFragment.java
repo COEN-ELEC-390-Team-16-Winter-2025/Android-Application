@@ -31,14 +31,22 @@ private FragmentDashboardBinding binding;
         binding = FragmentDashboardBinding.inflate(inflater, container, false);
         View root = binding.getRoot();
 
-        // Handle "Scan Now" button click
-        binding.scanNowButton.setOnClickListener(v -> {
+        binding.btnSeeList.setOnClickListener(v -> {
             Intent intent = new Intent(getActivity(), ScanningActivity.class);
+            intent.putExtra("mode", "fullList"); // Mode for full BAC list
             startActivity(intent);
         });
 
-        //final TextView textView = binding.textDashboard;
-        //dashboardViewModel.getText().observe(getViewLifecycleOwner(), textView::setText);
+        binding.btnRefreshBAC.setOnClickListener(v -> {
+            Intent intent = new Intent(getActivity(), ScanningActivity.class);
+            intent.putExtra("mode", "refreshBac"); // Mode for refreshing BAC
+            startActivity(intent);
+        });
+
+
+
+        final TextView textView = binding.textDashboard;
+        dashboardViewModel.getText().observe(getViewLifecycleOwner(), textView::setText);
         return root;
     }
 
