@@ -16,6 +16,8 @@
         android:layout_gravity="center_horizontal"
         android:paddingBottom="16dp"/>
 
+
+
     <!-- Loading Message (Hidden by Default) -->
     <TextView
         android:id="@+id/loadingTextView"
@@ -23,10 +25,11 @@
         android:layout_height="wrap_content"
         android:text="Loading latest BAC reading..."
         android:textSize="18sp"
-        android:visibility="gone"
         android:gravity="center"
         android:layout_gravity="center_horizontal"
-        android:padding="10dp"/>
+        android:padding="10dp"
+        android:layout_marginTop="250dp"
+        android:visibility="gone"/>
 
     <!-- ListView for BAC readings -->
     <ListView
@@ -34,6 +37,20 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:divider="@android:color/darker_gray"
-        android:dividerHeight="1dp"/>
+        android:dividerHeight="1dp" />
+
+    <ProgressBar
+        android:id="@+id/progressBar"
+        style="?android:attr/progressBarStyleHorizontal"
+        android:progressDrawable="@drawable/progress_bar"
+        android:progress="0"
+        android:max="100"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        android:visibility="gone"
+
+        />
+
 </LinearLayout>
 

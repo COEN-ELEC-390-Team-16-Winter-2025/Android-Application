@@ -31,7 +31,9 @@ import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.auth.FirebaseAuth;
 
 import android.view.View;
+import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 
 public class ScanningActivity extends AppCompatActivity {
@@ -46,7 +48,13 @@ public class ScanningActivity extends AppCompatActivity {
     private Handler handler;
     private ListView bacListView;
     private TextView loadingTextView;
+    private ProgressBar progressBar;
 
+    private boolean MODE_LATEST_BAC;
+    String[] loading = {".", "..", "..."};
+
+    private double bac_readings = 0.0;
+    private int count = 0;
     private ArrayAdapter<String> bacListAdapter;
     private final List<String> bacList = new ArrayList<>();
     private BluetoothGatt mBluetoothGatt;
@@ -76,6 +84,7 @@ public class ScanningActivity extends AppCompatActivity {
 
         bacListView = findViewById(R.id.bacListView);
         loadingTextView = findViewById(R.id.loadingTextView);
+        progressBar = findViewById(R.id.progressBar);
 
         handler = new Handler(Looper.getMainLooper());
 
@@ -95,13 +104,16 @@ public class ScanningActivity extends AppCompatActivity {
         if ("refreshBAC".equals(mode)) {
             bacListView.setVisibility(View.GONE);
             loadingTextView.setVisibility(View.VISIBLE);
-            loadingTextView.setText("Loading latest BAC reading...");
+            progressBar.setVisibility(View.VISIBLE);
+            progressBar.setProgress(0);
+            MODE_LATEST_BAC = true;
+
         }
+
+
 
         // Connect to the Bluno device
         connectToBluno();
-
-
     }
 
     @SuppressLint("MissingPermission")
@@ -188,16 +200,35 @@ public class ScanningActivity extends AppCompatActivity {
                     double bacValue = extractBACValue(completeMessage);
                     double adjustedBAC = adjustBAC(bacValue, userWeight, userHeight);
 
+                    Log.d("Scanning Activity", "Adjusted BAC: "+adjustedBAC);
+                    if(count < 20){
+                        bac_readings += adjustedBAC;
+                        count++;
+                    }
+
                     String finalMessage = completeMessage + " | Adjusted BAC: " + String.format("%.3f", adjustedBAC);
 
                     // Update UI on main thread
                     handler.post(() -> {
                         bacList.add(completeMessage.trim()); // Append new reading instead of replacing
+                        progressBar.setProgress(bacList.size()*5);
+                        loadingTextView.setText("Loading latest BAC reading"+loading[count%3]);
                         bacListAdapter.notifyDataSetChanged();
                     });
 
 
                     Log.d(TAG, "Full BAC Result: " + completeMessage); // Log full message
+                }
+                if(count == 20 && MODE_LATEST_BAC){
+                    bac_readings  /= count;
+                    Log.d("Scanning Activity", "BAC reading: "+bac_readings);
+                    String bac_reading = String.format("%.2f", bac_readings);
+                    Intent intent = new Intent(ScanningActivity.this, MainActivity.class);
+                    intent.putExtra("latest_bac_entry", bac_reading);
+                    intent.putExtra("toDashboard", true);
+                    intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+                    startActivity(intent);
+                    finish();
                 }
             }
         }
@@ -282,9 +313,13 @@ public class ScanningActivity extends AppCompatActivity {
 
     private double extractBACValue(String message) {
         try {
-            String[] parts = message.split(":");
+            String[] parts = message.split("\\s+");
+            double BAC_value_mean = 0;
             if (parts.length > 1) {
-                return Double.parseDouble(parts[1].trim());
+                for(int i=0; i<parts.length; i++){
+                    BAC_value_mean += Double.parseDouble(parts[i].trim());
+                }
+                return BAC_value_mean/parts.length;
             }
         } catch (Exception e) {
             Log.e(TAG, "Error parsing BAC value", e);
