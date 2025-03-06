@@ -12,7 +12,9 @@ import android.widget.Toast;
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.google.firebase.Firebase;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.util.HashMap;
@@ -36,7 +38,6 @@ public class UserProfileActivity1 extends AppCompatActivity {
         unitSwitch = findViewById(R.id.unitSwitch);
         editTextHeight = findViewById(R.id.editTextHeight);
         editTextWeight = findViewById(R.id.editTextWeight);
-        Button saveButton = findViewById(R.id.saveButton);
         Button nextButton = findViewById(R.id.nextButton);
 
         unitSwitch.setOnCheckedChangeListener((buttonView, isChecked) -> {
@@ -53,16 +54,11 @@ public class UserProfileActivity1 extends AppCompatActivity {
             }
         });
 
-        // save button: validate input and store in firestore
-        saveButton.setOnClickListener(v -> {
-            if (validateInputs()) {
-                // if validation passes, data processed
-                storeUserData();
-            }
-        });
-
         // Next Button logic : goes to user profile activity 2
         nextButton.setOnClickListener(v -> {
+            if(validateInputs()){
+                storeUserData();
+            }
             Intent intent = new Intent(UserProfileActivity1.this, UserProfileActivity2.class);
             startActivity(intent);
             finish();
@@ -136,7 +132,10 @@ public class UserProfileActivity1 extends AppCompatActivity {
     // store the user's data in firestore
 
     private void storeUserData() {
-        String userId = Objects.requireNonNull(FirebaseAuth.getInstance().getCurrentUser()).getUid();
+
+        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+
+        String userId = user.getUid();
         FirebaseFirestore db = FirebaseFirestore.getInstance();
 
         // convert to float
@@ -158,6 +157,6 @@ public class UserProfileActivity1 extends AppCompatActivity {
                 .addOnSuccessListener(aVoid ->
                         Toast.makeText(UserProfileActivity1.this, "Profile saved!", Toast.LENGTH_SHORT).show())
                 .addOnFailureListener(e ->
-                        Toast.makeText(UserProfileActivity1.this, "Failed to save profile", Toast.LENGTH_SHORT).show());
+                        Toast.makeText(UserProfileActivity1.this, e.getMessage(), Toast.LENGTH_SHORT).show());
     }
 }

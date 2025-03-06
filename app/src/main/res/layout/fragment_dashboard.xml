@@ -33,7 +33,7 @@
             android:layout_height="200dp"
             android:layout_width="match_parent"
             android:id="@+id/latest_BAC_measurement"
-            android:text="0.01"
+            android:text="0.00"
             android:textColor="@color/black"
             android:fontFamily="@font/geostar_fill"
             android:textSize="100dp"

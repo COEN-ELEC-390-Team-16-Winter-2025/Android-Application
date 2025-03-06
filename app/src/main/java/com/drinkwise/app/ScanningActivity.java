@@ -202,7 +202,7 @@ public class ScanningActivity extends AppCompatActivity {
 
                     Log.d("Scanning Activity", "Adjusted BAC: "+adjustedBAC);
                     if(count < 20){
-                        bac_readings += adjustedBAC;
+                        bac_readings += bacValue;
                         count++;
                     }
 
@@ -221,7 +221,6 @@ public class ScanningActivity extends AppCompatActivity {
                 }
                 if(count == 20 && MODE_LATEST_BAC){
                     bac_readings  /= count;
-                    Log.d("Scanning Activity", "BAC reading: "+bac_readings);
                     String bac_reading = String.format("%.2f", bac_readings);
                     Intent intent = new Intent(ScanningActivity.this, MainActivity.class);
                     intent.putExtra("latest_bac_entry", bac_reading);
