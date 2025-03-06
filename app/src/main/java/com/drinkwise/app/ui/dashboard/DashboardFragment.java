@@ -17,6 +17,8 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.Toast;
+
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import com.drinkwise.app.R;
@@ -33,6 +35,7 @@ private Button refresh_bac;
 
         binding = FragmentDashboardBinding.inflate(inflater, container, false);
         View root = binding.getRoot();
+
 
         binding.btnSeeList.setOnClickListener(v -> {
             Intent intent = new Intent(getActivity(), ScanningActivity.class);
@@ -61,9 +64,12 @@ private Button refresh_bac;
         latest_bac_measurement = view.findViewById(R.id.latest_BAC_measurement);
         refresh_bac = view.findViewById(R.id.btnRefreshBAC);
 
-        if(getArguments() != null){
-            latest_bac_measurement.setText(getArguments().getString("latest_bac_entry"));
 
+        if(getArguments().getString("latest_bac_entry") != null){
+            latest_bac_measurement.setText(getArguments().getString("latest_bac_entry"));
+        }
+        else{
+            latest_bac_measurement.setText("--");
         }
 
 

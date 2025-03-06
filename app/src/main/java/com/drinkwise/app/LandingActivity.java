@@ -32,7 +32,7 @@ public class LandingActivity extends AppCompatActivity {
                 editor.apply();
 
                 // Open UserProfileActivity1
-                startActivity(new Intent(LandingActivity.this, UserProfileActivity1.class));
+                startActivity(new Intent(LandingActivity.this, SignUpActivity.class));
                 finish(); // Close LandingActivity
             }
         });

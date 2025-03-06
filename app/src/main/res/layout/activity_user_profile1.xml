@@ -1,97 +1,153 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:paddingTop="110dp"
-    tools:context=".UserProfileActivity1">
+    android:background="#FFFFFF">
 
-    <TextView
-        android:id="@+id/profileTitle"
+    <!-- Progression bar -->
+    <ImageView
+        android:id="@+id/progression_bar_userprofile2"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="User Profile - Height and Weight"
-        android:textSize="18sp"
-        android:textStyle="bold"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
+        android:layout_marginTop="50dp"
+        android:adjustViewBounds="true"
+        android:scaleType="fitCenter"
+        android:src="@drawable/progression_bar_userprofile2"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.5"
-        android:layout_marginTop="16dp"
-        tools:ignore="HardcodedText" />
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 
-    <!-- Switch to toggle units (Metric/Imperial) -->
+    <!-- Top message -->
+    <TextView
+        android:id="@+id/top_message"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="100dp"
+        android:fontFamily="@font/asul"
+        android:text="Let's get to know you better!"
+        android:textColor="@color/black"
+        android:textSize="18sp"
+        app:layout_constraintBottom_toTopOf="@+id/name_label"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/progression_bar_userprofile2" />
+
+    
+    <!-- Enter your name text -->
+    <TextView
+        android:id="@+id/name_label"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="50dp"
+        android:fontFamily="@font/asul"
+        android:text="How tall are you?"
+        android:textColor="@color/black"
+        android:textSize="20sp"
+        app:layout_constraintBottom_toTopOf="@id/editTextHeight"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/top_message" />
+
+    <!-- Box to input name -->
+    <EditText
+        android:id="@+id/editTextHeight"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        android:layout_marginBottom="67dp"
+        android:background="@drawable/edittext_border"
+        android:ems="10"
+        android:fontFamily="@font/asul"
+        android:inputType="textPersonName"
+        android:textAlignment="center"
+        android:textColor="@color/black"
+        android:textSize="20sp"
+        app:layout_constraintBottom_toTopOf="@+id/birthday_label"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/name_label"
+        tools:ignore="MissingConstraints" />
+
+    <!-- Name Error message-->
+    <TextView
+        android:id="@+id/NameErrorTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:visibility="gone"
+        app:layout_constraintStart_toStartOf="@id/editTextHeight"
+        app:layout_constraintTop_toBottomOf="@id/editTextHeight"
+        tools:ignore="MissingConstraints" />
+
+    <!-- Birthday text -->
+    <TextView
+        android:id="@+id/birthday_label"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:fontFamily="@font/asul"
+        android:text="How much do you weight?"
+        android:textColor="@color/black"
+        android:textSize="20sp"
+        app:layout_constraintBottom_toTopOf="@id/editTextWeight"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/editTextHeight" />
+
+    <!-- birthday selection box -->
+    <EditText
+        android:id="@+id/editTextWeight"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        android:background="@drawable/edittext_border"
+        android:clickable="true"
+        android:ems="10"
+        android:focusable="true"
+        android:fontFamily="@font/asul"
+        android:textAlignment="center"
+        android:textColor="@color/black"
+        android:textSize="20sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.502"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/birthday_label"
+        tools:ignore="MissingConstraints" />
+
+
     <Switch
         android:id="@+id/unitSwitch"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="24dp"
+        android:layout_marginStart="200dp"
         android:layout_marginTop="24dp"
         android:minHeight="48dp"
         android:text="Metric Units"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/profileTitle"
+        app:layout_constraintTop_toBottomOf="@id/editTextWeight"
         tools:ignore="HardcodedText,UseSwitchCompatOrMaterialXml" />
 
-    <!-- EditText for Height -->
-    <EditText
-        android:id="@+id/editTextHeight"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="24dp"
-        android:layout_marginTop="24dp"
-        android:layout_marginEnd="24dp"
-        android:autofillHints=""
-        android:hint="Height (cm)"
-        android:inputType="numberDecimal"
-        android:minHeight="48dp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/unitSwitch"
-        tools:ignore="HardcodedText,VisualLintTextFieldSize" />
+    <!-- Save button -->
 
-    <!-- EditText for Weight -->
-    <EditText
-        android:id="@+id/editTextWeight"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="24dp"
-        android:layout_marginTop="24dp"
-        android:layout_marginEnd="24dp"
-        android:autofillHints=""
-        android:hint="Weight (kg)"
-        android:inputType="numberDecimal"
-        android:minHeight="48dp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/editTextHeight"
-        tools:ignore="HardcodedText,VisualLintTextFieldSize" />
-
-    <!-- Save Button to validate and store data -->
-    <Button
-        android:id="@+id/saveButton"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Save"
-        app:layout_constraintTop_toBottomOf="@+id/editTextWeight"
-        app:layout_constraintStart_toStartOf="parent"
-        android:layout_marginTop="24dp"
-        android:layout_marginStart="24dp"
-        tools:ignore="HardcodedText" />
-
-    <!-- Temporary Home Button to go back to MainActivity -->
+    <!-- Next button -->
     <Button
         android:id="@+id/nextButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:background="@drawable/rounded_button"
+        android:padding="10dp"
         android:text="Next"
-        app:layout_constraintTop_toBottomOf="@+id/editTextWeight"
+        android:textAlignment="center"
+        android:textColor="#FFFFFF"
+        android:textSize="18sp"
+        app:backgroundTint="@null"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginTop="24dp"
-        android:layout_marginEnd="24dp"
-        tools:ignore="HardcodedText" />
+        app:layout_constraintHorizontal_bias="0.498"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/editTextWeight"
+        app:layout_constraintVertical_bias="0.578"
+        tools:ignore="MissingConstraints" />
+
 
 </androidx.constraintlayout.widget.ConstraintLayout>
