@@ -25,6 +25,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+import com.google.firebase.Timestamp;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.DocumentSnapshot;
@@ -56,7 +57,9 @@ public class ScanningActivity extends AppCompatActivity {
     private double bac_readings = 0.0;
     private int count = 0;
     private ArrayAdapter<String> bacListAdapter;
+    private ScanningAdapter adapter;
     private final List<String> bacList = new ArrayList<>();
+    private ArrayList<BACEntry> bacEntries = new ArrayList<BACEntry>();
     private BluetoothGatt mBluetoothGatt;
     private BluetoothDevice mBluetoothDevice;
 
@@ -89,8 +92,9 @@ public class ScanningActivity extends AppCompatActivity {
         handler = new Handler(Looper.getMainLooper());
 
         // Set up the ListView adapter
-        bacListAdapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, bacList);
-        bacListView.setAdapter(bacListAdapter);
+        //bacListAdapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, bacList);
+        adapter = new ScanningAdapter(this, bacEntries);
+        bacListView.setAdapter(adapter);
 
 
         // Initialize Bluetooth
@@ -210,10 +214,11 @@ public class ScanningActivity extends AppCompatActivity {
 
                     // Update UI on main thread
                     handler.post(() -> {
-                        bacList.add(completeMessage.trim()); // Append new reading instead of replacing
+                        bacEntries.add(new BACEntry(bacValue, Timestamp.now()));
+                        //bacList.add(completeMessage.trim()); // Append new reading instead of replacing
                         progressBar.setProgress(bacList.size()*5);
                         loadingTextView.setText("Loading latest BAC reading"+loading[count%3]);
-                        bacListAdapter.notifyDataSetChanged();
+                        adapter.notifyDataSetChanged();
                     });
 
 
