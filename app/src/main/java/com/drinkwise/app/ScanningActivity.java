@@ -23,6 +23,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.UUID;
 
 import com.google.firebase.Timestamp;
@@ -216,7 +217,7 @@ public class ScanningActivity extends AppCompatActivity {
                     handler.post(() -> {
                         bacEntries.add(new BACEntry(bacValue, Timestamp.now()));
                         //bacList.add(completeMessage.trim()); // Append new reading instead of replacing
-                        progressBar.setProgress(bacList.size()*5);
+                        progressBar.setProgress(bacEntries.size()*5);
                         loadingTextView.setText("Loading latest BAC reading"+loading[count%3]);
                         adapter.notifyDataSetChanged();
                     });
@@ -226,7 +227,7 @@ public class ScanningActivity extends AppCompatActivity {
                 }
                 if(count == 20 && MODE_LATEST_BAC){
                     bac_readings  /= count;
-                    String bac_reading = String.format("%.2f", bac_readings);
+                    String bac_reading = String.format(Locale.US,"%.2f", bac_readings);
                     Intent intent = new Intent(ScanningActivity.this, MainActivity.class);
                     intent.putExtra("latest_bac_entry", bac_reading);
                     intent.putExtra("toDashboard", true);
