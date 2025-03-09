@@ -57,7 +57,6 @@
         <activity
             android:name=".MainActivity"
             android:exported="true"
-<<<<<<< HEAD
             android:label="@string/app_name">
 
             <intent-filter>
@@ -67,11 +66,6 @@
             </intent-filter>
         </activity>
 
-
-=======
-            android:label="@string/app_name"/>
-
->>>>>>> a631559053ae906a4d7e5042d5cd5d44725933b4
         <meta-data
             android:name="preloaded_fonts"
             android:resource="@array/preloaded_fonts" />
