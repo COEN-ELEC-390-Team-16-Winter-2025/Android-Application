@@ -9,5 +9,7 @@
     <color name="white">#FFFFFFFF</color>
     <color name="button_orange">#E59947</color>
     <color name="bone">#DED4C7</color>
+    <color name="green">#338533</color>
+    <color name="red">#FF0000</color>
 
 </resources>

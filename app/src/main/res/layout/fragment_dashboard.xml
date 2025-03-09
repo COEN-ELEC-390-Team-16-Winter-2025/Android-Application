@@ -14,7 +14,6 @@
         android:id="@+id/BAC_measurement_container"
         android:background="@drawable/dashboard_border"
         android:orientation="vertical"
-        android:layout_marginTop="25dp"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
@@ -34,7 +33,7 @@
             android:layout_height="200dp"
             android:layout_width="match_parent"
             android:id="@+id/latest_BAC_measurement"
-            android:text="0.01"
+            android:text="0.00"
             android:textColor="@color/black"
             android:fontFamily="@font/geostar_fill"
             android:textSize="100dp"
@@ -42,14 +41,14 @@
             android:gravity="center"
             android:layout_marginTop="15dp"
             />
-        
+
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="100dp"
 
             android:orientation="horizontal"
             >
-            
+
             <LinearLayout
                 android:layout_width="120dp"
                 android:layout_height="100dp"
@@ -70,7 +69,7 @@
                     android:layout_height="wrap_content"
                     android:id="@+id/number_of_drinks"
                     android:fontFamily="@font/montserrat"
-                    android:text="2"
+                    android:text="--"
                     android:textSize="20dp"
                     android:layout_marginTop="10dp"
                     android:layout_marginLeft="20dp"
@@ -97,7 +96,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:id="@+id/calories"
-                    android:text="520 cal"
+                    android:text="--"
                     android:fontFamily="@font/montserrat"
                     android:textSize="20dp"
                     android:layout_marginTop="10dp"
@@ -125,7 +124,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:id="@+id/time_drinking"
-                    android:text="1h30m"
+                    android:text="--"
                     android:fontFamily="@font/montserrat"
                     android:textSize="20dp"
                     android:layout_marginTop="10dp"
@@ -201,7 +200,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginLeft="10dp"
                 android:fontFamily="@font/montserrat_semibold"
-                android:text="1h 30 min"
+                android:text="--"
                 android:textColor="@color/white"
                 android:textSize="19dp"></TextView>
 
@@ -239,7 +238,7 @@
                 android:layout_marginLeft="10dp"
                 android:layout_marginTop="10dp"
                 android:fontFamily="@font/montserrat_semibold"
-                android:text="8h 20 min"
+                android:text="--"
                 android:textColor="@color/white"
                 android:textSize="19dp"></TextView>
 
@@ -276,7 +275,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginLeft="10dp"
                 android:fontFamily="@font/montserrat_semibold"
-                android:text="80%"
+                android:text="--"
                 android:textColor="@color/white"
                 android:textSize="19dp"></TextView>
 
