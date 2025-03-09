@@ -36,11 +36,10 @@ public class UserProfileActivity2 extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_user_profile2);
 
-        NameTextView = findViewById(R.id.NameTextView);
-        BirthdayTextView = findViewById(R.id.BirthdayTextView);
+        NameTextView = findViewById(R.id.editTextHeight);
+        BirthdayTextView = findViewById(R.id.editTextWeight);
         NameErrorTextView = findViewById(R.id.NameErrorTextView);
         BirthdayErrorTextView = findViewById(R.id.BirthdayErrorTextView);
-        SaveButton = findViewById(R.id.SaveButton);
         NextButton = findViewById(R.id.NextButton);
 
         //Initialize Firebase references
@@ -51,16 +50,14 @@ public class UserProfileActivity2 extends AppCompatActivity {
         BirthdayTextView.setOnClickListener(v -> showDatePicker());
 
         validInputs();
-        //Save to database once the save button is pressed
-        SaveButton.setOnClickListener(v -> {
-            if(validInputs()) {
-                saveToFirebase();
-            }
-        });
+
 
         //Navigate to the sign up activity
         NextButton.setOnClickListener(v -> {
-            Intent intent = new Intent(UserProfileActivity2.this, SignUpActivity.class);
+            if(validInputs()){
+                saveToFirebase();
+            }
+            Intent intent = new Intent(UserProfileActivity2.this, LandingActivity.class);
             startActivity(intent);
         });
 
@@ -124,14 +121,18 @@ public class UserProfileActivity2 extends AppCompatActivity {
 
         //Getting usr from firebase
         FirebaseUser user = auth.getCurrentUser();
+
         String userID = user.getUid();
         Map<String, Object> userData =  new HashMap<>();
         userData.put("name", name);
         userData.put("birthday", birthday);
 
-        DocumentReference DocRef = db.collection("users").document(userID);
+        DocumentReference DocRef = db.collection("users")
+                .document(userID)
+                .collection("profile")
+                .document("stats");
 
-        DocRef.set(userData).addOnSuccessListener(aVoid -> {
+        DocRef.update(userData).addOnSuccessListener(aVoid -> {
             Toast.makeText(UserProfileActivity2.this, "Profile saved!", Toast.LENGTH_SHORT).show();
         }).addOnFailureListener(e -> {
             Toast.makeText(UserProfileActivity2.this, "Failed to save profile!",Toast.LENGTH_SHORT).show();

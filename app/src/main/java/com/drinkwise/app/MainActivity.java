@@ -1,11 +1,16 @@
 package com.drinkwise.app;
 
+import android.app.ComponentCaller;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.util.Log;
 import android.widget.Button;
+import android.widget.Toast;
 
 import com.google.android.material.bottomnavigation.BottomNavigationView;
+
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.navigation.NavController;
@@ -27,15 +32,15 @@ public class MainActivity extends AppCompatActivity {
 
 
         // Retrieve SharedPreferences
-        SharedPreferences preferences = getSharedPreferences("AppPrefs", MODE_PRIVATE);
-        boolean isFirstTime = preferences.getBoolean("isFirstTime", true); // Default: true (first time)
-
-        // If first time, show Landing Page
-        if (isFirstTime) {
-            startActivity(new Intent(this, LandingActivity.class));
-            finish(); // Close MainActivity so it doesn't stay in back stack
-            return;
-        }
+//        SharedPreferences preferences = getSharedPreferences("AppPrefs", MODE_PRIVATE);
+//        boolean isFirstTime = preferences.getBoolean("isFirstTime", true); // Default: true (first time)
+//
+//        // If first time, show Landing Page
+//        if (isFirstTime) {
+//            startActivity(new Intent(this, LandingActivity.class));
+//            finish(); // Close MainActivity so it doesn't stay in back stack
+//            return;
+//        }
 
         // Normal behavior if it's not the first time
         binding = ActivityMainBinding.inflate(getLayoutInflater());
@@ -51,6 +56,25 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+        Intent intent = getIntent();
+        if(intent.getBooleanExtra("toDashboard", false)){
+            intent.removeExtra("toDashboard");
+        }
+
+        String bac_entry = intent.getStringExtra("latest_bac_entry");
+        if(bac_entry == null){
+            Log.d("Main Activity", "Object is null");
+        }
+        // Navigate to DashboardFragment and pass data
+        NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment_activity_main);
+        Bundle bundle = new Bundle();
+        bundle.putString("latest_bac_entry", intent.getStringExtra("latest_bac_entry"));
+        navController.navigate(R.id.navigation_dashboard, bundle);
+    }
 
     // delete later
     @Override
@@ -62,6 +86,12 @@ public class MainActivity extends AppCompatActivity {
         preferences.edit().putBoolean("isFirstTime", true).apply();
     }
 
+    @Override
+    protected void onNewIntent(@NonNull Intent intent) {
+        super.onNewIntent(intent);
+        setIntent(intent);
+    }
 }
+
 
 

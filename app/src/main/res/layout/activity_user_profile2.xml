@@ -14,7 +14,7 @@
         android:layout_marginTop="50dp"
         android:adjustViewBounds="true"
         android:scaleType="fitCenter"
-        android:src="@drawable/progression_bar_userprofile2"
+        android:src="@drawable/progression_bar"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
@@ -44,14 +44,14 @@
         android:text="Enter your name: "
         android:textColor="@color/black"
         android:textSize="20sp"
-        app:layout_constraintBottom_toTopOf="@id/NameTextView"
+        app:layout_constraintBottom_toTopOf="@id/editTextHeight"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/top_message" />
 
     <!-- Box to input name -->
     <EditText
-        android:id="@+id/NameTextView"
+        android:id="@+id/editTextHeight"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="20dp"
@@ -75,8 +75,8 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:visibility="gone"
-        app:layout_constraintStart_toStartOf="@id/NameTextView"
-        app:layout_constraintTop_toBottomOf="@id/NameTextView"
+        app:layout_constraintStart_toStartOf="@id/editTextHeight"
+        app:layout_constraintTop_toBottomOf="@id/editTextHeight"
         tools:ignore="MissingConstraints" />
 
     <!-- Birthday text -->
@@ -88,14 +88,14 @@
         android:text="Select your birthday: "
         android:textColor="@color/black"
         android:textSize="20sp"
-        app:layout_constraintBottom_toTopOf="@id/BirthdayTextView"
+        app:layout_constraintBottom_toTopOf="@id/editTextWeight"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/NameTextView" />
+        app:layout_constraintTop_toBottomOf="@+id/editTextHeight" />
 
     <!-- birthday selection box -->
     <TextView
-        android:id="@+id/BirthdayTextView"
+        android:id="@+id/editTextWeight"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="20dp"
@@ -119,29 +119,11 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:visibility="gone"
-        app:layout_constraintStart_toStartOf="@id/BirthdayTextView"
-        app:layout_constraintTop_toBottomOf="@id/BirthdayTextView"
+        app:layout_constraintStart_toStartOf="@id/editTextWeight"
+        app:layout_constraintTop_toBottomOf="@id/editTextWeight"
         tools:ignore="MissingConstraints" />
 
     <!-- Save button -->
-    <Button
-        android:id="@+id/SaveButton"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:background="@drawable/rounded_button"
-        android:padding="10dp"
-        android:text="Save Profile"
-        android:textAlignment="center"
-        android:textColor="#FFFFFF"
-        android:textSize="18sp"
-        app:backgroundTint="@null"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.179"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/BirthdayTextView"
-        app:layout_constraintVertical_bias="0.559"
-        tools:ignore="MissingConstraints" />
 
     <!-- Next button -->
     <Button
@@ -150,17 +132,17 @@
         android:layout_height="wrap_content"
         android:background="@drawable/rounded_button"
         android:padding="10dp"
-        android:text="Next"
+        android:text="Finish"
         android:textAlignment="center"
         android:textColor="#FFFFFF"
         android:textSize="18sp"
         app:backgroundTint="@null"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.842"
+        app:layout_constraintHorizontal_bias="0.498"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/BirthdayTextView"
-        app:layout_constraintVertical_bias="0.559"
+        app:layout_constraintTop_toBottomOf="@+id/editTextWeight"
+        app:layout_constraintVertical_bias="0.558"
         tools:ignore="MissingConstraints" />
 
 
