@@ -22,12 +22,15 @@ import android.widget.ListView;
 import androidx.appcompat.app.AppCompatActivity;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.UUID;
 
 import com.google.firebase.Timestamp;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.auth.FirebaseAuth;
@@ -57,6 +60,7 @@ public class ScanningActivity extends AppCompatActivity {
 
     private double bac_readings = 0.0;
     private int count = 0;
+    private static int entry_count = 0;
     private ArrayAdapter<String> bacListAdapter;
     private ScanningAdapter adapter;
     private final List<String> bacList = new ArrayList<>();
@@ -227,6 +231,8 @@ public class ScanningActivity extends AppCompatActivity {
                 }
                 if(count == 20 && MODE_LATEST_BAC){
                     bac_readings  /= count;
+                    BACEntry bacEntry = new BACEntry(bac_readings, Timestamp.now());
+                    storeBAC(bacEntry);
                     String bac_reading = String.format(Locale.US,"%.2f", bac_readings);
                     Intent intent = new Intent(ScanningActivity.this, MainActivity.class);
                     intent.putExtra("latest_bac_entry", bac_reading);
@@ -342,6 +348,33 @@ public class ScanningActivity extends AppCompatActivity {
         resultIntent.putExtra("latestBAC", bacValue);
         setResult(RESULT_OK, resultIntent);
         finish();
+    }
+
+    public void storeBAC(BACEntry bacentry){
+        db = FirebaseFirestore.getInstance();
+
+        Map<String,Object> bac = new HashMap<>();
+        bac.put("bacValue", bacentry.getBac());
+        bac.put("Status", bacentry.getStatus());
+        bac.put("Date", bacentry.getDate());
+        bac.put("Time", bacentry.getTime());
+
+       DocumentReference documentReference = db.collection("users")
+                .document(userId)
+                .collection("BacEntry")
+                .document(bacentry.getDate() + " " + bacentry.getTime());
+
+       documentReference.get().addOnSuccessListener(documentSnapshot -> {
+           if(documentSnapshot.exists()){
+               documentReference.update(bac);
+               Toast.makeText(this, "Bac Entry Saved", Toast.LENGTH_SHORT).show();
+           }else{
+               documentReference.set(bac);
+               Toast.makeText(this, "Bac Entry Saved", Toast.LENGTH_SHORT).show();
+           }
+       }).addOnFailureListener(e -> {
+           Log.e("Firestore", "Error: "+e);
+       });
     }
 
 
