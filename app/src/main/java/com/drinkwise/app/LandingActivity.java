@@ -31,7 +31,7 @@ public class LandingActivity extends AppCompatActivity {
                 editor.putBoolean("isFirstTime", false); // Mark that landing page was shown
                 editor.apply();
 
-                // Open UserProfileActivity1
+                // Open sign up page
                 startActivity(new Intent(LandingActivity.this, SignUpActivity.class));
                 finish(); // Close LandingActivity
             }

@@ -52,12 +52,12 @@ public class UserProfileActivity2 extends AppCompatActivity {
         validInputs();
 
 
-        //Navigate to the sign up activity
+        //Navigate to the dashboard
         NextButton.setOnClickListener(v -> {
             if(validInputs()){
                 saveToFirebase();
             }
-            Intent intent = new Intent(UserProfileActivity2.this, LandingActivity.class);
+            Intent intent = new Intent(UserProfileActivity2.this, MainActivity.class);
             startActivity(intent);
         });
 
