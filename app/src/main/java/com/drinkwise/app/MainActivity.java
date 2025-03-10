@@ -32,15 +32,15 @@ public class MainActivity extends AppCompatActivity {
 
 
         // Retrieve SharedPreferences
-//        SharedPreferences preferences = getSharedPreferences("AppPrefs", MODE_PRIVATE);
-//        boolean isFirstTime = preferences.getBoolean("isFirstTime", true); // Default: true (first time)
-//
-//        // If first time, show Landing Page
-//        if (isFirstTime) {
-//            startActivity(new Intent(this, LandingActivity.class));
-//            finish(); // Close MainActivity so it doesn't stay in back stack
-//            return;
-//        }
+        SharedPreferences preferences = getSharedPreferences("AppPrefs", MODE_PRIVATE);
+        boolean isFirstTime = preferences.getBoolean("isFirstTime", true); // Default: true (first time)
+
+        // If first time, show Landing Page
+        if (isFirstTime) {
+            startActivity(new Intent(this, LandingActivity.class));
+            finish(); // Close MainActivity so it doesn't stay in back stack
+            return;
+        }
 
         // Normal behavior if it's not the first time
         binding = ActivityMainBinding.inflate(getLayoutInflater());

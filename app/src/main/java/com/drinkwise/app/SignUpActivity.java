@@ -35,14 +35,16 @@ public class SignUpActivity extends AppCompatActivity {
         button.setOnClickListener(v -> registerNewUser());
 
     }
-    @Override
-    protected void onStart(){
-        super.onStart();
-        if(auth.getCurrentUser() !=null){
-            startActivity(new Intent(SignUpActivity.this, MainActivity.class));
-            finish();
-        }
-    }
+
+//    @Override
+//    protected void onStart(){
+//        super.onStart();
+//        if(auth.getCurrentUser() !=null){
+//            startActivity(new Intent(SignUpActivity.this, MainActivity.class));
+//            finish();
+//        }
+//    }
+
     private void registerNewUser(){
         //get values from user input
         String email = emailTextView.getText().toString().trim();
