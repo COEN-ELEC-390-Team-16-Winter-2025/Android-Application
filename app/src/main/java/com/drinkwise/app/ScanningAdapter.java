@@ -45,6 +45,8 @@ public class ScanningAdapter extends BaseAdapter {
         return 0;
     }
 
+
+
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
         convertView = inflater.inflate(R.layout.bac_list_view, null);
@@ -54,7 +56,7 @@ public class ScanningAdapter extends BaseAdapter {
         TextView bac_status = convertView.findViewById(R.id.bac_status);
         TextView bac_date = convertView.findViewById(R.id.bac_date);
         TextView bac_time = convertView.findViewById(R.id.bac_time);
-
+        sortBACEntriesByTimestamp();
         double bac = bacEntries.get(position).getBac();
         bac_value.setText("BAC Value: " + String.format("%.3f", bac));
         bac_status_holder.setText("Status: ");
@@ -100,7 +102,7 @@ public class ScanningAdapter extends BaseAdapter {
             @Override
             public int compare(BACEntry entry1, BACEntry entry2) {
                 // Compare timestamps in descending order (most recent first)
-                return entry1.getTimestamp().compareTo(entry2.getTimestamp()); // Swapped here
+                return entry2.getTimestamp().compareTo(entry1.getTimestamp()); // Swapped here
             }
         });
 
