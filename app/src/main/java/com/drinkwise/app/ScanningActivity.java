@@ -22,6 +22,8 @@ import android.widget.ListView;
 import androidx.appcompat.app.AppCompatActivity;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -225,7 +227,6 @@ public class ScanningActivity extends AppCompatActivity {
                     // Update UI on main thread
                     handler.post(() -> {
                         bacEntries.add(new BACEntry(bacValue, Timestamp.now()));
-                        //bacList.add(completeMessage.trim()); // Append new reading instead of replacing
                         progressBar.setProgress(bacEntries.size()*5);
                         loadingTextView.setText("Loading latest BAC reading"+loading[count%3]);
                         adapter.notifyDataSetChanged();
@@ -381,6 +382,7 @@ public class ScanningActivity extends AppCompatActivity {
            Log.e("Firestore", "Error: "+e);
        });
     }
+
 
 
     @Override
