@@ -30,8 +30,6 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         FirebaseApp.initializeApp(this);
 
-
-        // Retrieve SharedPreferences
         SharedPreferences preferences = getSharedPreferences("AppPrefs", MODE_PRIVATE);
         boolean isFirstTime = preferences.getBoolean("isFirstTime", true); // Default: true (first time)
 
@@ -42,9 +40,15 @@ public class MainActivity extends AppCompatActivity {
             return;
         }
 
+        // Make sure the ActionBar is shown
+        if (getSupportActionBar() != null) {
+            getSupportActionBar().show();
+        }
+
         // Normal behavior if it's not the first time
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
+
 
         BottomNavigationView navView = findViewById(R.id.nav_view);
         AppBarConfiguration appBarConfiguration = new AppBarConfiguration.Builder(
@@ -69,6 +73,7 @@ public class MainActivity extends AppCompatActivity {
         if(bac_entry == null){
             Log.d("Main Activity", "Object is null");
         }
+
         // Navigate to DashboardFragment and pass data
         NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment_activity_main);
         Bundle bundle = new Bundle();
@@ -92,6 +97,5 @@ public class MainActivity extends AppCompatActivity {
         setIntent(intent);
     }
 }
-
 
 

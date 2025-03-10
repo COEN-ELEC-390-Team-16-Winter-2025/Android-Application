@@ -54,6 +54,7 @@ public class ScanningActivity extends AppCompatActivity {
     private ListView bacListView;
     private TextView loadingTextView;
     private ProgressBar progressBar;
+    private TextView instructionTextView;
 
     private boolean MODE_LATEST_BAC;
     String[] loading = {".", "..", "..."};
@@ -80,6 +81,8 @@ public class ScanningActivity extends AppCompatActivity {
 
         String mode = getIntent().getStringExtra("mode");
 
+        setTitle("BAC Readings");
+
 
         FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
         if (currentUser != null) {
@@ -93,6 +96,7 @@ public class ScanningActivity extends AppCompatActivity {
         bacListView = findViewById(R.id.bacListView);
         loadingTextView = findViewById(R.id.loadingTextView);
         progressBar = findViewById(R.id.progressBar);
+        instructionTextView = findViewById(R.id.instructionTextView);
 
         handler = new Handler(Looper.getMainLooper());
 
@@ -113,6 +117,7 @@ public class ScanningActivity extends AppCompatActivity {
         if ("refreshBAC".equals(mode)) {
             bacListView.setVisibility(View.GONE);
             loadingTextView.setVisibility(View.VISIBLE);
+            instructionTextView.setVisibility(View.VISIBLE);
             progressBar.setVisibility(View.VISIBLE);
             progressBar.setProgress(0);
             MODE_LATEST_BAC = true;
