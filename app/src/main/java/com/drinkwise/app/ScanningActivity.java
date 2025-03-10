@@ -80,6 +80,8 @@ public class ScanningActivity extends AppCompatActivity {
 
         String mode = getIntent().getStringExtra("mode");
 
+        setTitle("BAC Readings");
+
 
         FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
         if (currentUser != null) {
