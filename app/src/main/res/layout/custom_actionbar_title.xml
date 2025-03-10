@@ -1,0 +1,13 @@
+<!-- res/layout/custom_actionbar_title.xml -->
+<TextView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/action_bar_title"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:text="Your Title"
+    android:textColor="@color/dark_brown"
+    android:fontFamily="@font/artifika"
+    android:textAllCaps="true"
+    android:textSize="18sp"
+    android:gravity="center"
+    android:layout_gravity="center" />
