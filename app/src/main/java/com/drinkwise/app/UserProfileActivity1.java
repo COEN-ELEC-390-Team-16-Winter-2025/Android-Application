@@ -40,6 +40,9 @@ public class UserProfileActivity1 extends AppCompatActivity {
         editTextWeight = findViewById(R.id.editTextWeight);
         Button nextButton = findViewById(R.id.nextButton);
 
+        editTextHeight.setHint("Height (ft)");
+        editTextWeight.setHint("Weight (lb)");
+
         unitSwitch.setOnCheckedChangeListener((buttonView, isChecked) -> {
             if (isChecked) {
                 // Switch ON: metric
@@ -58,10 +61,10 @@ public class UserProfileActivity1 extends AppCompatActivity {
         nextButton.setOnClickListener(v -> {
             if(validateInputs()){
                 storeUserData();
+                Intent intent = new Intent(UserProfileActivity1.this, UserProfileActivity2.class);
+                startActivity(intent);
+                finish();
             }
-            Intent intent = new Intent(UserProfileActivity1.this, UserProfileActivity2.class);
-            startActivity(intent);
-            finish();
         });
     }
 

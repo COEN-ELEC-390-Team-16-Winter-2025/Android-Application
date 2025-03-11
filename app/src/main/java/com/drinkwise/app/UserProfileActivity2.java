@@ -50,20 +50,17 @@ public class UserProfileActivity2 extends AppCompatActivity {
         //Open date picker for birthday
         BirthdayTextView.setOnClickListener(v -> showDatePicker());
 
-        validInputs();
-
-
         //Navigate to the dashboard
         NextButton.setOnClickListener(v -> {
             if(validInputs()){
                 saveToFirebase();
+                SharedPreferences sharedPreferences = getSharedPreferences("AppPrefs", MODE_PRIVATE);
+                SharedPreferences.Editor editor = sharedPreferences.edit();
+                editor.putBoolean("returningUser", true);
+                editor.apply();
+                Intent intent = new Intent(UserProfileActivity2.this, LandingActivity.class);
+                startActivity(intent);
             }
-            SharedPreferences sharedPreferences = getSharedPreferences("AppPrefs", MODE_PRIVATE);
-            SharedPreferences.Editor editor = sharedPreferences.edit();
-            editor.putBoolean("returningUser", true);
-            editor.apply();
-            Intent intent = new Intent(UserProfileActivity2.this, LandingActivity.class);
-            startActivity(intent);
         });
 
     }
