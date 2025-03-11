@@ -65,9 +65,6 @@ public class UserProfileActivity1 extends AppCompatActivity {
                 startActivity(intent);
                 finish();
             }
-//            Intent intent = new Intent(UserProfileActivity1.this, UserProfileActivity2.class);
-//            startActivity(intent);
-//            finish();
         });
     }
 
