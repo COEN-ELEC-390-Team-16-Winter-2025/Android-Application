@@ -64,12 +64,12 @@ private Button refresh_bac;
         latest_bac_measurement = view.findViewById(R.id.latest_BAC_measurement);
         refresh_bac = view.findViewById(R.id.btnRefreshBAC);
 
-
-        if(getArguments().getString("latest_bac_entry") != null){
-            latest_bac_measurement.setText(getArguments().getString("latest_bac_entry"));
-        }
-        else{
-            latest_bac_measurement.setText("--");
+        if(getArguments() != null) {
+            if (getArguments().getString("latest_bac_entry") != null) {
+                latest_bac_measurement.setText(getArguments().getString("latest_bac_entry"));
+            } else {
+                latest_bac_measurement.setText("--");
+            }
         }
 
 

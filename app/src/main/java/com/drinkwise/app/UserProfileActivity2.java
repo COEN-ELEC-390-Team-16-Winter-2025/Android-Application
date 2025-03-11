@@ -3,6 +3,7 @@ package com.drinkwise.app;
 import android.annotation.SuppressLint;
 import android.app.DatePickerDialog;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
@@ -57,7 +58,11 @@ public class UserProfileActivity2 extends AppCompatActivity {
             if(validInputs()){
                 saveToFirebase();
             }
-            Intent intent = new Intent(UserProfileActivity2.this, MainActivity.class);
+            SharedPreferences sharedPreferences = getSharedPreferences("AppPrefs", MODE_PRIVATE);
+            SharedPreferences.Editor editor = sharedPreferences.edit();
+            editor.putBoolean("returningUser", true);
+            editor.apply();
+            Intent intent = new Intent(UserProfileActivity2.this, LandingActivity.class);
             startActivity(intent);
         });
 

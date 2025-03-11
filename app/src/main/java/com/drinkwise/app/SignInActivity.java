@@ -1,6 +1,7 @@
 package com.drinkwise.app;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.widget.Button;
 import android.widget.EditText;
@@ -40,10 +41,12 @@ public class SignInActivity extends AppCompatActivity {
     @Override
     protected void onStart(){
         super.onStart();
-        if(auth.getCurrentUser() !=null){
+       /* if(auth.getCurrentUser() !=null){
             startActivity(new Intent(SignInActivity.this, MainActivity.class));
             finish();
         }
+
+        */
     }
 
     private void SignInUserAccount() {
@@ -59,7 +62,12 @@ public class SignInActivity extends AppCompatActivity {
             public void onComplete(@NonNull Task<AuthResult> task) {
                 if (task.isSuccessful()) {
                     //Sign in successful
+                    SharedPreferences sharedPreferences = getSharedPreferences("AppPrefs", MODE_PRIVATE);
+                    SharedPreferences.Editor editor = sharedPreferences.edit();
+                    editor.putBoolean("returningUser", true);
+                    editor.apply();
                     startActivity(new Intent(SignInActivity.this, MainActivity.class));
+
                     finish();
                 } else {
                     if (task.getException() != null) {

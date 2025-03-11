@@ -31,14 +31,15 @@ public class MainActivity extends AppCompatActivity {
         FirebaseApp.initializeApp(this);
 
         SharedPreferences preferences = getSharedPreferences("AppPrefs", MODE_PRIVATE);
-        boolean isFirstTime = preferences.getBoolean("isFirstTime", true); // Default: true (first time)
 
+        boolean returningUser = preferences.getBoolean("returningUser", false);
         // If first time, show Landing Page
-        if (isFirstTime) {
+        if (!returningUser) {
             startActivity(new Intent(this, LandingActivity.class));
             finish(); // Close MainActivity so it doesn't stay in back stack
             return;
         }
+
 
         // Make sure the ActionBar is shown
         if (getSupportActionBar() != null) {
@@ -69,16 +70,16 @@ public class MainActivity extends AppCompatActivity {
             intent.removeExtra("toDashboard");
         }
 
-        String bac_entry = intent.getStringExtra("latest_bac_entry");
-        if(bac_entry == null){
-            Log.d("Main Activity", "Object is null");
-        }
 
-        // Navigate to DashboardFragment and pass data
-        NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment_activity_main);
-        Bundle bundle = new Bundle();
-        bundle.putString("latest_bac_entry", intent.getStringExtra("latest_bac_entry"));
-        navController.navigate(R.id.navigation_dashboard, bundle);
+
+        if(intent.getStringExtra("latest_bac_entry") != null) {
+            // Navigate to DashboardFragment and pass data
+            String bac_entry = intent.getStringExtra("latest_bac_entry");
+            NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment_activity_main);
+            Bundle bundle = new Bundle();
+            bundle.putString("latest_bac_entry", intent.getStringExtra("latest_bac_entry"));
+            navController.navigate(R.id.navigation_dashboard, bundle);
+        }
     }
 
     // delete later
