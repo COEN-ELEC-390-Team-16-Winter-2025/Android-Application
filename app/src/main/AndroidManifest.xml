@@ -23,7 +23,8 @@
         tools:targetApi="tiramisu">
         <activity
             android:name=".UserProfileActivity1"
-            android:exported="false" />
+            android:exported="false"
+            android:theme="@style/Theme.AppCompat.Light.NoActionBar"/>
         <activity
             android:name=".UserProfileActivity2"
             android:exported="false"

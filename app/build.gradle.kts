@@ -41,8 +41,11 @@ dependencies {
     implementation("com.google.firebase:firebase-auth") // Version managed by BOM
     implementation("com.google.firebase:firebase-firestore") // Version managed by BOM
 
+    implementation ("com.google.android.material:material:1.10.0")
+
+
     implementation(libs.appcompat)
-    implementation(libs.material)
+    //implementation(libs.material)
     implementation(libs.constraintlayout)
     implementation(libs.lifecycle.livedata.ktx)
     implementation(libs.lifecycle.viewmodel.ktx)
