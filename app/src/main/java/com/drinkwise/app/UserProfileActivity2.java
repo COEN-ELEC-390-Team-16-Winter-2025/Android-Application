@@ -67,11 +67,16 @@ public class UserProfileActivity2 extends AppCompatActivity {
 
     private void showDatePicker(){
         final Calendar calendar = Calendar.getInstance();
+
+        // Subtract 18 years to set default year
+        calendar.add(Calendar.YEAR, -18);
+
         int year = calendar.get(Calendar.YEAR);
         int month = calendar.get(Calendar.MONTH);
         int day = calendar.get(Calendar.DAY_OF_MONTH);
 
-        DatePickerDialog datePicker = new DatePickerDialog(this, (view, selectedYear, selectedMonth, selectedDay) -> {
+        DatePickerDialog datePicker = new DatePickerDialog(this,  R.style.DatePickerDialogTheme, (view, selectedYear, selectedMonth, selectedDay) -> {
+
             Calendar selectedCalendar = Calendar.getInstance();
             selectedCalendar.set(selectedYear, selectedMonth, selectedDay);
 
@@ -86,6 +91,20 @@ public class UserProfileActivity2 extends AppCompatActivity {
                 BirthdayErrorTextView.setVisibility(View.GONE);
             }
         }, year, month, day);
+
+        // Max selectable date (today)
+        datePicker.getDatePicker().setMaxDate(calendar.getTimeInMillis());
+
+        // Min selectable date (optional, e.g., 100 years ago)
+        Calendar minDate = Calendar.getInstance();
+        minDate.add(Calendar.YEAR, -100);
+        datePicker.getDatePicker().setMinDate(minDate.getTimeInMillis());
+
+        // Move selection to 18 years ago by default
+        Calendar defaultDate = Calendar.getInstance();
+        defaultDate.add(Calendar.YEAR, -18);
+        datePicker.updateDate(defaultDate.get(Calendar.YEAR), defaultDate.get(Calendar.MONTH), defaultDate.get(Calendar.DAY_OF_MONTH));
+
         datePicker.show();
     }
 
