@@ -5,7 +5,11 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.Gravity;
+import android.view.LayoutInflater;
+import android.view.View;
 import android.widget.Button;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.material.bottomnavigation.BottomNavigationView;
@@ -20,14 +24,56 @@ import androidx.navigation.ui.NavigationUI;
 import com.drinkwise.app.databinding.ActivityMainBinding;
 import com.google.firebase.FirebaseApp;
 
+import androidx.appcompat.app.ActionBar;
+import androidx.appcompat.app.AppCompatActivity;
+
+
 public class MainActivity extends AppCompatActivity {
 
     private ActivityMainBinding binding;
+    private TextView actionBarTitle;
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        binding = ActivityMainBinding.inflate(getLayoutInflater());
+        setContentView(binding.getRoot());
+
+        // Setup custom ActionBar title
+        ActionBar actionBar = getSupportActionBar();
+        if (actionBar != null) {
+            actionBar.setDisplayShowCustomEnabled(true);
+            actionBar.setDisplayShowTitleEnabled(false);
+
+            LayoutInflater inflater = LayoutInflater.from(this);
+            View customView = inflater.inflate(R.layout.custom_actionbar_title, null);
+            actionBarTitle = customView.findViewById(R.id.action_bar_title);
+
+            ActionBar.LayoutParams layoutParams = new ActionBar.LayoutParams(
+                    ActionBar.LayoutParams.MATCH_PARENT,
+                    ActionBar.LayoutParams.WRAP_CONTENT,
+                    Gravity.CENTER_HORIZONTAL
+            );
+            actionBar.setCustomView(customView, layoutParams);
+
+            NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment_activity_main);
+            navController.addOnDestinationChangedListener((controller, destination, arguments) -> {
+                int destId = destination.getId();
+                if (destId == R.id.navigation_home) {
+                    actionBarTitle.setText("Home");
+                } else if (destId == R.id.navigation_dashboard) {
+                    actionBarTitle.setText("Dashboard");
+                } else if (destId == R.id.navigation_notifications) {
+                    actionBarTitle.setText("Notifications");
+                } else {
+                    actionBarTitle.setText("DrinkWise");
+                }
+            });
+
+        }
+
         FirebaseApp.initializeApp(this);
 
         SharedPreferences preferences = getSharedPreferences("AppPrefs", MODE_PRIVATE);
@@ -41,14 +87,8 @@ public class MainActivity extends AppCompatActivity {
         }
 
 
-        // Make sure the ActionBar is shown
-        if (getSupportActionBar() != null) {
-            getSupportActionBar().show();
-        }
-
         // Normal behavior if it's not the first time
-        binding = ActivityMainBinding.inflate(getLayoutInflater());
-        setContentView(binding.getRoot());
+
 
 
         BottomNavigationView navView = findViewById(R.id.nav_view);
@@ -60,6 +100,8 @@ public class MainActivity extends AppCompatActivity {
         NavigationUI.setupWithNavController(binding.navView, navController);
 
     }
+
+
 
     @Override
     protected void onResume() {

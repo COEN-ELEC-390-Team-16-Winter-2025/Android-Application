@@ -20,6 +20,7 @@ import android.widget.ArrayAdapter;
 import android.widget.ListView;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -41,6 +42,8 @@ import android.view.View;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
+import androidx.appcompat.app.ActionBar;
+
 
 
 public class ScanningActivity extends AppCompatActivity {
@@ -83,7 +86,17 @@ public class ScanningActivity extends AppCompatActivity {
 
         String mode = getIntent().getStringExtra("mode");
 
-        setTitle("BAC Readings");
+        //setTitle("BAC Readings");
+
+        ActionBar actionBar = getSupportActionBar();
+        if (actionBar != null) {
+            actionBar.setDisplayShowCustomEnabled(true);
+            actionBar.setCustomView(R.layout.custom_actionbar_title);
+            TextView title = actionBar.getCustomView().findViewById(R.id.action_bar_title);
+            title.setText("BAC Readings");
+        }
+
+
 
 
         FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
