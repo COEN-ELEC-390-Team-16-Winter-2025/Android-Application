@@ -5,251 +5,203 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:fillViewport="true" >
+    android:fillViewport="true"
+    android:fitsSystemWindows="true"
+    android:clipToPadding="false"
+    android:paddingTop="80dp"
+    android:paddingBottom="80dp"
+    >
 
-    <androidx.constraintlayout.widget.ConstraintLayout
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@color/bone"
+        android:orientation="vertical"
+        android:paddingTop="32dp"
+        android:paddingBottom="32dp"
         tools:context=".ui.dashboard.DashboardFragment"
-        android:paddingBottom="80dp"
-        >
+        android:fitsSystemWindows="true"
+        android:padding="16dp">
 
-
-
-        <!-- BAC Measurement Container -->
+        <!-- Top Section: BAC Level and Progress Bar -->
         <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="350dp"
-            android:id="@+id/BAC_measurement_container"
-            android:background="@drawable/dashboard_border"
-            android:orientation="vertical"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            >
-
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:fontFamily="@font/montserrat"
-                android:textSize="20dp"
-                android:text="Last B.A.C. Measurement"
-                android:textColor="@color/black"
-                android:layout_marginTop="15dp"
-                android:layout_marginLeft="10dp"/>
-
-            <TextView
-                android:layout_height="200dp"
-                android:layout_width="match_parent"
-                android:id="@+id/latest_BAC_measurement"
-                android:text="0.00"
-                android:textColor="@color/black"
-                android:fontFamily="@font/geostar_fill"
-                android:textSize="100dp"
-                android:textAlignment="center"
-                android:gravity="center"
-                android:layout_marginTop="15dp"
-                />
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="100dp"
-                android:orientation="horizontal"
-                >
-
-                <LinearLayout
-                    android:layout_width="120dp"
-                    android:layout_height="100dp"
-                    android:orientation="vertical">
-
-                    <TextView
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:text="Drinks"
-                        android:textSize="13dp"
-                        android:fontFamily="@font/montserrat_medium"
-                        android:layout_marginTop="15dp"
-                        android:layout_marginLeft="20dp">
-                    </TextView>
-
-                    <TextView
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:id="@+id/number_of_drinks"
-                        android:fontFamily="@font/montserrat"
-                        android:text="--"
-                        android:textSize="20dp"
-                        android:layout_marginTop="10dp"
-                        android:layout_marginLeft="20dp"
-                        ></TextView>
-
-                </LinearLayout>
-
-                <LinearLayout
-                    android:layout_width="120dp"
-                    android:layout_height="100dp"
-                    android:orientation="vertical">
-
-                    <TextView
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:text="Calories"
-                        android:fontFamily="@font/montserrat_medium"
-                        android:textSize="13dp"
-                        android:layout_marginTop="15dp"
-                        android:layout_marginLeft="20dp">
-                    </TextView>
-
-                    <TextView
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:id="@+id/calories"
-                        android:text="--"
-                        android:fontFamily="@font/montserrat"
-                        android:textSize="20dp"
-                        android:layout_marginTop="10dp"
-                        android:layout_marginLeft="20dp">
-                    </TextView>
-
-                </LinearLayout>
-
-                <LinearLayout
-                    android:layout_width="120dp"
-                    android:layout_height="100dp"
-                    android:orientation="vertical">
-
-                    <TextView
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:text="Time Drinking"
-                        android:fontFamily="@font/montserrat_medium"
-                        android:textSize="13dp"
-                        android:layout_marginTop="15dp"
-                        android:layout_marginLeft="20dp">
-                    </TextView>
-
-                    <TextView
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:id="@+id/time_drinking"
-                        android:text="--"
-                        android:fontFamily="@font/montserrat"
-                        android:textSize="20dp"
-                        android:layout_marginTop="10dp"
-                        android:layout_marginLeft="20dp">
-                    </TextView>
-                </LinearLayout>
-            </LinearLayout>
-        </LinearLayout>
-
-        <!-- Buttons -->
-        <Button
-            android:id="@+id/btnSeeList"
-            android:layout_width="131dp"
-            android:layout_height="61dp"
-            android:backgroundTint="#AE1414"
-            android:padding="16dp"
-            android:text="See List"
-            app:layout_constraintTop_toBottomOf="@+id/BAC_measurement_container"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toStartOf="@+id/btnRefreshBAC"
-            app:layout_constraintHorizontal_bias="0.5"
-            android:layout_marginTop="16dp" />
-
-        <Button
-            android:id="@+id/btnRefreshBAC"
-            android:layout_width="131dp"
-            android:layout_height="61dp"
-            android:backgroundTint="#AE1414"
-            android:padding="16dp"
-            android:text="Refresh BAC"
-            app:layout_constraintTop_toBottomOf="@+id/BAC_measurement_container"
-            app:layout_constraintStart_toEndOf="@+id/btnSeeList"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="0.5"
-            android:layout_marginTop="16dp" />
-
-        <Button
-            android:id="@+id/btnBACHistory"
-            android:layout_width="304dp"
-            android:layout_height="44dp"
-            android:backgroundTint="#E59947"
-            android:text="VIEW BAC HISTORY"
-            app:layout_constraintTop_toBottomOf="@+id/btnSeeList"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            android:layout_marginTop="16dp" />
-
-        <View
-            android:id="@+id/dividerLine"
-            android:layout_width="0dp"
-            android:layout_height="2dp"
-            android:background="#4B3621"
-            app:layout_constraintTop_toBottomOf="@id/btnBACHistory"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            android:layout_marginTop="25dp" />
-
-        <!-- Alcohol Consumed Container -->
-        <LinearLayout
-            android:id="@+id/number_of_drinks_container"
-            android:layout_width="match_parent"
-            android:layout_height="250dp"
-            android:background="@drawable/dashboard_border"
-            android:orientation="vertical"
-            app:layout_constraintTop_toBottomOf="@id/dividerLine"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            android:layout_marginTop="45dp">
-
-        <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginLeft="10dp"
-            android:layout_marginTop="15dp"
-            android:fontFamily="@font/montserrat"
-            android:text="Alcohol Consumed"
-            android:textColor="@color/black"
-            android:textSize="20dp" />
-
-        <TextView
-            android:id="@+id/amount_drunk"
-            android:layout_width="match_parent"
-            android:layout_height="150dp"
-            android:layout_marginTop="15dp"
-            android:fontFamily="@font/geostar_fill"
+            android:orientation="vertical"
             android:gravity="center"
-            android:text="2.2 L"
-            android:textAlignment="center"
-            android:textColor="@color/black"
-            android:textSize="100dp" />
+            android:padding="16dp"
+            android:background="@color/bac_background_color">
+
+            <TextView
+                android:id="@+id/bacLevel"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="0.06%"
+                android:textSize="36sp"
+                android:textColor="@color/bac_text_color"
+                android:textStyle="bold" />
+
+            <ProgressBar
+                android:id="@+id/bacProgressBar"
+                style="?android:attr/progressBarStyleHorizontal"
+                android:layout_width="match_parent"
+                android:layout_height="8dp"
+                android:progress="60"
+                android:max="100"
+                android:progressDrawable="@drawable/bac_progress_bar" />
+
+            <TextView
+                android:id="@+id/bacStatus"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Caution"
+                android:textSize="18sp"
+                android:textColor="@color/bac_status_color"
+                android:paddingTop="8dp" />
         </LinearLayout>
 
-        <!-- Add Drink Button -->
-        <Button
-            android:id="@+id/btnAddDrink"
-            android:layout_width="131dp"
-            android:layout_height="61dp"
-            android:backgroundTint="#AE1414"
+        <!-- Middle Section: Alcohol Consumed -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
             android:padding="16dp"
-            android:text="Add drink"
-            app:layout_constraintTop_toBottomOf="@+id/number_of_drinks_container"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            android:layout_marginTop="16dp" />
+            android:layout_marginTop="16dp"
+            android:background="@color/alcohol_background_color">
 
-        <!-- Drink Log Button -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Alcohol Consumed"
+                android:textSize="20sp"
+                android:textStyle="bold" />
+
+            <!-- Beer Row -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:paddingTop="8dp">
+
+                <ImageView
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    android:src="@drawable/ic_beer"
+                    android:contentDescription="Beer" />
+
+                <TextView
+                    android:id="@+id/beerCount"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="3"
+                    android:textSize="24sp"
+                    android:paddingLeft="8dp" />
+
+                <Button
+                    android:id="@+id/addBeerButton"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:text="+"
+                    android:textSize="18sp"
+                    android:layout_marginLeft="16dp"
+                    android:backgroundTint="@color/button_background_color"
+                    android:textColor="@color/button_text_color" />
+            </LinearLayout>
+
+            <!-- Wine Row -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:paddingTop="8dp">
+
+                <ImageView
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    android:src="@drawable/ic_wine"
+                    android:contentDescription="Wine" />
+
+                <TextView
+                    android:id="@+id/wineCount"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="2"
+                    android:textSize="24sp"
+                    android:paddingLeft="8dp" />
+
+                <Button
+                    android:id="@+id/addWineButton"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:text="+"
+                    android:textSize="18sp"
+                    android:layout_marginLeft="16dp"
+                    android:backgroundTint="@color/button_background_color"
+                    android:textColor="@color/button_text_color" />
+            </LinearLayout>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Total Calories: 450"
+                android:textSize="16sp"
+                android:paddingTop="8dp" />
+        </LinearLayout>
+
+        <!-- Bottom Section: Buttons -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="16dp"
+            android:layout_marginTop="16dp">
+
+            <Button
+                android:id="@+id/seeListButton"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="SEE LIST"
+                android:textSize="18sp"
+                android:padding="16dp"
+                android:backgroundTint="@color/button_background_color"
+                android:textColor="@color/button_text_color" />
+
+            <Button
+                android:id="@+id/refreshButton"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="REFRESH"
+                android:textSize="18sp"
+                android:padding="16dp"
+                android:layout_marginTop="8dp"
+                android:backgroundTint="@color/button_background_color"
+                android:textColor="@color/button_text_color" />
+
+            <Button
+                android:id="@+id/viewHistoryButton"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="VIEW BAC HISTORY"
+                android:textSize="18sp"
+                android:padding="16dp"
+                android:layout_marginTop="8dp"
+                android:backgroundTint="@color/button_background_color"
+                android:textColor="@color/button_text_color" />
+        </LinearLayout>
+
+        <!-- Quick Help Button -->
         <Button
-            android:id="@+id/btnDrinkLog"
-            android:layout_width="304dp"
-            android:layout_height="44dp"
-            android:backgroundTint="#E59947"
-            android:text="VIEW DRINK LOG"
-            app:layout_constraintTop_toBottomOf="@+id/btnAddDrink"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            android:layout_marginTop="16dp" />
+            android:id="@+id/quickHelpButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="QUICK HELP"
+            android:textSize="18sp"
+            android:padding="16dp"
+            android:layout_marginTop="16dp"
+            android:backgroundTint="@color/quick_help_background_color"
+            android:textColor="@color/quick_help_text_color" />
 
-    </androidx.constraintlayout.widget.ConstraintLayout>
+    </LinearLayout>
 </ScrollView>
+
