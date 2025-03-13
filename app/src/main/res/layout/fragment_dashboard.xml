@@ -158,36 +158,29 @@
             android:layout_marginTop="16dp">
 
             <Button
-                android:id="@+id/seeListButton"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="SEE LIST"
-                android:textSize="18sp"
-                android:padding="16dp"
-                android:backgroundTint="@color/button_background_color"
-                android:textColor="@color/button_text_color" />
-
-            <Button
                 android:id="@+id/refreshButton"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="REFRESH"
+                android:text="MEASURE BAC"
                 android:textSize="18sp"
-                android:padding="16dp"
+                android:padding="20dp"
                 android:layout_marginTop="8dp"
                 android:backgroundTint="@color/button_background_color"
                 android:textColor="@color/button_text_color" />
 
             <Button
-                android:id="@+id/viewHistoryButton"
+                android:id="@+id/seeListButton"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="VIEW BAC HISTORY"
+                android:text="SEE LIVE READINGS"
                 android:textSize="18sp"
-                android:padding="16dp"
-                android:layout_marginTop="8dp"
+                android:padding="20dp"
                 android:backgroundTint="@color/button_background_color"
                 android:textColor="@color/button_text_color" />
+
+
+
+
         </LinearLayout>
 
         <!-- Quick Help Button -->
