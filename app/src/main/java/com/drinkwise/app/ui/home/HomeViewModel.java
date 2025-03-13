@@ -6,6 +6,17 @@ import androidx.lifecycle.ViewModel;
 
 public class HomeViewModel extends ViewModel {
 
+
+
+
+
+    //not used
+
+
+
+
+
+
     private final MutableLiveData<String> mText;
 
     public HomeViewModel() {

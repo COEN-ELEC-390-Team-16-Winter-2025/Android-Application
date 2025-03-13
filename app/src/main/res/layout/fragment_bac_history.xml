@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="16dp"
+    android:background="@color/background_color_light">
+
+    <!-- Search Bar -->
+    <EditText
+        android:id="@+id/searchBar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Search BAC readings..."
+        android:background="@drawable/search_bar_background"
+        android:padding="12dp"
+        android:textColor="@color/text_color_light"
+        android:textColorHint="@color/secondary_text_color_light" />
+
+    <!-- Sorting and Filtering Buttons -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginTop="16dp">
+
+        <!-- Sort Button -->
+        <Button
+            android:id="@+id/sortButton"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Sort by Date"
+            android:background="@color/button_background_color"
+            android:textColor="@color/button_text_color"
+            android:textSize="14sp" />
+
+        <!-- Filter Button -->
+        <Button
+            android:id="@+id/filterButton"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Filter by Zone"
+            android:background="@color/button_background_color"
+            android:textColor="@color/button_text_color"
+            android:textSize="14sp"
+            android:layout_marginLeft="8dp" />
+    </LinearLayout>
+
+    <!-- List of BAC Readings -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/bacHistoryRecyclerView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_marginTop="16dp"
+        android:padding="8dp" />
+
+</LinearLayout>
