@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="16dp"
+    android:background="@drawable/item_background"
+    android:layout_marginBottom="8dp">
+
+    <!-- Date and Time -->
+    <TextView
+        android:id="@+id/dateTime"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="March 13, 2025 - 9:21 AM"
+        android:textSize="16sp"
+        android:textColor="@color/text_color_light"
+        android:textStyle="bold" />
+
+    <!-- BAC Level -->
+    <TextView
+        android:id="@+id/bacLevel"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="0.06%"
+        android:textSize="24sp"
+        android:textColor="@color/text_color_light"
+        android:layout_marginTop="8dp" />
+
+    <!-- Zone Indicator -->
+    <TextView
+        android:id="@+id/zoneIndicator"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Caution"
+        android:textSize="14sp"
+        android:background="@drawable/zone_indicator_background"
+        android:padding="4dp"
+        android:layout_marginTop="8dp" />
+
+</LinearLayout>
