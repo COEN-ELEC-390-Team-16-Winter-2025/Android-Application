@@ -59,7 +59,6 @@ public class DashboardFragment extends Fragment {
         // Bottom Buttons
         seeListButton = root.findViewById(R.id.seeListButton);
         refreshButton = root.findViewById(R.id.refreshButton);
-        viewHistoryButton = root.findViewById(R.id.viewHistoryButton);
         quickHelpButton = root.findViewById(R.id.quickHelpButton);
 
         setupButtonListeners();
@@ -83,11 +82,6 @@ public class DashboardFragment extends Fragment {
             startActivity(intent);
         });
 
-        // View BAC History Button (You can define what this does)
-        viewHistoryButton.setOnClickListener(v -> {
-            // Example: Launch an Activity or Fragment for BAC history
-            // startActivity(new Intent(getActivity(), BacHistoryActivity.class));
-        });
 
         // Quick Help Button
         quickHelpButton.setOnClickListener(v -> {
