@@ -11,7 +11,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="YOUR TITLE"
-        android:textColor="@color/dark_brown"
+        android:textColor="@color/van_dyke"
         android:fontFamily="@font/artifika"
         android:textAllCaps="true"
         android:textSize="22sp"

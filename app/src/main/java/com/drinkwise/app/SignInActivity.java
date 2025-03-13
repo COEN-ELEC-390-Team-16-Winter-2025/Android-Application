@@ -41,12 +41,14 @@ public class SignInActivity extends AppCompatActivity {
     @Override
     protected void onStart(){
         super.onStart();
-       /* if(auth.getCurrentUser() !=null){
+
+        // comment this out for demo!!
+        if(auth.getCurrentUser() !=null){
             startActivity(new Intent(SignInActivity.this, MainActivity.class));
             finish();
         }
 
-        */
+
     }
 
     private void SignInUserAccount() {
