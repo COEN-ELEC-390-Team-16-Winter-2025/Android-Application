@@ -86,6 +86,8 @@ public class ScanningActivity extends AppCompatActivity {
 
         String mode = getIntent().getStringExtra("mode");
 
+        //setTitle("BAC Readings");
+
         ActionBar actionBar = getSupportActionBar();
         if (actionBar != null) {
             actionBar.setDisplayShowCustomEnabled(true);
@@ -228,7 +230,7 @@ public class ScanningActivity extends AppCompatActivity {
                     double adjustedBAC = adjustBAC(bacValue, userWeight, userHeight);
 
                     Log.d("Scanning Activity", "Adjusted BAC: "+adjustedBAC);
-                    if(count < 10){
+                    if(count < 20){
                         bac_readings += bacValue;
                         count++;
                     }
@@ -246,7 +248,7 @@ public class ScanningActivity extends AppCompatActivity {
 
                     Log.d(TAG, "Full BAC Result: " + completeMessage); // Log full message
                 }
-                if(count == 10 && MODE_LATEST_BAC){
+                if(count == 20 && MODE_LATEST_BAC){
                     bac_readings  /= count;
                     BACEntry bacEntry = new BACEntry(bac_readings, Timestamp.now());
                     storeBAC(bacEntry);

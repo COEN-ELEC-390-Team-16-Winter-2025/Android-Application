@@ -137,11 +137,7 @@ public class DashboardFragment extends Fragment {
         wineCount.setText(String.valueOf(wineCounter));
     }
 
-    /**
-     * Updates BAC level, progress bar, and status text/color
-     *
-     * @param bacValue BAC value as a decimal (e.g., 0.06 for 6%)
-     */
+
     private void updateBacLevel(double bacValue) {
         if (getContext() == null) return;
 
