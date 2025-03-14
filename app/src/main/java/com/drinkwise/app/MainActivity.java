@@ -79,7 +79,7 @@ public class MainActivity extends AppCompatActivity {
             navController.addOnDestinationChangedListener((controller, destination, arguments) -> {
                 int destId = destination.getId();
                 if (destId == R.id.navigation_home) {
-                    actionBarTitle.setText("Home");
+                    actionBarTitle.setText("History");
                 } else if (destId == R.id.navigation_dashboard) {
                     actionBarTitle.setText("Dashboard");
                 } else if (destId == R.id.navigation_notifications) {
