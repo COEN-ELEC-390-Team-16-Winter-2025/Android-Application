@@ -79,8 +79,8 @@
 
     <color name="bac_safe">#4CAF50</color>       <!-- Green -->
     <color name="bac_caution">#FFC107</color>    <!-- Amber/Yellow -->
-    <color name="bac_danger">#F44336</color>
-    <color name="bac_default">#726B6B</color>     <!-- Red -->
+    <color name="bac_danger">#F44336</color>  <!-- Red -->
+    <color name="bac_default">#726B6B</color>
 
 </resources>
 
