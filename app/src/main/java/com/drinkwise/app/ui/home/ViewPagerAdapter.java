@@ -4,6 +4,8 @@ import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentActivity;
 import androidx.viewpager2.adapter.FragmentStateAdapter;
+
+import com.drinkwise.app.ui.home.analytics.AnalyticsFragment;
 import com.drinkwise.app.ui.home.bachistory.BacHistoryFragment;
 import com.drinkwise.app.ui.home.drinklog.DrinkLogFragment;
 
@@ -21,6 +23,8 @@ public class ViewPagerAdapter extends FragmentStateAdapter {
                 return new DrinkLogFragment();
             case 1:
                 return new BacHistoryFragment();
+            case 2:
+                return new AnalyticsFragment();
             default:
                 throw new IllegalArgumentException("Invalid position: " + position);
         }
@@ -28,6 +32,6 @@ public class ViewPagerAdapter extends FragmentStateAdapter {
 
     @Override
     public int getItemCount() {
-        return 2; // Number of tabs
+        return 3; // Number of tabs
     }
 }
