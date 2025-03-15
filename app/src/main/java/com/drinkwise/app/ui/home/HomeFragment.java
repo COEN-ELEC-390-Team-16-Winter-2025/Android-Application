@@ -43,6 +43,9 @@ public class HomeFragment extends Fragment {
                 case 1:
                     tab.setText("BAC History");
                     break;
+                case 2:
+                    tab.setText("Analytics");
+                    break;
             }
         }).attach();
     }
