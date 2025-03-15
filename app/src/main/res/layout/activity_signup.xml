@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
@@ -58,10 +57,10 @@
         android:textSize="20sp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.498"
+        app:layout_constraintHorizontal_bias="0.488"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/signup_title"
-        app:layout_constraintVertical_bias="0.065" />
+        app:layout_constraintVertical_bias="0.037" />
 
     <EditText
         android:id="@+id/email_edittext"
@@ -77,25 +76,70 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/email_label"
-        app:layout_constraintVertical_bias="0.09" />
+        app:layout_constraintVertical_bias="0.052" />
+
 
     <TextView
         android:id="@+id/password_label"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Enter Password:"
         android:fontFamily="@font/asul"
+        android:text="Enter Password:"
         android:textColor="@color/black"
         android:textSize="20sp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.498"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/email_edittext"
-        app:layout_constraintVertical_bias="0.166" />
+        app:layout_constraintVertical_bias="0.043" />
 
     <EditText
         android:id="@+id/password_edittext"
+        android:layout_width="287dp"
+        android:layout_height="47dp"
+        android:layout_marginBottom="4dp"
+        android:background="@drawable/edittext_border"
+        android:ems="10"
+        android:inputType="textPassword"
+        android:padding="12dp"
+        android:textColor="@color/black"
+        android:textSize="14sp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/password_requirements"
+        app:layout_constraintVertical_bias="0.107" />
+
+    <TextView
+        android:id="@+id/password_requirements"
+        android:layout_width="313dp"
+        android:layout_height="88dp"
+        android:layout_marginTop="8dp"
+        android:padding="8dp"
+        android:text="Password must be at least 8 characters long and include:\n- At least 1 uppercase letter\n- At least 1 number\n- At least 1 special character "
+        android:textColor="@color/black"
+        android:textSize="12sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/password_label" />
+
+    <TextView
+        android:id="@+id/confirm_password_label"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="32dp"
+        android:fontFamily="@font/asul"
+        android:text="Confirm Password:"
+        android:textColor="@color/black"
+        android:textSize="20sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/password_edittext" />
+
+    <EditText
+        android:id="@+id/confirm_password_edittext"
         android:layout_width="287dp"
         android:layout_height="47dp"
         android:background="@drawable/edittext_border"
@@ -106,17 +150,15 @@
         android:textSize="14sp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.497"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/password_label"
-        app:layout_constraintVertical_bias="0.15" />
-
+        app:layout_constraintTop_toBottomOf="@+id/confirm_password_label"
+        app:layout_constraintVertical_bias="0.192" />
 
     <Button
         android:id="@+id/signup_button"
         android:layout_width="197dp"
         android:layout_height="52dp"
-        android:layout_marginTop="68dp"
+        android:layout_marginTop="30dp"
         android:background="@drawable/rounded_button"
         android:padding="10dp"
         android:text="SIGN UP"
@@ -127,7 +169,7 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/password_edittext"
-        app:layout_constraintVertical_bias="0.0" />
+        app:layout_constraintTop_toBottomOf="@id/confirm_password_edittext"
+        app:layout_constraintVertical_bias="0.568" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
