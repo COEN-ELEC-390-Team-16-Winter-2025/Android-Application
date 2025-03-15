@@ -56,4 +56,9 @@ public class BACEntry {
 
     public Timestamp getTimestamp() {
         return timestamp;
-    }}
+    }
+
+    public void setStatus(String s) {
+        // later
+    }
+}

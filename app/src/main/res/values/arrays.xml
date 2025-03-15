@@ -1,0 +1,7 @@
+<resources>
+    <string-array name="status_options">
+        <item>Safe</item>
+        <item>Caution</item>
+        <item>Danger</item>
+    </string-array>
+</resources>
