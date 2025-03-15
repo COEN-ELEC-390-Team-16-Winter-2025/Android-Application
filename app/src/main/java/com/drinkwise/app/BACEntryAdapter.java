@@ -1,6 +1,8 @@
 package com.drinkwise.app;
 
 import android.annotation.SuppressLint;
+import android.content.Context;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -25,6 +27,8 @@ public class BACEntryAdapter extends RecyclerView.Adapter<BACEntryAdapter.BACVie
     @SuppressLint("NotifyDataSetChanged")
     public void setBacEntries(List<BACEntry> entries) {
         this.bacEntries = entries;
+        Log.d("BACEntryAdapter", "Entries set! Count: " + entries.size());
+
         notifyDataSetChanged();
     }
 
@@ -41,38 +45,82 @@ public class BACEntryAdapter extends RecyclerView.Adapter<BACEntryAdapter.BACVie
     public void onBindViewHolder(@NonNull BACViewHolder holder, int position) {
         BACEntry entry = bacEntries.get(position);
 
-        // Use the date and time from the entry directly
-        String dateTime = entry.getDate() + " - " + entry.getTime();
-        holder.dateTimeTextView.setText(dateTime);
+        // Format and set the date-time text
+        holder.dateTimeTextView.setText(formatEntryDate(entry));
 
-        // Show BAC value (as percentage)
-        holder.bacLevelTextView.setText(String.format(Locale.getDefault(), "%.2f%%", entry.getBac()));
+        // Set BAC Level with percentage
+        holder.bacLevelTextView.setText(
+                String.format(Locale.getDefault(), "%.2f%%", entry.getBac())
+        );
 
-        // Get status (Safe, Caution, Over Limit) directly
+        // Get Zone Status
         String zone = entry.getStatus();
         holder.zoneIndicatorTextView.setText(zone);
 
-        // Optional: Change background color based on zone/status
+        // Set Text Color and Emoji based on Zone
+        Context context = holder.itemView.getContext();
         int colorRes;
+        String emoji;
+
         switch (zone) {
             case "Safe":
                 colorRes = R.color.bac_safe;
+                emoji = "😊";
                 break;
             case "Caution":
                 colorRes = R.color.bac_caution;
+                emoji = "😟";
                 break;
             case "Over Limit":
                 colorRes = R.color.bac_danger;
+                emoji = "⚠️";
                 break;
             default:
                 colorRes = R.color.bac_default;
+                emoji = "❓";
                 break;
         }
 
-        holder.zoneIndicatorTextView.setBackgroundColor(
-                ContextCompat.getColor(holder.itemView.getContext(), colorRes)
+        // Apply the color to the zone text
+        holder.zoneIndicatorTextView.setTextColor(
+                ContextCompat.getColor(context, colorRes)
         );
+
+        // Set the emoji text
+        holder.emojiIndicatorTextView.setText(emoji);
     }
+
+    private String formatEntryDate(BACEntry entry) {
+        // Combine date and time fields into a single date-time string
+        String rawDateTime = entry.getDate() + " " + entry.getTime(); // Example: "2025-03-14 22:36:39"
+
+        Log.d("DATE_FORMAT_DEBUG", "Raw Date-Time: " + rawDateTime);
+
+        try {
+            // Input format matches the combined date-time string
+            SimpleDateFormat inputFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault());
+            Date date = inputFormat.parse(rawDateTime);
+
+            // Log the parsed date for debugging
+            Log.d("DATE_FORMAT_DEBUG", "Parsed Date: " + date.toString());
+
+            // Output format for display: "EEEE MMMM dd hh:mm:ss a zzz yyyy"
+            SimpleDateFormat outputFormat = new SimpleDateFormat("EEEE MMMM dd, yyyy - hh:mm a zzz", Locale.getDefault());
+            String formattedDate = outputFormat.format(date);
+
+            Log.d("DATE_FORMAT_DEBUG", "Formatted Date: " + formattedDate);
+
+            return formattedDate;
+
+        } catch (Exception e) {
+            Log.e("DATE_FORMAT_DEBUG", "Parsing failed for: '" + rawDateTime + "'", e);
+            return "Invalid Date: " + rawDateTime; // Fallback for invalid dates
+        }
+    }
+
+
+
+
 
 
     @Override
@@ -84,12 +132,14 @@ public class BACEntryAdapter extends RecyclerView.Adapter<BACEntryAdapter.BACVie
         TextView dateTimeTextView;
         TextView bacLevelTextView;
         TextView zoneIndicatorTextView;
+        TextView emojiIndicatorTextView;
 
         public BACViewHolder(@NonNull View itemView) {
             super(itemView);
             dateTimeTextView = itemView.findViewById(R.id.dateTime);
             bacLevelTextView = itemView.findViewById(R.id.bacLevel);
             zoneIndicatorTextView = itemView.findViewById(R.id.zoneIndicator);
+            emojiIndicatorTextView = itemView.findViewById(R.id.emojiIndicator);
         }
     }
 

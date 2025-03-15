@@ -4,10 +4,11 @@
     android:layout_height="wrap_content"
     android:orientation="vertical"
     android:padding="16dp"
+    android:gravity="center_horizontal"
     android:background="@drawable/item_background"
     android:layout_marginBottom="8dp">
 
-    <!-- Date and Time -->
+    <!-- Date and Time Centered -->
     <TextView
         android:id="@+id/dateTime"
         android:layout_width="wrap_content"
@@ -15,27 +16,54 @@
         android:text="March 13, 2025 - 9:21 AM"
         android:textSize="16sp"
         android:textColor="@color/text_color_light"
-        android:textStyle="bold" />
+        android:textStyle="bold"
+        android:textAlignment="viewStart" />
 
-    <!-- BAC Level -->
-    <TextView
-        android:id="@+id/bacLevel"
+    <!-- Spacer -->
+    <Space
+        android:layout_width="0dp"
+        android:layout_height="8dp" />
+
+    <!-- BAC Level + Zone Indicator + Emoji in a horizontal row, centered -->
+    <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="0.06%"
-        android:textSize="24sp"
-        android:textColor="@color/text_color_light"
-        android:layout_marginTop="8dp" />
+        android:orientation="horizontal"
+        android:gravity="center">
 
-    <!-- Zone Indicator -->
-    <TextView
-        android:id="@+id/zoneIndicator"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Caution"
-        android:textSize="14sp"
-        android:background="@drawable/zone_indicator_background"
-        android:padding="4dp"
-        android:layout_marginTop="8dp" />
+        <!-- BAC Level -->
+        <TextView
+            android:id="@+id/bacLevel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="0.06%"
+            android:textSize="24sp"
+            android:textColor="@color/text_color_light" />
+
+        <!-- Space between BAC and zone indicator -->
+        <Space
+            android:layout_width="16dp"
+            android:layout_height="wrap_content" />
+
+        <!-- Zone Indicator -->
+        <TextView
+            android:id="@+id/zoneIndicator"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Caution"
+            android:textSize="24sp"
+            android:padding="4dp"
+            android:textColor="@color/text_color_light"
+            android:layout_marginEnd="8dp" />
+
+        <!-- Emoji -->
+        <TextView
+            android:id="@+id/emojiIndicator"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="😊"
+            android:textSize="24sp" />
+    </LinearLayout>
 
 </LinearLayout>
+
