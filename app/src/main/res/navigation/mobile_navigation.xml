@@ -6,6 +6,12 @@
     app:startDestination="@+id/navigation_home">
 
     <fragment
+        android:id="@+id/navigation_sober_up"
+        android:name="com.drinkwise.app.ui.soberup.SoberUpFragment"
+        android:label="Sober Up"
+        tools:layout="@layout/fragment_sober_up" />
+
+    <fragment
         android:id="@+id/navigation_home"
         android:name="com.drinkwise.app.ui.home.HomeFragment"
         android:label="@string/title_home"

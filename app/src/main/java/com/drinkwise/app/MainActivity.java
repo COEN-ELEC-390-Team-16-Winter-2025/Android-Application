@@ -78,7 +78,9 @@ public class MainActivity extends AppCompatActivity {
             NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment_activity_main);
             navController.addOnDestinationChangedListener((controller, destination, arguments) -> {
                 int destId = destination.getId();
-                if (destId == R.id.navigation_home) {
+                if (destId == R.id.navigation_sober_up) {
+                    actionBarTitle.setText("Sober Up Minigame");
+                } else if (destId == R.id.navigation_home) {
                     actionBarTitle.setText("History");
                 } else if (destId == R.id.navigation_dashboard) {
                     actionBarTitle.setText("Dashboard");
@@ -94,6 +96,7 @@ public class MainActivity extends AppCompatActivity {
     private void setupNavigation() {
         BottomNavigationView navView = findViewById(R.id.nav_view);
         AppBarConfiguration appBarConfiguration = new AppBarConfiguration.Builder(
+                R.id.navigation_sober_up,
                 R.id.navigation_home,
                 R.id.navigation_dashboard,
                 R.id.navigation_notifications

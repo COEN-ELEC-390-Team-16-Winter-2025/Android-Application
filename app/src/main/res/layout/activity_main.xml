@@ -20,7 +20,9 @@
         app:layout_constraintRight_toRightOf="parent"
         app:menu="@menu/bottom_nav_menu"
         app:itemIconTint="@color/dark_brown"
-        app:itemTextColor="@color/dark_brown" />
+        app:itemTextColor="@color/dark_brown"
+        app:labelVisibilityMode="labeled"
+        app:itemHorizontalTranslationEnabled="false"/>
 
     <fragment
         android:id="@+id/nav_host_fragment_activity_main"
