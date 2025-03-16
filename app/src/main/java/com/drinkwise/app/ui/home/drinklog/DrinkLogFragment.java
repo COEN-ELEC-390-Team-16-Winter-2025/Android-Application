@@ -47,10 +47,14 @@ public class DrinkLogFragment extends Fragment {
         db.collection("users").document(userId)
                 .collection("manual_drink_logs")
                 .orderBy("timestamp") // Sort by time (optional)
-                .get()
-                .addOnSuccessListener(queryDocumentSnapshots -> {
+                .addSnapshotListener((value, error) -> {
+
+                    if(error != null){
+                        Log.e(TAG, "Error fetching drink logs", error);
+                        drinkLogTextView.setText("Failed to load drink logs.");
+                    }
                     StringBuilder logText = new StringBuilder();
-                    for (QueryDocumentSnapshot document : queryDocumentSnapshots) {
+                    for (QueryDocumentSnapshot document : value) {
                         String drinkType = document.getString("drinkType");
                         Long calories = document.getLong("calories");
 
@@ -72,10 +76,6 @@ public class DrinkLogFragment extends Fragment {
 
                     // Set the formatted log text in the TextView
                     drinkLogTextView.setText(logText.toString());
-                })
-                .addOnFailureListener(e -> {
-                    Log.e(TAG, "Error fetching drink logs", e);
-                    drinkLogTextView.setText("Failed to load drink logs.");
                 });
     }
 }
