@@ -67,19 +67,19 @@ public class DashboardFragment extends Fragment {
     private Button quickHelpButton;
 
     // Drink Counters
-    private int beerCounter = 0;
-    private int wineCounter = 0;
-    private int champagneCounter = 0;
-    private int cocktailCounter = 0;
-    private int shotCounter = 0;
-    private int sakeCounter = 0;
+    private static int beerCounter = 0;
+    private static int wineCounter = 0;
+    private static int champagneCounter = 0;
+    private static int cocktailCounter = 0;
+    private static int shotCounter = 0;
+    private static int sakeCounter = 0;
 
     //Total calories
-    private int totalCalories = 0;
+    private static int totalCalories = 0;
     private TextView caloriesTextView;
 
     // Drink Calories Mapping
-    private final Map<String, Integer> drinkCalories = new HashMap<>();
+    private static final Map<String, Integer> drinkCalories = new HashMap<>();
 
     //Firestore database
     private FirebaseFirestore db;
@@ -201,6 +201,7 @@ public class DashboardFragment extends Fragment {
         updateCocktailCount();
         updateShotCount();
         updateSakeCount();
+        updateTotalCalories();
     }
 
     private void showDefaultBacValue() {
