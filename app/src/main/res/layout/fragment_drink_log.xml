@@ -5,6 +5,18 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".ui.drinklog.DrinkLogFragment" >
+    tools:context=".ui.home.drinklog.DrinkLogFragment">
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:padding="16dp">
 
+        <TextView
+            android:id="@+id/drinkLogTextView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Manual drink logs..."
+            android:textSize="16sp"
+            android:textColor="@android:color/black"/>
+    </ScrollView>
 </androidx.constraintlayout.widget.ConstraintLayout>
