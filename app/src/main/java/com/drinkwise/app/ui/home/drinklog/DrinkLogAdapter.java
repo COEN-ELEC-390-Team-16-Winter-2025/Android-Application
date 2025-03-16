@@ -12,6 +12,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.drinkwise.app.R;
 
 import java.util.List;
+import java.util.Locale;
 
 public class DrinkLogAdapter extends RecyclerView.Adapter<DrinkLogAdapter.ViewHolder> {
 
@@ -23,47 +24,34 @@ public class DrinkLogAdapter extends RecyclerView.Adapter<DrinkLogAdapter.ViewHo
 
     @NonNull
     @Override
-    public DrinkLogAdapter.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+    public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_drink_log, parent, false);
         return new ViewHolder(view);
     }
 
     @Override
-    public void onBindViewHolder(@NonNull DrinkLogAdapter.ViewHolder holder, int position) {
+    public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         DrinkLogItem item = drinkLogList.get(position);
 
-        holder.drinkTypeTextView.setText(item.getDrinkType());
-        holder.caloriesTextView.setText(item.getCalories() + " cal");
-        holder.timeTextView.setText(item.getTime());
-
-        // Set the drink image based on the drink type
-        String drinkType = item.getDrinkType().toLowerCase();
-        int imageResId;
-
-        switch (drinkType) {
-            case "beer":
-                imageResId = R.drawable.ic_beer;
-                break;
-            case "wine":
-                imageResId = R.drawable.ic_wine;
-                break;
-            case "champagne":
-                imageResId = R.drawable.ic_champagne;
-                break;
-            case "cocktail":
-                imageResId = R.drawable.ic_cocktail;
-                break;
-            case "sake":
-                imageResId = R.drawable.ic_sake;
-                break;
-            case "shot":
-                imageResId = R.drawable.ic_shot;
-                break;
-            default:
-                imageResId = R.drawable.ic_beer;
-                break;
+        // Set drink type
+        if (item.getDrinkType() != null) {
+            holder.drinkTypeTextView.setText(item.getDrinkType());
+        } else {
+            holder.drinkTypeTextView.setText("Unknown Drink");
         }
 
+        // Set calories
+        if (item.getCalories() != null) {
+            holder.caloriesTextView.setText(String.format(Locale.getDefault(), "%d cal", item.getCalories()));
+        } else {
+            holder.caloriesTextView.setText("N/A");
+        }
+
+        // Set time
+        holder.timeTextView.setText(item.getTime());
+
+        // Set drink image
+        int imageResId = getDrinkImageResource(item.getDrinkType());
         holder.drinkImageView.setImageResource(imageResId);
         holder.drinkImageView.setContentDescription(item.getDrinkType() + " icon");
     }
@@ -71,6 +59,27 @@ public class DrinkLogAdapter extends RecyclerView.Adapter<DrinkLogAdapter.ViewHo
     @Override
     public int getItemCount() {
         return drinkLogList.size();
+    }
+
+    // method to update the dataset
+    public void setDrinkLogEntries(List<DrinkLogItem> entries) {
+        this.drinkLogList = entries;
+        notifyDataSetChanged(); // Notify the adapter that the data has changed
+    }
+
+    private int getDrinkImageResource(String drinkType) {
+        if (drinkType == null) {
+            return R.drawable.ic_beer;
+        }
+        switch (drinkType.toLowerCase()) {
+            case "beer": return R.drawable.ic_beer;
+            case "wine": return R.drawable.ic_wine;
+            case "champagne": return R.drawable.ic_champagne;
+            case "cocktail": return R.drawable.ic_cocktail;
+            case "sake": return R.drawable.ic_sake;
+            case "shot": return R.drawable.ic_shot;
+            default: return R.drawable.ic_beer;
+        }
     }
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
@@ -84,9 +93,7 @@ public class DrinkLogAdapter extends RecyclerView.Adapter<DrinkLogAdapter.ViewHo
             drinkTypeTextView = itemView.findViewById(R.id.drinkTypeTextView);
             caloriesTextView = itemView.findViewById(R.id.caloriesTextView);
             timeTextView = itemView.findViewById(R.id.timeTextView);
-            drinkImageView = itemView.findViewById(R.id.drinkImageView); // Find by ID
+            drinkImageView = itemView.findViewById(R.id.drinkImageView);
         }
     }
 }
-
-

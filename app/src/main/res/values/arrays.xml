@@ -4,4 +4,33 @@
         <item>Caution</item>
         <item>Danger</item>
     </string-array>
+
+    <string-array name="drink_type_options">
+        <item>All</item>
+        <item>Beer</item>
+        <item>Wine</item>
+        <item>Champagne</item>
+        <item>Cocktail</item>
+        <item>Shot</item>
+        <item>Sake</item>
+        <!-- Add more types as needed -->
+    </string-array>
+
+    <string-array name="bac_contribution_options">
+        <item>All</item>
+        <item>Below 0.08% (Safe)</item>
+        <item>0.08% - 0.15% (Caution)</item>
+        <item>Above 0.15% (Danger)</item>
+    </string-array>
+
+    <string-array name="sort_options">
+        <item>Time: Newest to Oldest</item>
+        <item>Time: Oldest to Newest</item>
+        <item>Drink Type: A → Z</item>
+        <item>Drink Type: Z → A</item>
+        <item>Calories: Highest to Lowest</item>
+        <item>Calories: Lowest to Highest</item>
+        <item>BAC Contribution: Highest to Lowest</item>
+        <item>BAC Contribution: Lowest to Highest</item>
+    </string-array>
 </resources>
