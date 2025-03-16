@@ -1,22 +1,68 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".ui.home.drinklog.DrinkLogFragment">
-    <ScrollView
+    android:paddingLeft="16dp"
+    android:paddingRight="16dp"
+    android:paddingTop="10dp"
+    android:background="@color/background_color_light">
+
+    <!-- Search Bar -->
+    <EditText
+        android:id="@+id/searchBar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Search Drinks..."
+        android:background="@drawable/search_bar_background"
+        android:padding="12dp"
+        android:textColor="@color/text_color_light"
+        android:textColorHint="@color/secondary_text_color_light" />
+
+    <!-- Sorting and Filtering Buttons -->
+    <LinearLayout
+        android:id="@+id/sortingFilteringLayout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/searchBar"
+        android:layout_marginTop="16dp"
+        android:orientation="horizontal">
+
+        <!-- Sort Button -->
+        <Button
+            android:id="@+id/sortButton"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Sort by:"
+            android:drawableEnd="@drawable/ic_arrow_drop_down"
+            android:background="@drawable/background_button"
+            android:textColor="@color/dark_brown"
+            android:textSize="16sp"
+            android:drawablePadding="8dp" />
+
+        <!-- Filter Button -->
+        <Button
+            android:id="@+id/filterButton"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Filter by:"
+            android:drawableEnd="@drawable/ic_arrow_drop_down"
+            android:background="@drawable/background_button"
+            android:textColor="@color/dark_brown"
+            android:textSize="16sp"
+            android:layout_marginLeft="8dp"
+            android:drawablePadding="8dp" />
+    </LinearLayout>
+
+    <!-- RecyclerView -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/drinkLogRecyclerView"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:padding="16dp">
-
-        <TextView
-            android:id="@+id/drinkLogTextView"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Manual drink logs..."
-            android:textSize="16sp"
-            android:textColor="@android:color/black"/>
-    </ScrollView>
-</androidx.constraintlayout.widget.ConstraintLayout>
+        android:layout_below="@id/sortingFilteringLayout"
+        android:layout_marginTop="16dp"
+        android:clipToPadding="false"
+        android:paddingBottom="8dp" />
+</RelativeLayout>
