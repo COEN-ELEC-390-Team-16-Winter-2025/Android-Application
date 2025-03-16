@@ -2,6 +2,7 @@ package com.drinkwise.app.ui.dashboard;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.text.Html;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -376,10 +377,20 @@ public class DashboardFragment extends Fragment {
         if (drinkInfo.getVisibility() == View.VISIBLE) {
             drinkInfo.setVisibility(View.GONE); // Hide if already shown
         } else {
-            drinkInfo.setText(String.format("%s\nVolume: %dml\nBAC: %.2f\nCalories: %d kcal", name, volume, bac, calories));
+            // Format the name to be bold and underlined using HTML
+            String formattedName = "<b><u>" + name + "</u></b>";
+
+            // Multiply bac by 100 to show as a percentage and add a % symbol
+            String info = String.format("%s<br>Volume: %dml<br>BAC: %.2f%%<br>Calories: %d kcal",
+                    formattedName, volume, bac, calories);
+
+            // Set the text using Html.fromHtml() to render the formatting
+            drinkInfo.setText(Html.fromHtml(info));
+
             drinkInfo.setVisibility(View.VISIBLE);
         }
     }
+
 
     private void updateTotalCalories() {
         totalCalories = (beerCounter * drinkCalories.get("Beer")) +

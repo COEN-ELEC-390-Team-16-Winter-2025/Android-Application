@@ -83,19 +83,31 @@
                 android:text="Tap a drink icon to see details!"
                 android:textColor="@color/black"
                 android:textSize="16sp"
-                android:layout_marginTop="8dp"/>
-            <TextView
-                android:id="@+id/drinkInfo"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Drink Information"
-                android:fontFamily="@font/asul"
-                android:textSize="18sp"
-                android:textColor="@android:color/black"
-                android:gravity="center"
-                android:textAlignment="center"
-                android:padding="10dp"
-                android:visibility="gone"/>
+                android:layout_marginTop="8dp" />
+
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_gravity="center_horizontal">
+                <TextView
+                    android:id="@+id/drinkInfo"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Drink Information"
+                    android:fontFamily="@font/asul"
+                    android:textSize="18sp"
+                    android:textColor="@android:color/black"
+                    android:gravity="center"
+                    android:textAlignment="center"
+                    android:padding="10dp"
+                    android:background="@drawable/bg_drink_icon"
+                    android:visibility="gone"
+                    android:layout_marginTop="6dp"
+                    android:layout_centerInParent="true"/>
+            </RelativeLayout>
+
+
+
 
             <!-- First Row: Beer & Wine -->
             <LinearLayout
@@ -104,7 +116,8 @@
                 android:gravity="center"
                 android:orientation="horizontal"
                 android:paddingTop="8dp"
-                android:weightSum="2">
+                android:weightSum="2"
+                android:layout_marginBottom="2dp">
 
                 <!-- Beer -->
                 <LinearLayout
@@ -113,23 +126,31 @@
                     android:layout_weight="1"
                     android:gravity="center"
                     android:orientation="horizontal"
-                    android:padding="8dp">
+                    android:padding="2dp">
 
-                    <ImageView
-                        android:id="@+id/beerImage"
-                        android:clickable="true"
-                        android:focusable="true"
-                        android:layout_width="48dp"
-                        android:layout_height="48dp"
-                        android:contentDescription="Beer"
-                        android:src="@drawable/ic_beer" />
+                    <FrameLayout
+                        android:layout_width="46dp"
+                        android:layout_height="46dp"
+                        android:background="@drawable/bg_drink_icon"
+                        android:elevation="4dp">
+
+                        <ImageView
+                            android:id="@+id/beerImage"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:padding="4dp"
+                            android:scaleType="centerCrop"
+                            android:clickable="true"
+                            android:focusable="true"
+                            android:src="@drawable/ic_beer" />
+                    </FrameLayout>
 
                     <TextView
                         android:id="@+id/beerCount"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:paddingLeft="8dp"
-                        android:text="3"
+                        android:text="0"
                         android:textColor="@color/black"
                         android:fontFamily="@font/asul"
                         android:textSize="24sp" />
@@ -160,25 +181,33 @@
                     android:layout_weight="1"
                     android:gravity="center"
                     android:orientation="horizontal"
-                    android:padding="8dp">
+                    android:padding="2dp">
 
-                    <ImageView
-                        android:id="@+id/wineImage"
-                        android:clickable="true"
-                        android:focusable="true"
-                        android:layout_width="48dp"
-                        android:layout_height="48dp"
-                        android:contentDescription="Wine"
-                        android:src="@drawable/ic_wine" />
+                    <FrameLayout
+                        android:layout_width="46dp"
+                        android:layout_height="46dp"
+                        android:background="@drawable/bg_drink_icon"
+                        android:elevation="4dp">
+
+                        <ImageView
+                            android:id="@+id/wineImage"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:padding="4dp"
+                            android:scaleType="centerCrop"
+                            android:clickable="true"
+                            android:focusable="true"
+                            android:src="@drawable/ic_wine" />
+                    </FrameLayout>
 
                     <TextView
                         android:id="@+id/wineCount"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:paddingLeft="8dp"
-                        android:text="2"
-                        android:fontFamily="@font/asul"
+                        android:text="0"
                         android:textColor="@color/black"
+                        android:fontFamily="@font/asul"
                         android:textSize="24sp" />
 
                     <Button
@@ -199,17 +228,17 @@
                         android:backgroundTint="@color/quick_help_background_color"
                         android:textSize="14sp" />
                 </LinearLayout>
-
             </LinearLayout>
 
-            <!-- Second Row: Champagne & Cocktails -->
+            <!-- Second Row: Champagne & Cocktail -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:gravity="center"
                 android:orientation="horizontal"
                 android:paddingTop="8dp"
-                android:weightSum="2">
+                android:weightSum="2"
+                android:layout_marginBottom="2dp">
 
                 <!-- Champagne -->
                 <LinearLayout
@@ -218,26 +247,33 @@
                     android:layout_weight="1"
                     android:gravity="center"
                     android:orientation="horizontal"
-                    android:padding="8dp">
+                    android:padding="2dp">
 
-                    <ImageView
-                        android:id="@+id/champagneImage"
-                        android:clickable="true"
-                        android:focusable="true"
-                        android:layout_width="48dp"
-                        android:layout_height="48dp"
-                        android:contentDescription="Champagne"
-                        android:src="@drawable/ic_champagne"
-                        android:background="@color/white"/>
+                    <FrameLayout
+                        android:layout_width="46dp"
+                        android:layout_height="46dp"
+                        android:background="@drawable/bg_drink_icon"
+                        android:elevation="4dp">
+
+                        <ImageView
+                            android:id="@+id/champagneImage"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:padding="4dp"
+                            android:scaleType="centerCrop"
+                            android:clickable="true"
+                            android:focusable="true"
+                            android:src="@drawable/ic_champagne" />
+                    </FrameLayout>
 
                     <TextView
                         android:id="@+id/champagneCount"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:paddingLeft="8dp"
-                        android:text="3"
-                        android:fontFamily="@font/asul"
+                        android:text="0"
                         android:textColor="@color/black"
+                        android:fontFamily="@font/asul"
                         android:textSize="24sp" />
 
                     <Button
@@ -266,25 +302,33 @@
                     android:layout_weight="1"
                     android:gravity="center"
                     android:orientation="horizontal"
-                    android:padding="8dp">
+                    android:padding="2dp">
 
-                    <ImageView
-                        android:id="@+id/cocktailImage"
-                        android:clickable="true"
-                        android:focusable="true"
-                        android:layout_width="48dp"
-                        android:layout_height="48dp"
-                        android:contentDescription="Cocktail"
-                        android:src="@drawable/ic_cocktail" />
+                    <FrameLayout
+                        android:layout_width="46dp"
+                        android:layout_height="46dp"
+                        android:background="@drawable/bg_drink_icon"
+                        android:elevation="4dp">
+
+                        <ImageView
+                            android:id="@+id/cocktailImage"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:padding="4dp"
+                            android:scaleType="centerCrop"
+                            android:clickable="true"
+                            android:focusable="true"
+                            android:src="@drawable/ic_cocktail" />
+                    </FrameLayout>
 
                     <TextView
                         android:id="@+id/cocktailCount"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:paddingLeft="8dp"
-                        android:text="3"
-                        android:fontFamily="@font/asul"
+                        android:text="0"
                         android:textColor="@color/black"
+                        android:fontFamily="@font/asul"
                         android:textSize="24sp" />
 
                     <Button
@@ -305,7 +349,6 @@
                         android:backgroundTint="@color/quick_help_background_color"
                         android:textSize="14sp" />
                 </LinearLayout>
-
             </LinearLayout>
 
             <!-- Third Row: Shot & Sake -->
@@ -315,7 +358,8 @@
                 android:gravity="center"
                 android:orientation="horizontal"
                 android:paddingTop="8dp"
-                android:weightSum="2">
+                android:weightSum="2"
+                android:layout_marginBottom="2dp">
 
                 <!-- Shot -->
                 <LinearLayout
@@ -324,24 +368,31 @@
                     android:layout_weight="1"
                     android:gravity="center"
                     android:orientation="horizontal"
-                    android:padding="8dp">
+                    android:padding="2dp">
 
-                    <ImageView
-                        android:id="@+id/shotImage"
-                        android:clickable="true"
-                        android:focusable="true"
-                        android:layout_width="48dp"
-                        android:layout_height="48dp"
-                        android:contentDescription="Shot"
-                        android:src="@drawable/ic_shot"
-                        android:background="@color/white"/>
+                    <FrameLayout
+                        android:layout_width="46dp"
+                        android:layout_height="46dp"
+                        android:background="@drawable/bg_drink_icon"
+                        android:elevation="4dp">
+
+                        <ImageView
+                            android:id="@+id/shotImage"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:padding="4dp"
+                            android:scaleType="centerCrop"
+                            android:clickable="true"
+                            android:focusable="true"
+                            android:src="@drawable/ic_shot" />
+                    </FrameLayout>
 
                     <TextView
                         android:id="@+id/shotCount"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:paddingLeft="8dp"
-                        android:text="3"
+                        android:text="1"
                         android:fontFamily="@font/asul"
                         android:textColor="@color/black"
                         android:textSize="24sp" />
@@ -372,24 +423,31 @@
                     android:layout_weight="1"
                     android:gravity="center"
                     android:orientation="horizontal"
-                    android:padding="8dp">
+                    android:padding="2dp">
 
-                    <ImageView
-                        android:id="@+id/sakeImage"
-                        android:clickable="true"
-                        android:focusable="true"
-                        android:layout_width="48dp"
-                        android:layout_height="48dp"
-                        android:contentDescription="Sake"
-                        android:src="@drawable/ic_sake"
-                        android:background="@color/white"/>
+                    <FrameLayout
+                        android:layout_width="46dp"
+                        android:layout_height="46dp"
+                        android:background="@drawable/bg_drink_icon"
+                        android:elevation="4dp">
+
+                        <ImageView
+                            android:id="@+id/sakeImage"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:padding="4dp"
+                            android:scaleType="centerCrop"
+                            android:clickable="true"
+                            android:focusable="true"
+                            android:src="@drawable/ic_sake" />
+                    </FrameLayout>
 
                     <TextView
                         android:id="@+id/sakeCount"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:paddingLeft="8dp"
-                        android:text="3"
+                        android:text="1"
                         android:fontFamily="@font/asul"
                         android:textColor="@color/black"
                         android:textSize="24sp" />
@@ -411,7 +469,6 @@
                         android:text="-"
                         android:backgroundTint="@color/quick_help_background_color"
                         android:textSize="14sp" />
-
                 </LinearLayout>
 
             </LinearLayout>
