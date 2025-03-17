@@ -33,4 +33,10 @@
         <item>BAC Contribution: Highest to Lowest</item>
         <item>BAC Contribution: Lowest to Highest</item>
     </string-array>
+
+    <string-array name="graph_types">
+        <item>BAC Graph</item>
+        <item>Calories Graph</item>
+        <item>Drink Consumed Graph</item>
+    </string-array>
 </resources>
