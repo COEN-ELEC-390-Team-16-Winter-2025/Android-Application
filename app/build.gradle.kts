@@ -36,6 +36,9 @@ android {
 }
 
 dependencies {
+
+    implementation ("com.github.PhilJay:MPAndroidChart:v3.1.0")
+
     implementation(platform("com.google.firebase:firebase-bom:32.8.0")) // Use latest BOM version
 
     implementation("com.google.firebase:firebase-auth") // Version managed by BOM

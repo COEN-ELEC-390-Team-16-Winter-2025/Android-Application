@@ -1,14 +1,36 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:gravity="center"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:orientation="vertical"
     android:background="@color/background_color_light">
 
-    <TextView
-        android:layout_width="wrap_content"
+    <LinearLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Analytics Page"
-        android:textSize="24sp"
-        android:textColor="@color/dark_brown"/>
+        android:padding="16dp">
+
+        <Button
+            android:id="@+id/generateGraph"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Generate Graph"
+            android:drawableEnd="@drawable/ic_arrow_drop_down"
+            android:background="@drawable/background_button"
+            android:textColor="@color/dark_brown"
+            android:textSize="16sp"
+            android:drawablePadding="8dp" />
+
+    </LinearLayout>
+
+
+        <com.github.mikephil.charting.charts.PieChart
+            android:id="@+id/drinkTypePieChart"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+
+        </com.github.mikephil.charting.charts.PieChart>
+
 </LinearLayout>
