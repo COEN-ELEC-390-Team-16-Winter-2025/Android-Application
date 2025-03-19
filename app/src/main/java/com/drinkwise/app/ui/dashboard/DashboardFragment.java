@@ -11,6 +11,7 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -96,13 +97,30 @@ public class DashboardFragment extends Fragment {
         drinkCalories.put("Cocktail", 200);
         drinkCalories.put("Shot", 95);
         drinkCalories.put("Sake", 230);
+
+
     }
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        return inflater.inflate(R.layout.fragment_dashboard, container, false);
+
+        View rootView = inflater.inflate(R.layout.fragment_dashboard, container, false);
+
+        // Quick Help button (TEMP!!!!)
+        Button quickHelpButton = rootView.findViewById(R.id.quickHelpButton);
+
+        quickHelpButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Toast.makeText(getActivity(), "Notify Emergency Contact Feature Still In Progress", Toast.LENGTH_SHORT).show();
+
+            }
+        });
+
+        return rootView;
     }
+
 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
@@ -203,6 +221,8 @@ public class DashboardFragment extends Fragment {
         updateShotCount();
         updateSakeCount();
         updateTotalCalories();
+
+
     }
 
     private void showDefaultBacValue() {
@@ -225,10 +245,10 @@ public class DashboardFragment extends Fragment {
             startActivity(intent);
         });
 
-        quickHelpButton.setOnClickListener(v -> {
-            // TODO: Implement quick help functionality
-            Log.d(TAG, "Quick Help button clicked");
-        });
+//        quickHelpButton.setOnClickListener(v -> {
+//            // TODO: Implement quick help functionality
+//            Log.d(TAG, "Quick Help button clicked");
+//        });
 
         addBeerButton.setOnClickListener(v -> {
             beerCounter++;
