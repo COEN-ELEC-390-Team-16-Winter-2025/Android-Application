@@ -70,7 +70,13 @@
 
         <color name="progress_bar_fill">#E59947</color>
 
-
+    <!-- Graph Colors for Drink Types -->
+    <color name="beer">#EBBB40</color>
+    <color name="wine">#641B30</color>
+    <color name="cocktail">#FFB9BD</color>
+    <color name="champagne">#F7E7CE</color>
+    <color name="shot">#DA70D6</color>
+    <color name="sake">#7D8B5A</color>
 
 
     <color name="purple_200">#BB86FC</color>
