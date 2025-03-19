@@ -60,11 +60,11 @@
     <!-- List of BAC Readings -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/bacHistoryRecyclerView"
-        android:layout_width="384dp"
-        android:layout_height="526dp"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
         android:layout_below="@id/sortingFilteringLayout"
         android:layout_marginTop="16dp"
         android:clipToPadding="false"
-        android:padding="8dp" />
+        android:paddingBottom="8dp" />
 
 </RelativeLayout>
