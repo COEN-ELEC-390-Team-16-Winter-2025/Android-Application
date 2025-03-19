@@ -3,6 +3,7 @@ package com.drinkwise.app.ui.home.analytics;
 import android.app.AlertDialog;
 import android.app.DatePickerDialog;
 import android.graphics.Color;
+import android.graphics.Paint;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -14,10 +15,16 @@ import android.widget.Button;
 import android.widget.Spinner;
 import android.widget.Toast;
 
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 
 import com.drinkwise.app.R;
+import com.github.mikephil.charting.charts.BarChart;
 import com.github.mikephil.charting.charts.PieChart;
+import com.github.mikephil.charting.components.XAxis;
+import com.github.mikephil.charting.data.BarData;
+import com.github.mikephil.charting.data.BarDataSet;
+import com.github.mikephil.charting.data.BarEntry;
 import com.github.mikephil.charting.data.PieData;
 import com.github.mikephil.charting.data.PieDataSet;
 import com.github.mikephil.charting.data.PieEntry;
@@ -34,6 +41,7 @@ import org.checkerframework.checker.units.qual.Time;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
@@ -42,6 +50,7 @@ public class AnalyticsFragment extends Fragment {
 
 
     protected PieChart drinkTypePieChart;
+    protected BarChart caloriesBarChart;
     protected Button generateGraph, selectStartDate, selectEndDate;
     protected Spinner graphTypeSpinner;
 
@@ -56,6 +65,8 @@ public class AnalyticsFragment extends Fragment {
 
 
         drinkTypePieChart = view.findViewById(R.id.drinkTypePieChart);
+        caloriesBarChart = view.findViewById(R.id.caloriesBarChart);
+
         generateGraph = view.findViewById(R.id.generateGraph);
 
         generateGraph.setOnClickListener(v -> {
@@ -73,9 +84,41 @@ public class AnalyticsFragment extends Fragment {
 
     }
 
-    public void drink_type_chart_init(ArrayList<PieEntry> pieEntries){
+    public void calories_bar_init(ArrayList<BarEntry> barEntries, ArrayList<String> dates, Timestamp start, Timestamp end){
 
-        Log.d("PieChart", "Initializing PieChart...");
+        drinkTypePieChart.setVisibility(View.GONE);
+        caloriesBarChart.setVisibility(View.VISIBLE);
+
+        if (barEntries == null || barEntries.isEmpty()) {
+            Toast.makeText(requireContext(), "No data for this period", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        caloriesBarChart.setDrawValueAboveBar(true);
+        caloriesBarChart.setPinchZoom(true);
+        caloriesBarChart.setDrawValueAboveBar(true);
+
+        BarDataSet barDataSet = new BarDataSet(barEntries, "Calories");
+        barDataSet.setColor(Color.RED);
+        BarData barData = new BarData(barDataSet);
+        caloriesBarChart.setData(barData);
+
+        XAxis xAxis = caloriesBarChart.getXAxis();
+        xAxis.setValueFormatter(new DateFormatter(dates));
+        xAxis.setGranularity(1f);
+        xAxis.setPosition(XAxis.XAxisPosition.BOTTOM);
+        xAxis.setDrawGridLines(false);
+
+        caloriesBarChart.invalidate();
+        caloriesBarChart.animateY(500);
+
+
+    }
+
+    public void drink_type_chart_init(ArrayList<PieEntry> pieEntries, Timestamp start, Timestamp end){
+
+        caloriesBarChart.setVisibility(View.GONE);
+        drinkTypePieChart.setVisibility(View.VISIBLE);
 
         if (pieEntries == null || pieEntries.isEmpty()) {
             Log.e("PieChart", "No data available to display.");
@@ -83,20 +126,38 @@ public class AnalyticsFragment extends Fragment {
             return; // Prevents drawing an empty chart
         }
 
-        Log.d("PieChart", "Total Entries: " + pieEntries.size());
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
+        Date starDate = start.toDate();
+        Date endDate = end.toDate();
+
+
+
+        int total_drink_count = 0;
+        ArrayList<Integer> colors = new ArrayList<>();
+        for(PieEntry entry: pieEntries){
+            switch(entry.getLabel()){
+                case "Beer": colors.add(ContextCompat.getColor(requireContext(), R.color.beer));
+                break;
+                case "Wine": colors.add((ContextCompat.getColor(requireContext(), R.color.wine)));
+                break;
+                case "Champagne": colors.add((ContextCompat.getColor(requireContext(), R.color.champagne)));
+                break;
+                case "Cocktail": colors.add((ContextCompat.getColor(requireContext(), R.color.cocktail)));
+                break;
+                case "Shot": colors.add((ContextCompat.getColor(requireContext(), R.color.shot)));
+                break;
+                case "Sake": colors.add((ContextCompat.getColor(requireContext(), R.color.sake)));
+                break;
+            }
+            total_drink_count += entry.getValue();
+        }
 
         PieDataSet dataSet = new PieDataSet(pieEntries, "Drinks Consumed");
-        dataSet.setColors(Color.RED, Color.BLUE, Color.GREEN, Color.YELLOW, Color.CYAN, Color.BLACK);
+        dataSet.setColors(colors);
         dataSet.setValueTextColor(Color.WHITE);
         dataSet.setValueTextSize(14f);
 
-        int total_drink_count = 0;
-
-        for(PieEntry entry: pieEntries){
-            total_drink_count += entry.getValue();
-        }
         PieData pieData = new PieData(dataSet);
-
 
         pieData.setValueFormatter(new IntegerValueFormatter());
         drinkTypePieChart.setCenterText("Total Drinks: "+total_drink_count);
@@ -104,7 +165,12 @@ public class AnalyticsFragment extends Fragment {
         drinkTypePieChart.setCenterTextColor(Color.BLACK);
         drinkTypePieChart.setData(pieData);
         drinkTypePieChart.setUsePercentValues(false);
-        drinkTypePieChart.getDescription().setEnabled(false);
+
+        drinkTypePieChart.getDescription().setEnabled(true);
+        drinkTypePieChart.getDescription().setText(String.format("Drinks Consumed from " + simpleDateFormat.format(starDate) + " to " + simpleDateFormat.format(endDate)));
+        drinkTypePieChart.getDescription().setTextSize(18f);
+
+        drinkTypePieChart.getLegend().setEnabled(false);
         drinkTypePieChart.setEntryLabelColor(Color.BLACK);
         drinkTypePieChart.animateY(500);
 
@@ -112,6 +178,78 @@ public class AnalyticsFragment extends Fragment {
 
     }
 
+    public void fetch_calories_consumed(Timestamp start, Timestamp end, DataCallbackBar callback){
+
+        HashMap<String, Long> data = new HashMap<>();
+        ArrayList<BarEntry> barEntries = new ArrayList<>();
+
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+
+        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+        if (user == null) {
+            Toast.makeText(getContext(), "Please log in to view drink logs.", Toast.LENGTH_SHORT).show();
+        }
+
+        String userId = user.getUid();
+
+        SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
+        Calendar currentDate = Calendar.getInstance();
+        Calendar endDate = Calendar.getInstance();
+
+        currentDate.setTimeInMillis(start.getSeconds()*1000);
+        endDate.setTimeInMillis(end.getSeconds()*1000);
+
+        while(!currentDate.after(endDate)){
+            String date = formatter.format(currentDate.getTime());
+            data.put(date, 0L);
+            currentDate.add(Calendar.DAY_OF_MONTH, 1);
+        }
+
+
+
+        db.collection("users")
+                .document(userId)
+                .collection("manual_drink_logs")
+                .whereGreaterThanOrEqualTo("timestamp", start)
+                .whereLessThanOrEqualTo("timestamp", end)
+                .addSnapshotListener((value, error) -> {
+                    if(error != null){
+                        Log.e("Error", "Error fetching data" + error);
+                    }
+
+                    if(value == null || value.isEmpty()){
+                        Toast.makeText(requireContext(), "The current timestamp didn't return any results", Toast.LENGTH_SHORT).show();
+                    }
+
+                    for (QueryDocumentSnapshot document : value) {
+                        String drinkType = document.getString("drinkType");
+                        Long calories = document.getLong("calories");
+                        Timestamp timestamp = document.getTimestamp("timestamp");
+
+                        Log.d("Fetching Results", "Drink: " + drinkType + ", Calories: " + calories + ", Date: " + timestamp.toDate());
+
+                        if(calories != null){
+                            String date = formatter.format(timestamp.toDate());
+
+                            if(data.containsKey(date)){
+                                data.put(date, data.get(date) + calories);
+                            }
+                            else{
+                                data.put(date, calories);
+                            }
+
+                        }
+                    }
+                    int i = 0;
+                    ArrayList<String> dates = new ArrayList<>();
+                    for(Map.Entry<String, Long> entry : data.entrySet()){
+                        dates.add(entry.getKey());
+                        barEntries.add(new BarEntry(i, entry.getValue()));
+                        i++;
+                    }
+                    callback.onDataFetchedBar(barEntries, dates);
+                });
+    }
     public void fetch_drink_consumed(Timestamp start, Timestamp end, DataCallback callback){
 
         Map<String, Integer> data = new HashMap<>();
@@ -164,8 +302,6 @@ public class AnalyticsFragment extends Fragment {
         LayoutInflater inflater = LayoutInflater.from(requireContext());
         View generateGraphView = inflater.inflate(R.layout.generate_graph_dialog, null);
 
-        String[] graph = {"BAC Graph", "Calories Graph", "Drink Consumed Graph"};
-
         graphTypeSpinner = generateGraphView.findViewById(R.id.graphType);
         selectStartDate = generateGraphView.findViewById(R.id.startDateBtn);
         selectEndDate = generateGraphView.findViewById(R.id.endDateBtn);
@@ -209,15 +345,24 @@ public class AnalyticsFragment extends Fragment {
 
                     switch(selectedGraphType){
                         case "BAC Graph":
-                        case "Calories Graph":
+                        case "Calories Graph": fetch_calories_consumed(new Timestamp(startDate.getTime()), new Timestamp(endDate.getTime()), ((barEntries, dates) -> {
+                            if(!barEntries.isEmpty()){
+                                calories_bar_init(barEntries, dates, new Timestamp(startDate.getTime()), new Timestamp(endDate.getTime()));
+                            }
+                            else {
+                                Log.d("Bar Entry", "No data for Bar Entries");
+                            }
+                        }));
+                        break;
                         case "Drink Consumed Graph": fetch_drink_consumed(new Timestamp(startDate.getTime()), new Timestamp(endDate.getTime()), pieEntries -> {
                             if(!pieEntries.isEmpty()){
-                                drink_type_chart_init(pieEntries);
+                                drink_type_chart_init(pieEntries, new Timestamp(startDate.getTime()), new Timestamp(endDate.getTime()));
                             }
                             else{
-                                Log.d("Pie Entry", "No dataset for Pie Entries");
+                                Log.d("Pie Entry", "No data for Pie Entries");
                             }
                         });
+                        break;
 
                     }
 
@@ -236,6 +381,25 @@ public class AnalyticsFragment extends Fragment {
         @Override
         public String getFormattedValue(float value) {
             return String.valueOf((int) value);
+        }
+    }
+
+    public class DateFormatter extends ValueFormatter{
+
+        private ArrayList<String> dates;
+
+        public DateFormatter(ArrayList<String> dates) {
+            this.dates = dates;
+        }
+
+        @Override
+        public String getFormattedValue(float value) {
+            int i = (int) value;
+
+            if( i >= 0 && i < dates.size()){
+                return dates.get(i);
+            }
+            return "";
         }
     }
 }
