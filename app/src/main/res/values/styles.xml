@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="DatePickerDialogTheme" parent="Theme.MaterialComponents.Light.Dialog">
+        <!-- Header bar color (top area of the dialog, including title) -->
+        <item name="colorPrimary">@color/button_orange</item>
+
+        <!-- Background color of the whole dialog -->
+        <item name="android:background">@color/bone</item>
+
+        <!-- Color of the OK and CANCEL text buttons -->
+        <item name="colorControlNormal">@color/button_orange</item> <!-- For unpressed state -->
+        <item name="colorAccent">@color/button_orange</item> <!-- Fallback for older components -->
+
+        <!-- Color of the date circle (selected date) -->
+        <item name="colorOnPrimary">@color/dark_brown</item> <!-- Text color inside the selected circle -->
+
+        <!-- Optional: text colors for the header title text and other stuff -->
+        <item name="android:textColorPrimary">@color/dark_brown</item> <!-- Title text in the header -->
+    </style>
+</resources>

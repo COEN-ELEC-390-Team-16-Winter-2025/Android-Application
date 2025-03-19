@@ -1,27 +1,59 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/main"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".ScanningActivity">
+    android:orientation="vertical"
+    android:background="@color/bone"
+    android:padding="16dp">
 
-    <LinearLayout
+    <!-- Loading Message (Hidden by Default) -->
+    <TextView
+    android:id="@+id/loadingTextView"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:text="Loading latest BAC reading..."
+    android:textSize="22sp"
+    android:gravity="center"
+    android:layout_gravity="center_horizontal"
+    android:padding="10dp"
+    android:layout_marginTop="180dp"
+    android:visibility="gone"/>
+
+
+
+    <!-- ListView for BAC readings -->
+    <ListView
+    android:id="@+id/bacListView"
+    android:layout_width="match_parent"
+    android:layout_height="0dp"
+    android:layout_weight="1"
+    android:divider="@color/dark_brown"
+    android:dividerHeight="2dp" />
+
+    <ProgressBar
+        android:id="@+id/progressBar"
+        style="?android:attr/progressBarStyleHorizontal"
+        android:progressDrawable="@drawable/progress_bar"
+        android:progress="0"
+        android:max="100"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:orientation="vertical"
-        android:padding="16dp">
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        android:visibility="gone" />
 
-
-
-        <ListView
-            android:id="@+id/bacListView"
-            android:layout_width="wrap_content"
-            android:layout_height="432dp"
-            android:layout_weight="1" />
+    <!-- Instructions for Blowing into the Alcohol Sensor -->
+    <TextView
+        android:id="@+id/instructionTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Please breathe (not blow) into the alcohol sensor until the progress bar reaches 100%."
+        android:textSize="18sp"
+        android:gravity="center"
+        android:layout_gravity="center_horizontal"
+        android:padding="10dp"
+        android:visibility="gone"
+        android:layout_marginTop="20dp"/>
 
     </LinearLayout>
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+

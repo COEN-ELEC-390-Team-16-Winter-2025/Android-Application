@@ -9,18 +9,42 @@ import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothGattDescriptor;
 import android.bluetooth.BluetoothGattService;
 import android.bluetooth.BluetoothProfile;
+import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
+import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
+import java.util.Map;
 import java.util.UUID;
+
+import com.google.firebase.Timestamp;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.auth.FirebaseAuth;
+
+import android.view.View;
+import android.widget.ProgressBar;
+import android.widget.TextView;
+import android.widget.Toast;
+import androidx.appcompat.app.ActionBar;
+
+
 
 public class ScanningActivity extends AppCompatActivity {
 
@@ -33,22 +57,69 @@ public class ScanningActivity extends AppCompatActivity {
     private BluetoothAdapter bluetoothAdapter;
     private Handler handler;
     private ListView bacListView;
+    private TextView loadingTextView;
+    private ProgressBar progressBar;
+    private TextView instructionTextView;
+
+    private boolean MODE_LATEST_BAC;
+    String[] loading = {".", "..", "..."};
+
+    private double bac_readings = 0.0;
+    private int count = 0;
+    private static int entry_count = 0;
     private ArrayAdapter<String> bacListAdapter;
+    private ScanningAdapter adapter;
     private final List<String> bacList = new ArrayList<>();
+    private ArrayList<BACEntry> bacEntries = new ArrayList<BACEntry>();
     private BluetoothGatt mBluetoothGatt;
     private BluetoothDevice mBluetoothDevice;
+
+    private FirebaseFirestore db;
+    private int userHeight = 170;  // Default height (cm)
+    private int userWeight = 70;   // Default weight (kg)
+    private String userId = "USER_ID_HERE"; // Replace with actual user ID
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_scanning);
 
+        String mode = getIntent().getStringExtra("mode");
+
+        //setTitle("BAC Readings");
+
+        ActionBar actionBar = getSupportActionBar();
+        if (actionBar != null) {
+            actionBar.setDisplayShowCustomEnabled(true);
+            actionBar.setCustomView(R.layout.custom_actionbar_title);
+            TextView title = actionBar.getCustomView().findViewById(R.id.action_bar_title);
+            title.setText("BAC Readings");
+        }
+
+
+
+
+        FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
+        if (currentUser != null) {
+            userId = currentUser.getUid();
+            fetchUserData();
+        } else {
+            Log.e(TAG, "No logged-in user found.");
+        }
+
+
         bacListView = findViewById(R.id.bacListView);
+        loadingTextView = findViewById(R.id.loadingTextView);
+        progressBar = findViewById(R.id.progressBar);
+        instructionTextView = findViewById(R.id.instructionTextView);
+
         handler = new Handler(Looper.getMainLooper());
 
         // Set up the ListView adapter
-        bacListAdapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, bacList);
-        bacListView.setAdapter(bacListAdapter);
+        //bacListAdapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, bacList);
+        adapter = new ScanningAdapter(this, bacEntries);
+        bacListView.setAdapter(adapter);
+
 
         // Initialize Bluetooth
         bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
@@ -56,6 +127,19 @@ public class ScanningActivity extends AppCompatActivity {
             Log.e(TAG, "Bluetooth not supported");
             return;
         }
+
+        // Hide the list if we are in refresh mode
+        if ("refreshBAC".equals(mode)) {
+            bacListView.setVisibility(View.GONE);
+            loadingTextView.setVisibility(View.VISIBLE);
+            instructionTextView.setVisibility(View.VISIBLE);
+            progressBar.setVisibility(View.VISIBLE);
+            progressBar.setProgress(0);
+            MODE_LATEST_BAC = true;
+
+        }
+
+
 
         // Connect to the Bluno device
         connectToBluno();
@@ -141,20 +225,43 @@ public class ScanningActivity extends AppCompatActivity {
                     final String completeMessage = receivedDataBuffer.toString().trim(); // Get full message
                     receivedDataBuffer.setLength(0); // Clear buffer for next message
 
+                    // Perform calculations using retrieved weight
+                    double bacValue = extractBACValue(completeMessage);
+                    double adjustedBAC = adjustBAC(bacValue, userWeight, userHeight);
+
+                    Log.d("Scanning Activity", "Adjusted BAC: "+adjustedBAC);
+                    if(count < 20){
+                        bac_readings += bacValue;
+                        count++;
+                    }
+
+                    String finalMessage = completeMessage + " | Adjusted BAC: " + String.format("%.3f", adjustedBAC);
+
                     // Update UI on main thread
                     handler.post(() -> {
-                        bacList.add(completeMessage.trim()); // Append new reading instead of replacing
-                        bacListAdapter.notifyDataSetChanged();
+                        bacEntries.add(new BACEntry(bacValue, Timestamp.now()));
+                        progressBar.setProgress(bacEntries.size()*5);
+                        loadingTextView.setText("Loading latest BAC reading"+loading[count%3]);
+                        adapter.notifyDataSetChanged();
                     });
 
 
                     Log.d(TAG, "Full BAC Result: " + completeMessage); // Log full message
                 }
+                if(count == 20 && MODE_LATEST_BAC){
+                    bac_readings  /= count;
+                    BACEntry bacEntry = new BACEntry(bac_readings, Timestamp.now());
+                    storeBAC(bacEntry);
+                    String bac_reading = String.format(Locale.US,"%.2f", bac_readings);
+                    Intent intent = new Intent(ScanningActivity.this, MainActivity.class);
+                    intent.putExtra("latest_bac_entry", bac_reading);
+                    intent.putExtra("toDashboard", true);
+                    intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+                    startActivity(intent);
+                    finish();
+                }
             }
         }
-
-
-
 
 
         @Override
@@ -196,6 +303,100 @@ public class ScanningActivity extends AppCompatActivity {
             mBluetoothGatt = null;
         }
     }
+
+    private void fetchUserData() {
+        db = FirebaseFirestore.getInstance();
+
+        db.collection("users").document(userId)
+                .get()
+                .addOnSuccessListener(documentSnapshot -> {
+                    if (documentSnapshot.exists()) {
+                        Long heightValue = documentSnapshot.getLong("height");
+                        Long weightValue = documentSnapshot.getLong("weight");
+
+                        if (heightValue != null) {
+                            userHeight = heightValue.intValue();
+                        }
+                        if (weightValue != null) {
+                            userWeight = weightValue.intValue();
+                        }
+
+                        Log.d(TAG, "User Data Retrieved: Height=" + userHeight + ", Weight=" + userWeight);
+                    } else {
+                        Log.d(TAG, "User document does not exist. Using defaults.");
+                    }
+                })
+                .addOnFailureListener(e -> {
+                    Log.e(TAG, "Error fetching user data. Using defaults.", e);
+                });
+    }
+
+
+    private double adjustBAC(double bac, int weight, int height) {
+        double bodyWaterConstant = 0.58; // Avg for males; 0.49 for females
+        double metabolismRate = 0.017; // Per hour
+        double bmiFactor = (height / 100.0) / Math.sqrt(weight); // Simplified BMI effect
+
+        return (bac * (70.0 / weight)) * bodyWaterConstant * bmiFactor - metabolismRate;
+    }
+
+
+    private double extractBACValue(String message) {
+        try {
+            String[] parts = message.split("\\s+");
+            double BAC_value_mean = 0;
+            if (parts.length > 1) {
+                for(int i=0; i<parts.length; i++){
+                    BAC_value_mean += Double.parseDouble(parts[i].trim());
+                }
+                return BAC_value_mean/parts.length;
+            }
+        } catch (Exception e) {
+            Log.e(TAG, "Error parsing BAC value", e);
+        }
+        return 0.0;
+    }
+
+    private void saveLatestBAC(String bacValue) {
+        SharedPreferences prefs = getSharedPreferences("DrinkWisePrefs", MODE_PRIVATE);
+        SharedPreferences.Editor editor = prefs.edit();
+        editor.putString("latestBAC", bacValue);
+        editor.apply();
+
+        Intent resultIntent = new Intent();
+        resultIntent.putExtra("latestBAC", bacValue);
+        setResult(RESULT_OK, resultIntent);
+        finish();
+    }
+
+    public void storeBAC(BACEntry bacentry){
+        db = FirebaseFirestore.getInstance();
+
+        Map<String,Object> bac = new HashMap<>();
+        bac.put("bacValue", bacentry.getBac());
+        bac.put("Status", bacentry.getStatus());
+        bac.put("Date", bacentry.getDate());
+        bac.put("Time", bacentry.getTime());
+
+       DocumentReference documentReference = db.collection("users")
+                .document(userId)
+                .collection("BacEntry")
+                .document(bacentry.getDate() + " " + bacentry.getTime());
+
+       documentReference.get().addOnSuccessListener(documentSnapshot -> {
+           if(documentSnapshot.exists()){
+               documentReference.update(bac);
+               Toast.makeText(this, "Bac Entry Saved", Toast.LENGTH_SHORT).show();
+           }else{
+               documentReference.set(bac);
+               Toast.makeText(this, "Bac Entry Saved", Toast.LENGTH_SHORT).show();
+           }
+       }).addOnFailureListener(e -> {
+           Log.e("Firestore", "Error: "+e);
+       });
+    }
+
+
 
     @Override
     protected void onDestroy() {

@@ -1,0 +1,6 @@
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Selected/Pressed State: Deep Orange -->
+    <item android:state_checked="true" android:color="#FF5722" />
+    <!-- Unselected State: Gray -->
+    <item android:state_checked="false" android:color="#757575" />
+</selector>

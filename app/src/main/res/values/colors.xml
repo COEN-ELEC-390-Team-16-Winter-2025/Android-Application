@@ -1,10 +1,94 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="purple_200">#FFBB86FC</color>
-    <color name="purple_500">#FF6200EE</color>
-    <color name="purple_700">#FF3700B3</color>
-    <color name="teal_200">#FF03DAC5</color>
-    <color name="teal_700">#FF018786</color>
+
+    <!-- Base Colors -->
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
+    <color name="button_orange">#E59947</color> <!-- Citrus vibe -->
+    <color name="bone">#DED4C7</color> <!-- Light neutral (stone / bone tone) -->
+    <color name="green">#338533</color> <!-- Botanical green -->
+    <color name="red">#FF0000</color> <!-- Emergency red -->
+    <color name="dark_brown">#4E3629</color> <!-- Classic wood tone (think oak barrel) -->
+
+    <!-- Background Colors -->
+    <color name="background_color_light">#FFFFFF</color> <!-- Clean, light -->
+    <color name="background_color_dark">#121212</color> <!-- Deep contrast -->
+
+    <!-- BAC Level Colors (status indicators) -->
+    <color name="safe_color">#338533</color> <!-- Green for safe, matches botanical theme -->
+    <color name="caution_color">#E59947</color> <!-- Orange, keeping your existing citrus pop -->
+    <color name="danger_color">#F44336</color> <!-- Danger red stays the same -->
+
+    <!-- Text Colors -->
+    <color name="text_color_light">#000000</color>
+    <color name="text_color_dark">#FFFFFF</color>
+    <color name="secondary_text_color_light">#757575</color>
+    <color name="secondary_text_color_dark">#BDBDBD</color>
+
+    <!-- Button Colors -->
+    <color name="button_background_color">#6BA292</color> <!-- Replaces purple with fresh botanical green -->
+    <color name="button_text_color">#FFFFFF</color> <!-- White text for clarity -->
+    <color name="quick_help_background_color">#FF5252</color> <!-- Alert red, appropriate for emergency/help -->
+    <color name="quick_help_text_color">#FFFFFF</color>
+
+    <!-- Progress Bar Colors -->
+    <color name="progress_bar_background">#DED4C7</color> <!-- Bone color for background progress -->
+    <color name="progress_bar_progress">#338533</color> <!-- Green for progress bar fill -->
+
+    <!-- Card/Section Backgrounds -->
+    <color name="card_background_light">#FAFAFA</color> <!-- Clean light background -->
+    <color name="card_background_dark">#1E1E1E</color> <!-- Dark card version -->
+
+    <!-- Icon Colors -->
+    <color name="icon_color_light">#4E3629</color> <!-- Dark brown for icons on light background -->
+    <color name="icon_color_dark">#DED4C7</color> <!-- Bone color for icons on dark background -->
+
+    <!-- General Background Color -->
+    <color name="background_color">#FFFFFF</color> <!-- Or a darker option if needed -->
+
+    <!-- BAC Section Background -->
+    <color name="bac_background_color">#FAFAFA</color> <!-- Or something like #E8F5E9 for a greenish background -->
+
+    <!-- BAC Text Color -->
+    <color name="bac_text_color">#000000</color> <!-- Black or another clear color depending on your theme -->
+
+    <!-- BAC Status Text Color -->
+    <color name="bac_status_color">#E59947</color> <!-- Citrus caution color, or use safe/danger color conditionally -->
+
+    <!-- Alcohol Section Background -->
+    <color name="alcohol_background_color">#DED4C7</color> <!-- Bone or another neutral for contrast -->
+
+
+        <!-- Original Colors -->
+        <color name="butterscotch">#E59947</color>
+        <color name="bene">#DED4C7</color>
+        <color name="van_dyke">#3A2A27</color>
+        <color name="licorice">#140102</color>
+        <color name="deep_red">#350100</color>
+
+        <!-- Safety Colors -->
+
+        <color name="progress_bar_fill">#E59947</color>
+
+    <!-- Graph Colors for Drink Types -->
+    <color name="beer">#EBBB40</color>
+    <color name="wine">#641B30</color>
+    <color name="cocktail">#FFB9BD</color>
+    <color name="champagne">#F7E7CE</color>
+    <color name="shot">#DA70D6</color>
+    <color name="sake">#7D8B5A</color>
+
+
+    <color name="purple_200">#BB86FC</color>
+    <color name="purple_700">#3700B3</color>
+    <color name="teal_200">#03DAC5</color>
+
+    <color name="bac_safe">#4CAF50</color>       <!-- Green -->
+    <color name="bac_caution">#FFC107</color>    <!-- Amber/Yellow -->
+    <color name="bac_danger">#F44336</color>  <!-- Red -->
+    <color name="bac_default">#726B6B</color>
+
 </resources>
+
+
+

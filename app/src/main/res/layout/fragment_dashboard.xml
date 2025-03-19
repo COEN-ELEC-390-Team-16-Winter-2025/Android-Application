@@ -1,40 +1,535 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout
+<ScrollView
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".ui.dashboard.DashboardFragment" >
+    android:fillViewport="true"
+    android:fitsSystemWindows="true"
+    android:clipToPadding="false"
+    android:paddingTop="80dp"
+    android:paddingBottom="80dp"
+    >
 
-    <TextView
-        android:id="@+id/text_dashboard"
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginStart="8dp"
-        android:layout_marginTop="8dp"
-        android:layout_marginEnd="8dp"
-        android:textAlignment="center"
-        android:textSize="20sp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintBottom_toBottomOf="parent" />
+        android:orientation="vertical"
+        android:paddingTop="32dp"
+        android:paddingBottom="32dp"
+        tools:context=".ui.dashboard.DashboardFragment"
+        android:fitsSystemWindows="true"
+        android:padding="16dp">
 
-    <Button
-        android:id="@+id/scanNowButton"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:backgroundTint="#AE1414"
-        android:padding="16dp"
-        android:text="Scan Now"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.498"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.345" />
+        <!-- Top Section: BAC Level and Progress Bar -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:gravity="center"
+            android:padding="16dp"
+            android:background="@color/bac_background_color">
+
+            <TextView
+                android:id="@+id/bacLevel"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="0.06%"
+                android:textSize="36sp"
+                android:textColor="@color/bac_text_color"
+                android:textStyle="bold" />
+
+            <ProgressBar
+                android:id="@+id/bacProgressBar"
+                style="?android:attr/progressBarStyleHorizontal"
+                android:layout_width="match_parent"
+                android:layout_height="8dp"
+                android:progress="60"
+                android:max="100"
+                android:progressDrawable="@drawable/bac_progress_bar_safe" />
+
+            <TextView
+                android:id="@+id/bacStatus"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Caution"
+                android:textSize="18sp"
+                android:textColor="@color/bac_status_color"
+                android:paddingTop="8dp" />
+        </LinearLayout>
+
+        <!-- Middle Section: Alcohol Consumed -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:background="@color/alcohol_background_color"
+            android:orientation="vertical"
+            android:padding="16dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Alcohol Consumed"
+                android:fontFamily="@font/asul"
+                android:textColor="@color/black"
+                android:textSize="20sp"
+                android:textStyle="bold" />
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:fontFamily="@font/asul"
+                android:text="Tap a drink icon to see details!"
+                android:textColor="@color/black"
+                android:textSize="16sp"
+                android:layout_marginTop="8dp" />
+
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_gravity="center_horizontal">
+                <TextView
+                    android:id="@+id/drinkInfo"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Drink Information"
+                    android:fontFamily="@font/asul"
+                    android:textSize="18sp"
+                    android:textColor="@android:color/black"
+                    android:gravity="center"
+                    android:textAlignment="center"
+                    android:padding="10dp"
+                    android:background="@drawable/bg_drink_icon"
+                    android:visibility="gone"
+                    android:layout_marginTop="6dp"
+                    android:layout_centerInParent="true"/>
+            </RelativeLayout>
 
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+
+
+            <!-- First Row: Beer & Wine -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:orientation="horizontal"
+                android:paddingTop="8dp"
+                android:weightSum="2"
+                android:layout_marginBottom="2dp">
+
+                <!-- Beer -->
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:gravity="center"
+                    android:orientation="horizontal"
+                    android:padding="2dp">
+
+                    <FrameLayout
+                        android:layout_width="46dp"
+                        android:layout_height="46dp"
+                        android:background="@drawable/bg_drink_icon"
+                        android:elevation="4dp">
+
+                        <ImageView
+                            android:id="@+id/beerImage"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:padding="4dp"
+                            android:scaleType="centerCrop"
+                            android:clickable="true"
+                            android:focusable="true"
+                            android:src="@drawable/ic_beer" />
+                    </FrameLayout>
+
+                    <TextView
+                        android:id="@+id/beerCount"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:paddingLeft="8dp"
+                        android:text="0"
+                        android:textColor="@color/black"
+                        android:fontFamily="@font/asul"
+                        android:textSize="24sp" />
+
+                    <Button
+                        android:id="@+id/addBeerButton"
+                        android:layout_width="40dp"
+                        android:layout_height="40dp"
+                        android:layout_marginLeft="8dp"
+                        android:text="+"
+                        android:backgroundTint="@color/button_background_color"
+                        android:textSize="14sp" />
+
+                    <Button
+                        android:id="@+id/minusBeerButton"
+                        android:layout_width="40dp"
+                        android:layout_height="40dp"
+                        android:layout_marginLeft="8dp"
+                        android:text="-"
+                        android:backgroundTint="@color/quick_help_background_color"
+                        android:textSize="14sp" />
+                </LinearLayout>
+
+                <!-- Wine -->
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:gravity="center"
+                    android:orientation="horizontal"
+                    android:padding="2dp">
+
+                    <FrameLayout
+                        android:layout_width="46dp"
+                        android:layout_height="46dp"
+                        android:background="@drawable/bg_drink_icon"
+                        android:elevation="4dp">
+
+                        <ImageView
+                            android:id="@+id/wineImage"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:padding="4dp"
+                            android:scaleType="centerCrop"
+                            android:clickable="true"
+                            android:focusable="true"
+                            android:src="@drawable/ic_wine" />
+                    </FrameLayout>
+
+                    <TextView
+                        android:id="@+id/wineCount"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:paddingLeft="8dp"
+                        android:text="0"
+                        android:textColor="@color/black"
+                        android:fontFamily="@font/asul"
+                        android:textSize="24sp" />
+
+                    <Button
+                        android:id="@+id/addWineButton"
+                        android:layout_width="40dp"
+                        android:layout_height="40dp"
+                        android:layout_marginLeft="8dp"
+                        android:text="+"
+                        android:backgroundTint="@color/button_background_color"
+                        android:textSize="14sp" />
+
+                    <Button
+                        android:id="@+id/minusWineButton"
+                        android:layout_width="40dp"
+                        android:layout_height="40dp"
+                        android:layout_marginLeft="8dp"
+                        android:text="-"
+                        android:backgroundTint="@color/quick_help_background_color"
+                        android:textSize="14sp" />
+                </LinearLayout>
+            </LinearLayout>
+
+            <!-- Second Row: Champagne & Cocktail -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:orientation="horizontal"
+                android:paddingTop="8dp"
+                android:weightSum="2"
+                android:layout_marginBottom="2dp">
+
+                <!-- Champagne -->
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:gravity="center"
+                    android:orientation="horizontal"
+                    android:padding="2dp">
+
+                    <FrameLayout
+                        android:layout_width="46dp"
+                        android:layout_height="46dp"
+                        android:background="@drawable/bg_drink_icon"
+                        android:elevation="4dp">
+
+                        <ImageView
+                            android:id="@+id/champagneImage"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:padding="4dp"
+                            android:scaleType="centerCrop"
+                            android:clickable="true"
+                            android:focusable="true"
+                            android:src="@drawable/ic_champagne" />
+                    </FrameLayout>
+
+                    <TextView
+                        android:id="@+id/champagneCount"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:paddingLeft="8dp"
+                        android:text="0"
+                        android:textColor="@color/black"
+                        android:fontFamily="@font/asul"
+                        android:textSize="24sp" />
+
+                    <Button
+                        android:id="@+id/addChampagneButton"
+                        android:layout_width="40dp"
+                        android:layout_height="40dp"
+                        android:layout_marginLeft="8dp"
+                        android:text="+"
+                        android:backgroundTint="@color/button_background_color"
+                        android:textSize="14sp" />
+
+                    <Button
+                        android:id="@+id/minusChampagneButton"
+                        android:layout_width="40dp"
+                        android:layout_height="40dp"
+                        android:layout_marginLeft="8dp"
+                        android:text="-"
+                        android:backgroundTint="@color/quick_help_background_color"
+                        android:textSize="14sp" />
+                </LinearLayout>
+
+                <!-- Cocktail -->
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:gravity="center"
+                    android:orientation="horizontal"
+                    android:padding="2dp">
+
+                    <FrameLayout
+                        android:layout_width="46dp"
+                        android:layout_height="46dp"
+                        android:background="@drawable/bg_drink_icon"
+                        android:elevation="4dp">
+
+                        <ImageView
+                            android:id="@+id/cocktailImage"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:padding="4dp"
+                            android:scaleType="centerCrop"
+                            android:clickable="true"
+                            android:focusable="true"
+                            android:src="@drawable/ic_cocktail" />
+                    </FrameLayout>
+
+                    <TextView
+                        android:id="@+id/cocktailCount"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:paddingLeft="8dp"
+                        android:text="0"
+                        android:textColor="@color/black"
+                        android:fontFamily="@font/asul"
+                        android:textSize="24sp" />
+
+                    <Button
+                        android:id="@+id/addCocktailButton"
+                        android:layout_width="40dp"
+                        android:layout_height="40dp"
+                        android:layout_marginLeft="8dp"
+                        android:text="+"
+                        android:backgroundTint="@color/button_background_color"
+                        android:textSize="14sp" />
+
+                    <Button
+                        android:id="@+id/minusCocktailButton"
+                        android:layout_width="40dp"
+                        android:layout_height="40dp"
+                        android:layout_marginLeft="8dp"
+                        android:text="-"
+                        android:backgroundTint="@color/quick_help_background_color"
+                        android:textSize="14sp" />
+                </LinearLayout>
+            </LinearLayout>
+
+            <!-- Third Row: Shot & Sake -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:orientation="horizontal"
+                android:paddingTop="8dp"
+                android:weightSum="2"
+                android:layout_marginBottom="2dp">
+
+                <!-- Shot -->
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:gravity="center"
+                    android:orientation="horizontal"
+                    android:padding="2dp">
+
+                    <FrameLayout
+                        android:layout_width="46dp"
+                        android:layout_height="46dp"
+                        android:background="@drawable/bg_drink_icon"
+                        android:elevation="4dp">
+
+                        <ImageView
+                            android:id="@+id/shotImage"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:padding="4dp"
+                            android:scaleType="centerCrop"
+                            android:clickable="true"
+                            android:focusable="true"
+                            android:src="@drawable/ic_shot" />
+                    </FrameLayout>
+
+                    <TextView
+                        android:id="@+id/shotCount"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:paddingLeft="8dp"
+                        android:text="1"
+                        android:fontFamily="@font/asul"
+                        android:textColor="@color/black"
+                        android:textSize="24sp" />
+
+                    <Button
+                        android:id="@+id/addShotButton"
+                        android:layout_width="40dp"
+                        android:layout_height="40dp"
+                        android:layout_marginLeft="8dp"
+                        android:text="+"
+                        android:backgroundTint="@color/button_background_color"
+                        android:textSize="14sp" />
+
+                    <Button
+                        android:id="@+id/minusShotButton"
+                        android:layout_width="40dp"
+                        android:layout_height="40dp"
+                        android:layout_marginLeft="8dp"
+                        android:text="-"
+                        android:backgroundTint="@color/quick_help_background_color"
+                        android:textSize="14sp" />
+                </LinearLayout>
+
+                <!-- Sake -->
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:gravity="center"
+                    android:orientation="horizontal"
+                    android:padding="2dp">
+
+                    <FrameLayout
+                        android:layout_width="46dp"
+                        android:layout_height="46dp"
+                        android:background="@drawable/bg_drink_icon"
+                        android:elevation="4dp">
+
+                        <ImageView
+                            android:id="@+id/sakeImage"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:padding="4dp"
+                            android:scaleType="centerCrop"
+                            android:clickable="true"
+                            android:focusable="true"
+                            android:src="@drawable/ic_sake" />
+                    </FrameLayout>
+
+                    <TextView
+                        android:id="@+id/sakeCount"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:paddingLeft="8dp"
+                        android:text="1"
+                        android:fontFamily="@font/asul"
+                        android:textColor="@color/black"
+                        android:textSize="24sp" />
+
+                    <Button
+                        android:id="@+id/addSakeButton"
+                        android:layout_width="40dp"
+                        android:layout_height="40dp"
+                        android:layout_marginLeft="8dp"
+                        android:text="+"
+                        android:backgroundTint="@color/button_background_color"
+                        android:textSize="14sp" />
+
+                    <Button
+                        android:id="@+id/minusSakeButton"
+                        android:layout_width="40dp"
+                        android:layout_height="40dp"
+                        android:layout_marginLeft="8dp"
+                        android:text="-"
+                        android:backgroundTint="@color/quick_help_background_color"
+                        android:textSize="14sp" />
+                </LinearLayout>
+
+            </LinearLayout>
+
+            <TextView
+                android:id="@+id/caloriesTextView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:paddingTop="8dp"
+                android:fontFamily="@font/asul"
+                android:textColor="@color/black"
+                android:text="Total Calories: 0 kcal"
+                android:textSize="16sp" />
+
+        </LinearLayout>
+
+        <!-- Bottom Section: Buttons -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="16dp"
+            android:layout_marginTop="16dp">
+
+            <Button
+                android:id="@+id/refreshButton"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="MEASURE BAC"
+                android:textSize="18sp"
+                android:padding="20dp"
+                android:layout_marginTop="8dp"
+                android:backgroundTint="@color/button_background_color"
+                android:textColor="@color/button_text_color" />
+
+            <Button
+                android:id="@+id/seeListButton"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="SEE LIVE READINGS"
+                android:textSize="18sp"
+                android:padding="20dp"
+                android:backgroundTint="@color/button_background_color"
+                android:textColor="@color/button_text_color" />
+
+
+
+        </LinearLayout>
+
+        <!-- Quick Help Button -->
+        <Button
+            android:id="@+id/quickHelpButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="QUICK HELP"
+            android:textSize="18sp"
+            android:padding="16dp"
+            android:layout_marginTop="16dp"
+            android:backgroundTint="@color/quick_help_background_color"
+            android:textColor="@color/quick_help_text_color" />
+
+    </LinearLayout>
+</ScrollView>
+

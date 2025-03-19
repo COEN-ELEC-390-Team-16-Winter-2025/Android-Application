@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@color/bone"
+    android:padding="16dp">
+
+    <!-- Value TextView -->
+    <TextView
+        android:id="@+id/bac_value"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Value:"
+        android:textColor="@color/black"
+        android:textSize="20sp"
+        android:layout_marginBottom="8dp" />
+
+    <!-- Horizontal LinearLayout for Bac status -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginBottom="8dp">
+
+        <TextView
+            android:id="@+id/bac_status_holder"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Status: "
+            android:textColor="@color/black"
+            android:textSize="20sp"
+            android:layout_marginEnd="8dp" />
+
+        <TextView
+            android:id="@+id/bac_status"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:textSize="20sp"
+            android:textColor="@color/black"
+            android:layout_weight="1" />
+    </LinearLayout>
+
+    <!-- Date TextView -->
+    <TextView
+        android:id="@+id/bac_date"
+        android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:text="Date:"
+    android:textColor="@color/black"
+    android:textSize="20sp"
+    android:layout_marginBottom="8dp" />
+
+    <!-- Time TextView -->
+    <TextView
+        android:id="@+id/bac_time"
+        android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:text="Time:"
+    android:textColor="@color/black"
+    android:textSize="20sp"
+    android:layout_marginBottom="8dp" />
+
+</LinearLayout>
