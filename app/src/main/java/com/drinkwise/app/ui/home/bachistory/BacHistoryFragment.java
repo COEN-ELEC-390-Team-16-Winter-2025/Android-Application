@@ -298,7 +298,7 @@ public class BacHistoryFragment extends Fragment {
 
         // Start Date picker
         startDateButton.setOnClickListener(v -> {
-            DatePickerDialog datePickerDialog = new DatePickerDialog(requireContext(),
+            DatePickerDialog datePickerDialog = new DatePickerDialog(requireContext(), R.style.DatePickerDialogTheme,
                     (view, year, month, dayOfMonth) -> {
                         startDate.set(year, month, dayOfMonth);
                         String dateText = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(startDate.getTime());
@@ -312,7 +312,7 @@ public class BacHistoryFragment extends Fragment {
 
         // End Date picker
         endDateButton.setOnClickListener(v -> {
-            DatePickerDialog datePickerDialog = new DatePickerDialog(requireContext(),
+            DatePickerDialog datePickerDialog = new DatePickerDialog(requireContext(), R.style.DatePickerDialogTheme,
                     (view, year, month, dayOfMonth) -> {
                         endDate.set(year, month, dayOfMonth);
                         String dateText = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(endDate.getTime());

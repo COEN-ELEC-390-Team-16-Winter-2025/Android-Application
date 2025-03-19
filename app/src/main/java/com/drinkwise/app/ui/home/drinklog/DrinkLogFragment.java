@@ -325,7 +325,7 @@ public class DrinkLogFragment extends Fragment {
 
 
     private void showDatePicker(Button button, Calendar calendar) {
-        new DatePickerDialog(requireContext(), (view, year, month, dayOfMonth) -> {
+        new DatePickerDialog(requireContext(), R.style.DatePickerDialogTheme, (view, year, month, dayOfMonth) -> {
             calendar.set(year, month, dayOfMonth);
             String date = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(calendar.getTime());
             button.setText(date);
