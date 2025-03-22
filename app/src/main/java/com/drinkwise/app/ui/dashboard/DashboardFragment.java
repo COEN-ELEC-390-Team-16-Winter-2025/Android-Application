@@ -19,6 +19,8 @@ import androidx.fragment.app.Fragment;
 
 import com.drinkwise.app.R;
 import com.drinkwise.app.ScanningActivity;
+import com.drinkwise.app.ui.home.drinklog.BACCalculator;
+import com.drinkwise.app.ui.home.drinklog.DrinkLogItem;
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -27,7 +29,8 @@ import com.google.firebase.Timestamp;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
-
+import java.util.List;
+import java.util.ArrayList;
 
 public class DashboardFragment extends Fragment {
     private static final String TAG = "DashboardFragment";
@@ -321,6 +324,38 @@ public class DashboardFragment extends Fragment {
         });
     }
 
+    /**
+     * Retrieves the manual drink logs from Firestore, calculates the overall BAC using BACCalculator,
+     * and updates the BAC display.
+     */
+    private void updateBACFromManualLogs() {
+        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+        if (user == null) {
+            Log.e(TAG, "User not logged in; cannot update BAC");
+            return;
+        }
+        String userId = user.getUid();
+        db.collection("users")
+                .document(userId)
+                .collection("manual_drink_logs")
+                .get()
+                .addOnSuccessListener(queryDocumentSnapshots -> {
+                    List<DrinkLogItem> drinkLogs = new ArrayList<>();
+                    if (!queryDocumentSnapshots.isEmpty()) {
+                        queryDocumentSnapshots.getDocuments().forEach(doc -> {
+                            DrinkLogItem logItem = doc.toObject(DrinkLogItem.class);
+                            if (logItem != null) {
+                                drinkLogs.add(logItem);
+                            }
+                        });
+                    }
+                    double estimatedBAC = BACCalculator.calculateBAC(drinkLogs);
+                    updateBacLevel(estimatedBAC);
+                })
+                .addOnFailureListener(e -> {
+                    Log.e(TAG, "Error retrieving manual drink logs", e);
+                });
+    }
     private void updateBeerCount() {
         beerCount.setText(String.valueOf(beerCounter));
     }
