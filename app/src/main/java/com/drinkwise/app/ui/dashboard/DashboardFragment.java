@@ -330,10 +330,10 @@ public class DashboardFragment extends Fragment {
      */
     private void updateBACFromManualLogs() {
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
-        if (user == null) {
-            Log.e(TAG, "User not logged in; cannot update BAC");
-            return;
-        }
+//        if (user == null) {
+//            Log.e(TAG, "User not logged in; cannot update BAC");
+//            return;
+//        }
         String userId = user.getUid();
         db.collection("users")
                 .document(userId)
