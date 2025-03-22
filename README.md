@@ -12,5 +12,5 @@ Sem Axil Raïs (40113324) - Computer Engineering
 
 Vincent Nguyen  (40246406) - Computer Engineering
 
- Nadir Chetouani (40253921) - Computer Engineering
+Nadir Chetouani (40253921) - Electrical Engineering
 
