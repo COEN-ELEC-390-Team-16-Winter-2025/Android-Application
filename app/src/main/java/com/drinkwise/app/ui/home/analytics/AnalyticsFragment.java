@@ -113,6 +113,8 @@ public class AnalyticsFragment extends Fragment {
         leftAxis.removeAllLimitLines();
         leftAxis.addLimitLine(upperLimit);
 
+        leftAxis.setAxisMinimum(0f);
+
         LineData lineData = new LineData(set);
 
         BACLineChart.getXAxis().setValueFormatter(new DateFormatter2());
@@ -123,6 +125,13 @@ public class AnalyticsFragment extends Fragment {
         BACLineChart.animateY(500);
         BACLineChart.invalidate();
 
+        BACLineChart.getDescription().setEnabled(false);
+
+
+        Log.d("BACChart", "Entries size: " + lineChartEntries.size());
+        for (Entry entry : lineChartEntries) {
+            Log.d("BACChart", "Entry x: " + entry.getX() + " y: " + entry.getY());
+        }
 
     }
     public void calories_bar_init(ArrayList<BarEntry> barEntries, ArrayList<String> dates, Timestamp start, Timestamp end){
@@ -153,8 +162,12 @@ public class AnalyticsFragment extends Fragment {
         xAxis.setPosition(XAxis.XAxisPosition.BOTTOM);
         xAxis.setDrawGridLines(false);
 
+        YAxis leftAxis = caloriesBarChart.getAxisLeft();
+        leftAxis.setAxisMinimum(0f);
+
         caloriesBarChart.invalidate();
         caloriesBarChart.animateY(500);
+        caloriesBarChart.getDescription().setEnabled(false);
 
 
     }
@@ -459,35 +472,39 @@ public class AnalyticsFragment extends Fragment {
                         case "BAC Graph": fetch_BAC_entries(new Timestamp(startDate.getTime()), new Timestamp(endDate.getTime()), lineChartEntries -> {
                             if(!lineChartEntries.isEmpty()){
                                 BAC_line_init(lineChartEntries, new Timestamp(startDate.getTime()), new Timestamp(endDate.getTime()));
+                                Toast.makeText(requireContext(), "Graph Generated!", Toast.LENGTH_SHORT).show();
                             }
                             else {
                                 Log.d("Line Entry", "No data for Line Entries");
+                                Toast.makeText(requireContext(), "No data found for this period", Toast.LENGTH_SHORT).show();
                             }
                         });
                         break;
                         case "Calories Graph": fetch_calories_consumed(new Timestamp(startDate.getTime()), new Timestamp(endDate.getTime()), ((barEntries, dates) -> {
                             if(!barEntries.isEmpty()){
                                 calories_bar_init(barEntries, dates, new Timestamp(startDate.getTime()), new Timestamp(endDate.getTime()));
+                                Toast.makeText(requireContext(), "Graph Generated!", Toast.LENGTH_SHORT).show();
                             }
                             else {
                                 Log.d("Bar Entry", "No data for Bar Entries");
+                                Toast.makeText(requireContext(), "No data found for this period", Toast.LENGTH_SHORT).show();
                             }
                         }));
                         break;
                         case "Drink Consumed Graph": fetch_drink_consumed(new Timestamp(startDate.getTime()), new Timestamp(endDate.getTime()), pieEntries -> {
                             if(!pieEntries.isEmpty()){
                                 drink_type_chart_init(pieEntries, new Timestamp(startDate.getTime()), new Timestamp(endDate.getTime()));
+                                Toast.makeText(requireContext(), "Graph Generated!", Toast.LENGTH_SHORT).show();
                             }
                             else{
                                 Log.d("Pie Entry", "No data for Pie Entries");
+                                Toast.makeText(requireContext(), "No data found for this period", Toast.LENGTH_SHORT).show();
                             }
                         });
                         break;
-
                     }
-
-                    Toast.makeText(requireContext(), "Graph Generated!", Toast.LENGTH_SHORT).show();
                     dialog.dismiss();
+
                 })
                 .setNegativeButton("Cancel", (dialog, which) -> {
                     // Action when 'Cancel' is clicked
