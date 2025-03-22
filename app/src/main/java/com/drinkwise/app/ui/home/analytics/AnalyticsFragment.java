@@ -20,11 +20,17 @@ import androidx.fragment.app.Fragment;
 
 import com.drinkwise.app.R;
 import com.github.mikephil.charting.charts.BarChart;
+import com.github.mikephil.charting.charts.LineChart;
 import com.github.mikephil.charting.charts.PieChart;
+import com.github.mikephil.charting.components.LimitLine;
 import com.github.mikephil.charting.components.XAxis;
+import com.github.mikephil.charting.components.YAxis;
 import com.github.mikephil.charting.data.BarData;
 import com.github.mikephil.charting.data.BarDataSet;
 import com.github.mikephil.charting.data.BarEntry;
+import com.github.mikephil.charting.data.Entry;
+import com.github.mikephil.charting.data.LineData;
+import com.github.mikephil.charting.data.LineDataSet;
 import com.github.mikephil.charting.data.PieData;
 import com.github.mikephil.charting.data.PieDataSet;
 import com.github.mikephil.charting.data.PieEntry;
@@ -38,9 +44,12 @@ import com.google.firebase.firestore.QueryDocumentSnapshot;
 import org.checkerframework.checker.units.qual.A;
 import org.checkerframework.checker.units.qual.Time;
 
+import java.lang.reflect.Array;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Locale;
@@ -51,6 +60,7 @@ public class AnalyticsFragment extends Fragment {
 
     protected PieChart drinkTypePieChart;
     protected BarChart caloriesBarChart;
+    protected LineChart BACLineChart;
     protected Button generateGraph, selectStartDate, selectEndDate;
     protected Spinner graphTypeSpinner;
 
@@ -66,6 +76,7 @@ public class AnalyticsFragment extends Fragment {
 
         drinkTypePieChart = view.findViewById(R.id.drinkTypePieChart);
         caloriesBarChart = view.findViewById(R.id.caloriesBarChart);
+        BACLineChart = view.findViewById(R.id.BACLineChart);
 
         generateGraph = view.findViewById(R.id.generateGraph);
 
@@ -74,18 +85,49 @@ public class AnalyticsFragment extends Fragment {
         });
 
 
-
-
         // Inflate your fragment layout
         return view;
+    }
 
+    public void BAC_line_init(ArrayList<Entry> lineChartEntries, Timestamp start, Timestamp end){
 
+        drinkTypePieChart.setVisibility(View.GONE);
+        caloriesBarChart.setVisibility(View.GONE);
+        BACLineChart.setVisibility(View.VISIBLE);
+
+        //Entry highestBAC = Collections.max(lineChartEntries, (e1, e2) -> Float.compare(e1.getY(), e2.getY()));
+        //ArrayList<Entry> highestBACEntry = new ArrayList<>();
+        //highestBACEntry.add(highestBAC);
+
+        LineDataSet set = new LineDataSet(lineChartEntries, "BAC Levels");
+        set.setColor(Color.BLUE);
+        set.setValueTextSize(14f);
+        set.setLineWidth(3f);
+
+        LimitLine upperLimit = new LimitLine(0.8f, "Danger");
+        upperLimit.setLineWidth(3f);
+        upperLimit.enableDashedLine(10f, 10f, 0f);
+        upperLimit.setTextSize(10f);
+
+        YAxis leftAxis = BACLineChart.getAxisLeft();
+        leftAxis.removeAllLimitLines();
+        leftAxis.addLimitLine(upperLimit);
+
+        LineData lineData = new LineData(set);
+
+        BACLineChart.getXAxis().setValueFormatter(new DateFormatter2());
+        BACLineChart.getXAxis().setGranularity(1f);
+        BACLineChart.setData(lineData);
+
+        BACLineChart.getAxisRight().setEnabled(false);
+        BACLineChart.animateY(500);
+        BACLineChart.invalidate();
 
 
     }
-
     public void calories_bar_init(ArrayList<BarEntry> barEntries, ArrayList<String> dates, Timestamp start, Timestamp end){
 
+        BACLineChart.setVisibility(View.GONE);
         drinkTypePieChart.setVisibility(View.GONE);
         caloriesBarChart.setVisibility(View.VISIBLE);
 
@@ -97,10 +139,12 @@ public class AnalyticsFragment extends Fragment {
         caloriesBarChart.setDrawValueAboveBar(true);
         caloriesBarChart.setPinchZoom(true);
         caloriesBarChart.setDrawValueAboveBar(true);
+        caloriesBarChart.getAxisRight().setEnabled(false);
 
         BarDataSet barDataSet = new BarDataSet(barEntries, "Calories");
         barDataSet.setColor(Color.RED);
         BarData barData = new BarData(barDataSet);
+        barData.setValueTextSize(14f);
         caloriesBarChart.setData(barData);
 
         XAxis xAxis = caloriesBarChart.getXAxis();
@@ -117,6 +161,7 @@ public class AnalyticsFragment extends Fragment {
 
     public void drink_type_chart_init(ArrayList<PieEntry> pieEntries, Timestamp start, Timestamp end){
 
+        BACLineChart.setVisibility(View.GONE);
         caloriesBarChart.setVisibility(View.GONE);
         drinkTypePieChart.setVisibility(View.VISIBLE);
 
@@ -178,6 +223,76 @@ public class AnalyticsFragment extends Fragment {
 
     }
 
+    public void fetch_BAC_entries(Timestamp start, Timestamp end, DataCallbackLine callback){
+
+        HashMap<String, Double> data = new HashMap<>();
+        ArrayList<Entry> lineChartEntries = new ArrayList<>();
+
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+
+        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+        if (user == null) {
+            Toast.makeText(getContext(), "Please log in to view drink logs.", Toast.LENGTH_SHORT).show();
+        }
+
+        String userId = user.getUid();
+
+        SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
+        String startDate = formatter.format(start.toDate());
+        String endDate = formatter.format(end.toDate());
+
+        db.collection("users")
+                .document(userId)
+                .collection("BacEntry")
+                .addSnapshotListener(((value, error) -> {
+                    if (error != null) {
+                        Log.e("Error", "Error fetching data: " + error);
+                    }
+
+                    for (QueryDocumentSnapshot document : value) {
+                        String timestamp = document.getId();
+                        if(timestamp.compareTo(startDate) >= 0 && timestamp.compareTo(endDate) <= 0){
+                            Double bac = document.getDouble("bacValue");
+
+                            if(bac != null){
+                                Date parsedDate = null;
+                                try {
+                                    parsedDate = formatter.parse(timestamp);
+                                    String date = new SimpleDateFormat("yyyy-MM-dd").format(parsedDate);
+
+                                    if(data.containsKey(date)){
+                                        data.put(date, data.get(date) + bac);
+                                    }
+                                    else{
+                                        data.put(date, bac);
+                                    }
+
+                                } catch (ParseException e) {
+                                    throw new RuntimeException(e);
+                                }
+                            }
+                        }
+                    }
+
+                    for(Map.Entry<String, Double> entry : data.entrySet()){
+
+                        try {
+                            Date datefromMap = formatter.parse(entry.getKey());
+                            float xValue = datefromMap.getTime();
+                            float yValue = entry.getValue().floatValue();
+
+                            lineChartEntries.add(new Entry(xValue, yValue));
+
+                        } catch (ParseException e) {
+                            throw new RuntimeException(e);
+                        }
+                    }
+
+                    callback.onDataFetchedLine(lineChartEntries);
+                }));
+
+
+    }
     public void fetch_calories_consumed(Timestamp start, Timestamp end, DataCallbackBar callback){
 
         HashMap<String, Long> data = new HashMap<>();
@@ -187,7 +302,7 @@ public class AnalyticsFragment extends Fragment {
 
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
         if (user == null) {
-            Toast.makeText(getContext(), "Please log in to view drink logs.", Toast.LENGTH_SHORT).show();
+            Toast.makeText(getContext(), "Please log in to view bac entries logs.", Toast.LENGTH_SHORT).show();
         }
 
         String userId = user.getUid();
@@ -226,8 +341,6 @@ public class AnalyticsFragment extends Fragment {
                         Long calories = document.getLong("calories");
                         Timestamp timestamp = document.getTimestamp("timestamp");
 
-                        Log.d("Fetching Results", "Drink: " + drinkType + ", Calories: " + calories + ", Date: " + timestamp.toDate());
-
                         if(calories != null){
                             String date = formatter.format(timestamp.toDate());
 
@@ -237,7 +350,6 @@ public class AnalyticsFragment extends Fragment {
                             else{
                                 data.put(date, calories);
                             }
-
                         }
                     }
                     int i = 0;
@@ -312,9 +424,9 @@ public class AnalyticsFragment extends Fragment {
         selectStartDate.setOnClickListener(v -> {
             DatePickerDialog datePickerDialog = new DatePickerDialog(requireContext(), R.style.DatePickerDialogTheme,
                     (view, year, month, dayOfMonth) -> {
-                        startDate.set(year, month, dayOfMonth);
+                        startDate.set(year, month, dayOfMonth, 0, 0, 0);
                         String dateText = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(startDate.getTime());
-                        selectEndDate.setText(dateText);
+                        selectStartDate.setText(dateText);
                     },
                     startDate.get(Calendar.YEAR),
                     startDate.get(Calendar.MONTH),
@@ -325,7 +437,7 @@ public class AnalyticsFragment extends Fragment {
         selectEndDate.setOnClickListener(v -> {
             DatePickerDialog datePickerDialog = new DatePickerDialog(requireContext(), R.style.DatePickerDialogTheme,
                     (view, year, month, dayOfMonth) -> {
-                        endDate.set(year, month, dayOfMonth);
+                        endDate.set(year, month, dayOfMonth, 23, 59, 59);
                         String dateText = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(endDate.getTime());
                         selectEndDate.setText(dateText);
                     },
@@ -344,7 +456,15 @@ public class AnalyticsFragment extends Fragment {
                     String selectedGraphType = graphTypeSpinner.getSelectedItem().toString();
 
                     switch(selectedGraphType){
-                        case "BAC Graph":
+                        case "BAC Graph": fetch_BAC_entries(new Timestamp(startDate.getTime()), new Timestamp(endDate.getTime()), lineChartEntries -> {
+                            if(!lineChartEntries.isEmpty()){
+                                BAC_line_init(lineChartEntries, new Timestamp(startDate.getTime()), new Timestamp(endDate.getTime()));
+                            }
+                            else {
+                                Log.d("Line Entry", "No data for Line Entries");
+                            }
+                        });
+                        break;
                         case "Calories Graph": fetch_calories_consumed(new Timestamp(startDate.getTime()), new Timestamp(endDate.getTime()), ((barEntries, dates) -> {
                             if(!barEntries.isEmpty()){
                                 calories_bar_init(barEntries, dates, new Timestamp(startDate.getTime()), new Timestamp(endDate.getTime()));
@@ -387,7 +507,8 @@ public class AnalyticsFragment extends Fragment {
     public class DateFormatter extends ValueFormatter{
 
         private ArrayList<String> dates;
-
+        private SimpleDateFormat dateDisplay = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
+        private SimpleDateFormat dayDisplay = new SimpleDateFormat("MMM d", Locale.getDefault());
         public DateFormatter(ArrayList<String> dates) {
             this.dates = dates;
         }
@@ -397,10 +518,30 @@ public class AnalyticsFragment extends Fragment {
             int i = (int) value;
 
             if( i >= 0 && i < dates.size()){
-                return dates.get(i);
+                try {
+                    Date date = dateDisplay.parse(dates.get(i));
+                    return dayDisplay.format(date);
+                } catch (ParseException e) {
+                    Log.e("Parsing Error", "Error parsing date" + e);
+                    return "";
+                }
             }
             return "";
         }
+    }
+
+    public class DateFormatter2 extends ValueFormatter {
+
+        private SimpleDateFormat days = new SimpleDateFormat("MMM d", Locale.getDefault());
+
+        @Override
+        public String getFormattedValue(float value) {
+            return days.format(new Date((long) value));  // Convert epoch to date
+        }
+    }
+
+    public interface DataCallbackLine {
+        void onDataFetchedLine(ArrayList<Entry> lineChartEntries);
     }
 }
 
