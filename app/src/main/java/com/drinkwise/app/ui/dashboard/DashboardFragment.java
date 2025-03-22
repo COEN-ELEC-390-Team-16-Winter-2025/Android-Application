@@ -237,7 +237,7 @@ public class DashboardFragment extends Fragment {
             beerCounter++;
             updateBeerCount();
             updateTotalCalories();
-            updateBACFromManualLogs();
+            //updateBACFromManualLogs();
             logDrinkToFirestore("Beer", 150);
         });
 
@@ -245,7 +245,7 @@ public class DashboardFragment extends Fragment {
             wineCounter++;
             updateWineCount();
             updateTotalCalories();
-            updateBACFromManualLogs();
+            //updateBACFromManualLogs();
             logDrinkToFirestore("Wine", 125);
         });
 
@@ -253,7 +253,7 @@ public class DashboardFragment extends Fragment {
             champagneCounter++;
             updateChampagneCount();
             updateTotalCalories();
-            updateBACFromManualLogs();
+            //updateBACFromManualLogs();
             logDrinkToFirestore("Champagne", 90);
         });
 
@@ -261,7 +261,7 @@ public class DashboardFragment extends Fragment {
             cocktailCounter++;
             updateCocktailCount();
             updateTotalCalories();
-            updateBACFromManualLogs();
+            //updateBACFromManualLogs();
             logDrinkToFirestore("Cocktail", 200);
         });
 
@@ -269,7 +269,7 @@ public class DashboardFragment extends Fragment {
             shotCounter++;
             updateShotCount();
             updateTotalCalories();
-            updateBACFromManualLogs();
+            //updateBACFromManualLogs();
             logDrinkToFirestore("Shot", 95);
         });
 
@@ -277,7 +277,7 @@ public class DashboardFragment extends Fragment {
             sakeCounter++;
             updateSakeCount();
             updateTotalCalories();
-            updateBACFromManualLogs();
+            //updateBACFromManualLogs();
             logDrinkToFirestore("Sake", 230);
         });
 
@@ -286,7 +286,7 @@ public class DashboardFragment extends Fragment {
                 beerCounter--;
                 updateBeerCount();
                 updateTotalCalories();
-                updateBACFromManualLogs();
+                //updateBACFromManualLogs();
             }
         });
 
@@ -295,7 +295,7 @@ public class DashboardFragment extends Fragment {
                 wineCounter--;
                 updateWineCount();
                 updateTotalCalories();
-                updateBACFromManualLogs();
+                //updateBACFromManualLogs();
             }
         });
 
@@ -304,7 +304,7 @@ public class DashboardFragment extends Fragment {
                 champagneCounter--;
                 updateChampagneCount();
                 updateTotalCalories();
-                updateBACFromManualLogs();
+                //updateBACFromManualLogs();
             }
         });
 
@@ -313,7 +313,7 @@ public class DashboardFragment extends Fragment {
                 cocktailCounter--;
                 updateCocktailCount();
                 updateTotalCalories();
-                updateBACFromManualLogs();
+                //updateBACFromManualLogs();
             }
         });
 
@@ -322,7 +322,7 @@ public class DashboardFragment extends Fragment {
                 shotCounter--;
                 updateShotCount();
                 updateTotalCalories();
-                updateBACFromManualLogs();
+                //updateBACFromManualLogs();
             }
         });
 
@@ -331,7 +331,7 @@ public class DashboardFragment extends Fragment {
                 sakeCounter--;
                 updateSakeCount();
                 updateTotalCalories();
-                updateBACFromManualLogs();
+                //updateBACFromManualLogs();
             }
         });
     }
