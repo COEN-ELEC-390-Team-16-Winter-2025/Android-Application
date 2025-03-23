@@ -117,6 +117,7 @@ public class DrinkLogFragment extends Fragment {
                             String drinkType = document.getString("drinkType");
                             Long calories = document.getLong("calories");
                             com.google.firebase.Timestamp timestamp = document.getTimestamp("timestamp");
+                            Double BACContribution = document.getDouble("BAC_Contribution");
 
                             String formattedTime = "Unknown Time";
                             if (timestamp != null) {
@@ -124,7 +125,7 @@ public class DrinkLogFragment extends Fragment {
                                 formattedTime = sdf.format(timestamp.toDate());
                             }
 
-                            drinkLogList.add(new DrinkLogItem(drinkType, calories, formattedTime));
+                            drinkLogList.add(new DrinkLogItem(drinkType, calories, formattedTime, BACContribution));
                         }
 
                         // Reset filtered list and update the adapter with the full list
@@ -222,7 +223,13 @@ public class DrinkLogFragment extends Fragment {
         LinearLayout customDateLayout = filterDialogView.findViewById(R.id.customDateLayout);
 
         final Calendar startDate = Calendar.getInstance();
+        startDate.set(Calendar.HOUR_OF_DAY, 0);
+        startDate.set(Calendar.MINUTE, 0);
+        startDate.set(Calendar.SECOND, 0);
         final Calendar endDate = Calendar.getInstance();
+        endDate.set(Calendar.HOUR_OF_DAY, 11);
+        endDate.set(Calendar.MINUTE, 59);
+        endDate.set(Calendar.SECOND, 59);
 
         timePeriodGroup.setOnCheckedChangeListener((group, checkedId) -> {
             if (checkedId == R.id.customDateRadio) {
@@ -250,6 +257,10 @@ public class DrinkLogFragment extends Fragment {
                     String minCalories = minCaloriesEditText.getText().toString();
                     String maxCalories = maxCaloriesEditText.getText().toString();
                     boolean isCustomDateSelected = timePeriodGroup.getCheckedRadioButtonId() == R.id.customDateRadio;
+                    boolean isTodayDateSelected = timePeriodGroup.getCheckedRadioButtonId() == R.id.todayRadio;
+                    boolean isThisWeekSelected = timePeriodGroup.getCheckedRadioButtonId() == R.id.thisWeekRadio;
+                    boolean isThisMonthSelected = timePeriodGroup.getCheckedRadioButtonId() == R.id.thisMonthRadio;
+                    boolean isLastMonthSelected = timePeriodGroup.getCheckedRadioButtonId() == R.id.lastMonthRadio;
 
                     // Apply filters to each item
                     for (DrinkLogItem item : drinkLogList) {
@@ -283,6 +294,30 @@ public class DrinkLogFragment extends Fragment {
                             }
                         } catch (NumberFormatException e) {
                             Log.e(TAG, "Invalid calorie input", e);
+                        }
+
+                        if(isTodayDateSelected){
+                            if(!isToday(item.getTime())){
+                                matches = false;
+                            }
+                        }
+
+                        if(isThisWeekSelected){
+                            if(!isThisWeek(item.getTime())){
+                                matches = false;
+                            }
+                        }
+
+                        if(isThisMonthSelected){
+                            if(!isThisMonth(item.getTime())){
+                                matches = false;
+                            }
+                        }
+
+                        if(isLastMonthSelected){
+                            if(!isLastMonth(item.getTime())){
+                                matches = false;
+                            }
                         }
 
                         // Date Range Filter (only if custom date is selected)
@@ -363,6 +398,46 @@ public class DrinkLogFragment extends Fragment {
 
             return weekOfYear == now.get(Calendar.WEEK_OF_YEAR) &&
                     year == now.get(Calendar.YEAR);
+
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    private boolean isThisMonth(String dateStr){
+        SimpleDateFormat sdf = new SimpleDateFormat("MMM dd, yyyy HH:mm", Locale.getDefault());
+        try {
+            Date date = sdf.parse(dateStr);
+            Calendar cal = Calendar.getInstance();
+            Calendar now = Calendar.getInstance();
+
+            cal.setTime(date);
+
+            int monthOfYear = cal.get(Calendar.MONTH);
+            int year = cal.get(Calendar.YEAR);
+
+            return monthOfYear == now.get(Calendar.MONTH) &&
+                    year == now.get(Calendar.YEAR);
+
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    public boolean isLastMonth(String dateStr){
+        SimpleDateFormat sdf = new SimpleDateFormat("MMM dd, yyyy HH:mm", Locale.getDefault());
+        try {
+            Date date = sdf.parse(dateStr);
+            Calendar cal = Calendar.getInstance();
+            Calendar lastMonth = Calendar.getInstance();
+
+            cal.setTime(date);
+
+            lastMonth.add(Calendar.MONTH, -1);
+            int year = cal.get(Calendar.YEAR);
+
+            return cal.get(Calendar.MONTH) == lastMonth.get(Calendar.MONTH) &&
+                    cal.get(Calendar.YEAR) == lastMonth.get(Calendar.YEAR);
 
         } catch (Exception e) {
             return false;
