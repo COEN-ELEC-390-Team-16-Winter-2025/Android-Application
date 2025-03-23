@@ -152,4 +152,5 @@ public class BACEntryAdapter extends RecyclerView.Adapter<BACEntryAdapter.BACVie
             return "Danger";
         }
     }
+
 }

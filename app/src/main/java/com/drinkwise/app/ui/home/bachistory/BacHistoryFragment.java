@@ -77,6 +77,7 @@ public class BacHistoryFragment extends Fragment {
             adapter = new BACEntryAdapter();
             recyclerView.setAdapter(adapter);
 
+
             sortButton.setOnClickListener(v -> {
                 Log.d(TAG, "Sort button clicked");
                 showSortDialog();
@@ -433,4 +434,5 @@ public class BacHistoryFragment extends Fragment {
         Log.d(TAG, "Search result count: " + searchResults.size());
         adapter.setBacEntries(searchResults);
     }
+
 }

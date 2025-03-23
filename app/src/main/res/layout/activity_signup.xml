@@ -108,22 +108,20 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/password_requirements"
+        app:layout_constraintTop_toBottomOf="@+id/password_label"
         app:layout_constraintVertical_bias="0.107" />
 
-    <TextView
-        android:id="@+id/password_requirements"
-        android:layout_width="313dp"
-        android:layout_height="88dp"
-        android:layout_marginTop="8dp"
-        android:padding="8dp"
-        android:text="Password must be at least 8 characters long and include:\n- At least 1 uppercase letter\n- At least 1 number\n- At least 1 special character "
-        android:textColor="@color/black"
-        android:textSize="12sp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.5"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/password_label" />
+    <ImageButton
+        android:id="@+id/password_info_button"
+        android:layout_width="24dp"
+        android:layout_height="24dp"
+        android:background="?attr/selectableItemBackgroundBorderless"
+        android:src="@drawable/baseline_info_24"
+        android:contentDescription="Password rules"
+        app:layout_constraintTop_toTopOf="@id/password_edittext"
+        app:layout_constraintBottom_toBottomOf="@id/password_edittext"
+        app:layout_constraintStart_toEndOf="@id/password_edittext"
+        app:layout_constraintEnd_toEndOf="parent" />
 
     <TextView
         android:id="@+id/confirm_password_label"

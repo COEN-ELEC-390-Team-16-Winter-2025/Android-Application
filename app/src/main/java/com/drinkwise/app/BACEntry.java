@@ -38,6 +38,7 @@ public class BACEntry {
         time = time1.format(temp);
         }
 
+
     public String getDate() {
         return date;
     }
@@ -61,4 +62,5 @@ public class BACEntry {
     public void setStatus(String s) {
         // later
     }
+
 }
