@@ -258,7 +258,7 @@ public class DashboardFragment extends Fragment {
             updateBeerCount();
             updateTotalCalories();
             //updateBACFromManualLogs();
-            logDrinkToFirestore("Beer", 150);
+            logDrinkToFirestore("Beer", 150, 0.03);
         });
 
         addWineButton.setOnClickListener(v -> {
@@ -266,7 +266,7 @@ public class DashboardFragment extends Fragment {
             updateWineCount();
             updateTotalCalories();
             //updateBACFromManualLogs();
-            logDrinkToFirestore("Wine", 125);
+            logDrinkToFirestore("Wine", 125, 0.05);
         });
 
         addChampagneButton.setOnClickListener(v -> {
@@ -274,7 +274,7 @@ public class DashboardFragment extends Fragment {
             updateChampagneCount();
             updateTotalCalories();
             //updateBACFromManualLogs();
-            logDrinkToFirestore("Champagne", 90);
+            logDrinkToFirestore("Champagne", 90, 0.04);
         });
 
         addCocktailButton.setOnClickListener(v -> {
@@ -282,7 +282,7 @@ public class DashboardFragment extends Fragment {
             updateCocktailCount();
             updateTotalCalories();
             //updateBACFromManualLogs();
-            logDrinkToFirestore("Cocktail", 200);
+            logDrinkToFirestore("Cocktail", 200, 0.07);
         });
 
         addShotButton.setOnClickListener(v -> {
@@ -290,7 +290,7 @@ public class DashboardFragment extends Fragment {
             updateShotCount();
             updateTotalCalories();
             //updateBACFromManualLogs();
-            logDrinkToFirestore("Shot", 95);
+            logDrinkToFirestore("Shot", 95, 0.04);
         });
 
         addSakeButton.setOnClickListener(v -> {
@@ -298,7 +298,7 @@ public class DashboardFragment extends Fragment {
             updateSakeCount();
             updateTotalCalories();
             //updateBACFromManualLogs();
-            logDrinkToFirestore("Sake", 230);
+            logDrinkToFirestore("Sake", 230, 0.06);
         });
 
         minusBeerButton.setOnClickListener(v -> {
@@ -471,7 +471,7 @@ public class DashboardFragment extends Fragment {
         caloriesTextView.setText("Total Calories: " + totalCalories + " kcal");
     }
 
-    private void logDrinkToFirestore(String drinkType, int calories) {
+    private void logDrinkToFirestore(String drinkType, int calories, double BACContribution) {
 
         // Get current user
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
@@ -488,6 +488,7 @@ public class DashboardFragment extends Fragment {
             drinkEntry.put("drinkType", drinkType);
             drinkEntry.put("calories", calories);
             drinkEntry.put("timestamp", timestamp);
+            drinkEntry.put("BAC_Contribution", BACContribution);
 
             // Save to Firestore inside "users/{userId}/manual_drink_logs"
             db.collection("users").document(userId)
