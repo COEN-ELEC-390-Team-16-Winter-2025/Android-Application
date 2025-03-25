@@ -25,8 +25,11 @@ import com.drinkwise.app.ui.home.drinklog.DrinkLogItem;
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.Timestamp;
+import com.google.firebase.firestore.Query;
+
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -306,6 +309,7 @@ public class DashboardFragment extends Fragment {
                 beerCounter--;
                 updateBeerCount();
                 updateTotalCalories();
+                removeDrinkFromFirestore("Beer");
                 //updateBACFromManualLogs();
             }
         });
@@ -315,6 +319,7 @@ public class DashboardFragment extends Fragment {
                 wineCounter--;
                 updateWineCount();
                 updateTotalCalories();
+                removeDrinkFromFirestore("Wine");
                 //updateBACFromManualLogs();
             }
         });
@@ -324,6 +329,7 @@ public class DashboardFragment extends Fragment {
                 champagneCounter--;
                 updateChampagneCount();
                 updateTotalCalories();
+                removeDrinkFromFirestore("Champagne");
                 //updateBACFromManualLogs();
             }
         });
@@ -333,6 +339,7 @@ public class DashboardFragment extends Fragment {
                 cocktailCounter--;
                 updateCocktailCount();
                 updateTotalCalories();
+                removeDrinkFromFirestore("Cocktail");
                 //updateBACFromManualLogs();
             }
         });
@@ -342,6 +349,7 @@ public class DashboardFragment extends Fragment {
                 shotCounter--;
                 updateShotCount();
                 updateTotalCalories();
+                removeDrinkFromFirestore("Shot");
                 //updateBACFromManualLogs();
             }
         });
@@ -351,6 +359,7 @@ public class DashboardFragment extends Fragment {
                 sakeCounter--;
                 updateSakeCount();
                 updateTotalCalories();
+                removeDrinkFromFirestore("Sake");
                 //updateBACFromManualLogs();
             }
         });
@@ -500,6 +509,32 @@ public class DashboardFragment extends Fragment {
                             Log.e("Firestore", "Error adding drink log", e));
         } else {
             Log.e("Firestore", "User not logged in, cannot save drink log");
+        }
+    }
+
+    private void removeDrinkFromFirestore(String drinkType){
+        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+
+        if(user != null){
+            String userID = user.getUid();
+
+            db.collection("users")
+                    .document(userID)
+                    .collection("manual_drink_logs")
+                    .whereEqualTo("drinkType", drinkType)
+                    .orderBy("timestamp", Query.Direction.DESCENDING)
+                    .limit(1)
+                    .get()
+                    .addOnSuccessListener(queryDocumentSnapshots -> {
+                        DocumentSnapshot drinkEntry = queryDocumentSnapshots.getDocuments().get(0);
+                        drinkEntry.getReference().delete()
+                                .addOnSuccessListener(result ->{
+                                    Log.d("Firestore", drinkType + "successfully deleted");
+                                })
+                                .addOnFailureListener(error ->{
+                                    Log.d("Firestore", "Error deleting entry" + error);
+                                });
+                    });
         }
     }
 }

@@ -72,10 +72,12 @@ public class SignInActivity extends AppCompatActivity {
 
         // comment this out for demo!!
         // or testing when you want to skip sign in page if signed in!!!
-        if(auth.getCurrentUser() !=null){
+        /*if(auth.getCurrentUser() !=null){
             startActivity(new Intent(SignInActivity.this, MainActivity.class));
             finish();
        }
+
+         */
 
 
     }
