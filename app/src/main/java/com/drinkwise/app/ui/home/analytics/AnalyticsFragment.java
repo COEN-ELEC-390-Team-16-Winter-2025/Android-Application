@@ -6,6 +6,7 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.os.Bundle;
 import android.util.Log;
+import android.util.Pair;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -50,8 +51,10 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
@@ -89,22 +92,64 @@ public class AnalyticsFragment extends Fragment {
         return view;
     }
 
-    public void BAC_line_init(ArrayList<Entry> lineChartEntries, Timestamp start, Timestamp end){
+    public void BAC_line_init(ArrayList<Entry> lineChartEntries, ArrayList<String> dates, Timestamp start, Timestamp end){
 
         drinkTypePieChart.setVisibility(View.GONE);
         caloriesBarChart.setVisibility(View.GONE);
         BACLineChart.setVisibility(View.VISIBLE);
 
-        //Entry highestBAC = Collections.max(lineChartEntries, (e1, e2) -> Float.compare(e1.getY(), e2.getY()));
-        //ArrayList<Entry> highestBACEntry = new ArrayList<>();
-        //highestBACEntry.add(highestBAC);
+        if(lineChartEntries.isEmpty()){
+            Toast.makeText(requireContext(), "No data available to display", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        List<Pair<Entry, String>> combinedList = new ArrayList<>();
+        for (int i = 0; i < lineChartEntries.size(); i++) {
+            combinedList.add(new Pair<>(lineChartEntries.get(i), dates.get(i)));
+        }
+
+        Map<String, Pair<Entry, String>> highestBACValues = new HashMap();
+
+        SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
+
+        for(Pair<Entry, String> entry : combinedList){
+            float BAC = entry.first.getY();
+            String date = entry.second;
+
+            Date dateFromEntry;
+            try{
+                dateFromEntry = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).parse(date);
+                String formattedDate = formatter.format(dateFromEntry);
+                if(!highestBACValues.containsKey(formattedDate) || BAC > highestBACValues.get(formattedDate).first.getY()){
+                    highestBACValues.put(formattedDate, entry);
+                }
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        }
+
+        Log.d("DEBUG GRAPH", "Hashmap: "+highestBACValues);
+
+        List<Map.Entry<String, Pair<Entry, String>>> entriesByDate = new ArrayList<>(highestBACValues.entrySet());
+        Collections.sort(entriesByDate, (e1, e2) -> e1.getKey().compareTo(e2.getKey()));
+
+        lineChartEntries.clear();
+        dates.clear();
+
+        int i = 0;
+        for (Map.Entry<String, Pair<Entry, String>> entry : entriesByDate) {
+            lineChartEntries.add(new Entry(i, entry.getValue().first.getY()));
+            dates.add(entry.getKey());
+            i++;
+        }
+
 
         LineDataSet set = new LineDataSet(lineChartEntries, "BAC Levels");
         set.setColor(Color.BLUE);
         set.setValueTextSize(14f);
         set.setLineWidth(3f);
 
-        LimitLine upperLimit = new LimitLine(0.8f, "Danger");
+        LimitLine upperLimit = new LimitLine(0.08f, "Danger");
         upperLimit.setLineWidth(3f);
         upperLimit.enableDashedLine(10f, 10f, 0f);
         upperLimit.setTextSize(10f);
@@ -117,7 +162,7 @@ public class AnalyticsFragment extends Fragment {
 
         LineData lineData = new LineData(set);
 
-        BACLineChart.getXAxis().setValueFormatter(new DateFormatter2());
+        BACLineChart.getXAxis().setValueFormatter(new DateFormatter(dates));
         BACLineChart.getXAxis().setGranularity(1f);
         BACLineChart.setData(lineData);
 
@@ -144,6 +189,23 @@ public class AnalyticsFragment extends Fragment {
             Toast.makeText(requireContext(), "No data for this period", Toast.LENGTH_SHORT).show();
             return;
         }
+
+        List<Pair<BarEntry, String>> combinedList = new ArrayList<>();
+        for (int i = 0; i < barEntries.size(); i++) {
+            combinedList.add(new Pair<>(barEntries.get(i), dates.get(i)));
+        }
+
+        Collections.sort(combinedList, (pair1, pair2) -> pair1.second.compareTo(pair2.second));
+
+
+        barEntries.clear();
+        dates.clear();
+
+        for (int i = 0; i < combinedList.size(); i++) {
+            barEntries.add(new BarEntry(i, combinedList.get(i).first.getY())); // Sequential x-values
+            dates.add(combinedList.get(i).second); // Sorted dates
+        }
+
 
         caloriesBarChart.setDrawValueAboveBar(true);
         caloriesBarChart.setPinchZoom(true);
@@ -250,10 +312,37 @@ public class AnalyticsFragment extends Fragment {
 
         String userId = user.getUid();
 
-        SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
-        String startDate = formatter.format(start.toDate());
-        String endDate = formatter.format(end.toDate());
+        SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault());
+        Calendar startDateCalendar = Calendar.getInstance();
+        startDateCalendar.setTime(start.toDate());
+        startDateCalendar.set(Calendar.HOUR_OF_DAY, 0);
+        startDateCalendar.set(Calendar.MINUTE, 0);
+        startDateCalendar.set(Calendar.SECOND, 0);
+        String startDate = formatter.format(startDateCalendar.getTime());
 
+        // End Date at 23:59:59
+        Calendar endDateCalendar = Calendar.getInstance();
+        endDateCalendar.setTime(end.toDate());
+        endDateCalendar.set(Calendar.HOUR_OF_DAY, 23);
+        endDateCalendar.set(Calendar.MINUTE, 59);
+        endDateCalendar.set(Calendar.SECOND, 59);
+        String endDate = formatter.format(endDateCalendar.getTime());
+
+        Calendar currentDate = Calendar.getInstance();
+        Calendar endDate2 = Calendar.getInstance();
+
+        currentDate.setTimeInMillis(start.getSeconds()*1000);
+        endDate2.setTimeInMillis(end.getSeconds()*1000);
+
+        while(!currentDate.after(endDate2)){
+            String date = formatter.format(currentDate.getTime());
+            data.put(date, 0D);
+            currentDate.add(Calendar.DAY_OF_MONTH, 1);
+        }
+
+
+        Log.d("DEBUG", "Start Date: " + startDate);
+        Log.d("DEBUG", "End Date: " + endDate);
         db.collection("users")
                 .document(userId)
                 .collection("BacEntry")
@@ -264,6 +353,7 @@ public class AnalyticsFragment extends Fragment {
 
                     for (QueryDocumentSnapshot document : value) {
                         String timestamp = document.getId();
+                        Log.d("Timestamp", timestamp);
                         if(timestamp.compareTo(startDate) >= 0 && timestamp.compareTo(endDate) <= 0){
                             Double bac = document.getDouble("bacValue");
 
@@ -271,7 +361,7 @@ public class AnalyticsFragment extends Fragment {
                                 Date parsedDate = null;
                                 try {
                                     parsedDate = formatter.parse(timestamp);
-                                    String date = new SimpleDateFormat("yyyy-MM-dd").format(parsedDate);
+                                    String date = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(parsedDate);
 
                                     if(data.containsKey(date)){
                                         data.put(date, data.get(date) + bac);
@@ -286,22 +376,22 @@ public class AnalyticsFragment extends Fragment {
                             }
                         }
                     }
-
+                    int index = 0;
+                    ArrayList<String> dates = new ArrayList<>();
                     for(Map.Entry<String, Double> entry : data.entrySet()){
 
-                        try {
-                            Date datefromMap = formatter.parse(entry.getKey());
-                            float xValue = datefromMap.getTime();
+                            float xValue = index;
                             float yValue = entry.getValue().floatValue();
+                            dates.add(entry.getKey());
 
+                            Log.d("DEBUG", "Timestamp: "+entry.getKey());
+                            Log.d("DEBUG", "Value: "+yValue);
                             lineChartEntries.add(new Entry(xValue, yValue));
 
-                        } catch (ParseException e) {
-                            throw new RuntimeException(e);
-                        }
+                            index++;
                     }
 
-                    callback.onDataFetchedLine(lineChartEntries);
+                    callback.onDataFetchedLine(lineChartEntries, dates);
                 }));
 
 
@@ -469,9 +559,9 @@ public class AnalyticsFragment extends Fragment {
                     String selectedGraphType = graphTypeSpinner.getSelectedItem().toString();
 
                     switch(selectedGraphType){
-                        case "BAC Graph": fetch_BAC_entries(new Timestamp(startDate.getTime()), new Timestamp(endDate.getTime()), lineChartEntries -> {
+                        case "BAC Graph": fetch_BAC_entries(new Timestamp(startDate.getTime()), new Timestamp(endDate.getTime()), (lineChartEntries, dates) -> {
                             if(!lineChartEntries.isEmpty()){
-                                BAC_line_init(lineChartEntries, new Timestamp(startDate.getTime()), new Timestamp(endDate.getTime()));
+                                BAC_line_init(lineChartEntries, dates, new Timestamp(startDate.getTime()), new Timestamp(endDate.getTime()));
                                 Toast.makeText(requireContext(), "Graph Generated!", Toast.LENGTH_SHORT).show();
                             }
                             else {
@@ -549,16 +639,19 @@ public class AnalyticsFragment extends Fragment {
 
     public class DateFormatter2 extends ValueFormatter {
 
-        private SimpleDateFormat days = new SimpleDateFormat("MMM d", Locale.getDefault());
+        private final SimpleDateFormat dateFormat = new SimpleDateFormat("MMM dd", Locale.getDefault());
+
 
         @Override
         public String getFormattedValue(float value) {
-            return days.format(new Date((long) value));  // Convert epoch to date
+            long timestamp = (long) value;
+            return dateFormat.format(new Date(timestamp));
         }
+
     }
 
     public interface DataCallbackLine {
-        void onDataFetchedLine(ArrayList<Entry> lineChartEntries);
+        void onDataFetchedLine(ArrayList<Entry> lineChartEntries, ArrayList<String> dates);
     }
 }
 
