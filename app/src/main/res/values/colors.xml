@@ -83,9 +83,13 @@
     <color name="purple_700">#3700B3</color>
     <color name="teal_200">#03DAC5</color>
 
-    <color name="bac_safe">#4CAF50</color>       <!-- Green -->
-    <color name="bac_caution">#FFC107</color>    <!-- Amber/Yellow -->
-    <color name="bac_danger">#F44336</color>  <!-- Red -->
+    <color name="bac_safe">#00FF00</color> <!-- Green -->
+    <color name="bac_mild_impairment">#FFFF00</color> <!-- Yellow -->
+    <color name="bac_impaired">#FF9900</color> <!-- Orange -->
+    <color name="bac_high_impairment">#FF3300</color> <!-- Red -->
+    <color name="bac_severe_impairment">#990000</color> <!-- Dark Red -->
+    <color name="bac_medical_emergency">#660000</color> <!-- Maroon -->
+
     <color name="bac_default">#726B6B</color>
 
 </resources>

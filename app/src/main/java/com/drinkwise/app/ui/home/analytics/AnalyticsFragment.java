@@ -149,10 +149,16 @@ public class AnalyticsFragment extends Fragment {
         set.setValueTextSize(14f);
         set.setLineWidth(3f);
 
-        LimitLine upperLimit = new LimitLine(0.08f, "Danger");
+        LimitLine upperLimit = new LimitLine(0.08f, "Legally Impaired");
         upperLimit.setLineWidth(3f);
         upperLimit.enableDashedLine(10f, 10f, 0f);
-        upperLimit.setTextSize(10f);
+        upperLimit.setTextSize(15f);
+
+
+        // TODO: Find a way to position the label outside the graph area
+        upperLimit.setLabelPosition(LimitLine.LimitLabelPosition.LEFT_BOTTOM);
+        upperLimit.setXOffset(10f);
+        // the above was an attempt. it put it on the left inside the graph
 
         YAxis leftAxis = BACLineChart.getAxisLeft();
         leftAxis.removeAllLimitLines();

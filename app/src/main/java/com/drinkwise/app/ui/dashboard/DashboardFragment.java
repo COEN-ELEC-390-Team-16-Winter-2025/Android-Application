@@ -232,9 +232,9 @@ public class DashboardFragment extends Fragment {
     }
 
     private void showDefaultBacValue() {
-        bacLevel.setText("--");
+        bacLevel.setText("No Reading");
         bacProgressBar.setProgress(0);
-        bacStatus.setText("N/A");
+        bacStatus.setText("MEASURE BAC to update!");
         bacStatus.setTextColor(ContextCompat.getColor(requireContext(), R.color.bac_default));
     }
 
@@ -432,18 +432,30 @@ public class DashboardFragment extends Fragment {
         bacProgressBar.setProgress(progress);
 
         // Set status, text color, and progress drawable
-        if (bacValue < 0.03) {
+        if (bacValue <= 0.02) {
             bacStatus.setText("Safe");
             bacStatus.setTextColor(ContextCompat.getColor(requireContext(), R.color.bac_safe));
             bacProgressBar.setProgressDrawable(ContextCompat.getDrawable(requireContext(), R.drawable.bac_progress_bar_safe));
-        } else if (bacValue < 0.08) {
-            bacStatus.setText("Caution");
-            bacStatus.setTextColor(ContextCompat.getColor(requireContext(), R.color.bac_caution));
-            bacProgressBar.setProgressDrawable(ContextCompat.getDrawable(requireContext(), R.drawable.bac_progress_bar_caution));
+        } else if (bacValue <= 0.05) {
+            bacStatus.setText("Mild Impairment");
+            bacStatus.setTextColor(ContextCompat.getColor(requireContext(), R.color.bac_mild_impairment));
+            bacProgressBar.setProgressDrawable(ContextCompat.getDrawable(requireContext(), R.drawable.bac_progress_bar_mild_impairment));
+        } else if (bacValue <= 0.08) {
+            bacStatus.setText("Impaired");
+            bacStatus.setTextColor(ContextCompat.getColor(requireContext(), R.color.bac_impaired));
+            bacProgressBar.setProgressDrawable(ContextCompat.getDrawable(requireContext(), R.drawable.bac_progress_bar_impaired));
+        } else if (bacValue <= 0.15) {
+            bacStatus.setText("High Impairment");
+            bacStatus.setTextColor(ContextCompat.getColor(requireContext(), R.color.bac_high_impairment));
+            bacProgressBar.setProgressDrawable(ContextCompat.getDrawable(requireContext(), R.drawable.bac_progress_bar_high_impairment));
+        } else if (bacValue <= 0.30) {
+            bacStatus.setText("Severe Impairment");
+            bacStatus.setTextColor(ContextCompat.getColor(requireContext(), R.color.bac_severe_impairment));
+            bacProgressBar.setProgressDrawable(ContextCompat.getDrawable(requireContext(), R.drawable.bac_progress_bar_severe_impairment));
         } else {
-            bacStatus.setText("Danger");
-            bacStatus.setTextColor(ContextCompat.getColor(requireContext(), R.color.bac_danger));
-            bacProgressBar.setProgressDrawable(ContextCompat.getDrawable(requireContext(), R.drawable.bac_progress_bar_danger));
+            bacStatus.setText("Medical Emergency");
+            bacStatus.setTextColor(ContextCompat.getColor(requireContext(), R.color.bac_medical_emergency));
+            bacProgressBar.setProgressDrawable(ContextCompat.getDrawable(requireContext(), R.drawable.bac_progress_bar_medical_emergency));
         }
 
         Log.d(TAG, "BAC updated: " + bacValue + ", progress: " + progress);

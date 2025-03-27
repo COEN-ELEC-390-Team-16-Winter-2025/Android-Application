@@ -67,15 +67,25 @@ public class ScanningAdapter extends BaseAdapter {
         // Set color based on status
         switch (bacEntries.get(position).getStatus().trim()) {
             case "Safe":
-                bac_status.setTextColor(ContextCompat.getColor(context, R.color.green));
+                bac_status.setTextColor(ContextCompat.getColor(context, R.color.bac_safe));
                 break;
-            case "Caution":
-                bac_status.setTextColor(ContextCompat.getColor(context, R.color.button_orange));
+            case "Mild Impairment":
+                bac_status.setTextColor(ContextCompat.getColor(context, R.color.bac_mild_impairment));
                 break;
-            case "Over Limit":
-                bac_status.setTextColor(ContextCompat.getColor(context, R.color.red));
+            case "Impaired":
+                bac_status.setTextColor(ContextCompat.getColor(context, R.color.bac_impaired));
+                break;
+            case "High Impairment":
+                bac_status.setTextColor(ContextCompat.getColor(context, R.color.bac_high_impairment));
+                break;
+            case "Severe Impairment":
+                bac_status.setTextColor(ContextCompat.getColor(context, R.color.bac_severe_impairment));
+                break;
+            case "Medical Emergency":
+                bac_status.setTextColor(ContextCompat.getColor(context, R.color.bac_medical_emergency));
                 break;
             default:
+                bac_status.setTextColor(ContextCompat.getColor(context, R.color.bac_default));
                 break;
         }
 
