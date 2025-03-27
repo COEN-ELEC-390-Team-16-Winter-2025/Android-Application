@@ -68,5 +68,4 @@ public class BACEntry {
     public void setStatus(String s) {
         // later
     }
-
 }

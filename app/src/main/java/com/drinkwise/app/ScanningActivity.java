@@ -22,6 +22,7 @@ import android.widget.ListView;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 
+import java.sql.Time;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -65,6 +66,7 @@ public class ScanningActivity extends AppCompatActivity {
     String[] loading = {".", "..", "..."};
 
     private double bac_readings = 0.0;
+    private ArrayList<Double> readings = new ArrayList<>();
     private int count = 0;
     private static int entry_count = 0;
     private ArrayAdapter<String> bacListAdapter;
@@ -232,6 +234,7 @@ public class ScanningActivity extends AppCompatActivity {
                     Log.d("Scanning Activity", "Adjusted BAC: "+adjustedBAC);
                     if(count < 20){
                         bac_readings += bacValue;
+                        readings.add(bacValue);
                         count++;
                     }
 
@@ -249,9 +252,12 @@ public class ScanningActivity extends AppCompatActivity {
                     Log.d(TAG, "Full BAC Result: " + completeMessage); // Log full message
                 }
                 if(count == 20 && MODE_LATEST_BAC){
-                    bac_readings  /= count;
+                    bac_readings  = readings.stream().max(Double::compare).get();
                     BACEntry bacEntry = new BACEntry(bac_readings, Timestamp.now());
+                    Alert alert = new Alert(bac_readings, Timestamp.now());
                     storeBAC(bacEntry);
+                    storeAlert(alert);
+                    count++;
                     String bac_reading = String.format(Locale.US,"%.2f", bac_readings);
                     Intent intent = new Intent(ScanningActivity.this, MainActivity.class);
                     intent.putExtra("latest_bac_entry", bac_reading);
@@ -386,14 +392,42 @@ public class ScanningActivity extends AppCompatActivity {
        documentReference.get().addOnSuccessListener(documentSnapshot -> {
            if(documentSnapshot.exists()){
                documentReference.update(bac);
-               Toast.makeText(this, "Bac Entry Saved", Toast.LENGTH_SHORT).show();
+               Log.d("Firestore", "Bac entry updated successfully");
            }else{
                documentReference.set(bac);
-               Toast.makeText(this, "Bac Entry Saved", Toast.LENGTH_SHORT).show();
+               Log.d("Firestore", "Bac entry updated successfully");
            }
        }).addOnFailureListener(e -> {
            Log.e("Firestore", "Error: "+e);
        });
+    }
+
+    //Stores an alert object in firestore database when called. Updates if field already exists or sets if not
+    public void storeAlert(Alert alert){
+        db = FirebaseFirestore.getInstance();
+
+        Map<String,Object> alertMap = new HashMap<>();
+        alertMap.put("bacValue", alert.getBac());
+        alertMap.put("Status", alert.getStatus());
+        alertMap.put("Message", alert.getMessage());
+        alertMap.put("Timestamp", Timestamp.now());
+
+        DocumentReference documentReference = db.collection("users")
+                .document(userId)
+                .collection("Alerts")
+                .document(alert.getDate() + " " + alert.getTime());
+
+        documentReference.get().addOnSuccessListener(documentSnapshot -> {
+            if(documentSnapshot.exists()){
+                documentReference.update(alertMap);
+                Log.d("Firestore", "Alert entry updated successfully");
+            }else{
+                documentReference.set(alertMap);
+                Log.d("Firestore", "Alert entry saved successfully");
+            }
+        }).addOnFailureListener(e -> {
+            Log.e("Firestore", "Error: "+e);
+        });
     }
 
 
