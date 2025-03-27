@@ -67,13 +67,25 @@ public class BACEntryAdapter extends RecyclerView.Adapter<BACEntryAdapter.BACVie
                 colorRes = R.color.bac_safe;
                 emoji = "😊";
                 break;
-            case "Caution":
-                colorRes = R.color.bac_caution;
+            case "Mild Impairment":
+                colorRes = R.color.bac_mild_impairment;
                 emoji = "😟";
                 break;
-            case "Over Limit":
-                colorRes = R.color.bac_danger;
-                emoji = "⚠️";
+            case "Impaired":
+                colorRes = R.color.bac_impaired;
+                emoji = "😣";
+                break;
+            case "High Impairment":
+                colorRes = R.color.bac_high_impairment;
+                emoji = "😵";
+                break;
+            case "Severe Impairment":
+                colorRes = R.color.bac_severe_impairment;
+                emoji = "🤢";
+                break;
+            case "Medical Emergency":
+                colorRes = R.color.bac_medical_emergency;
+                emoji = "🚨";
                 break;
             default:
                 colorRes = R.color.bac_default;
