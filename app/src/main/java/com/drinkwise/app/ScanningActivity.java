@@ -38,6 +38,8 @@ import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.firestore.Query;
+
 
 import android.view.View;
 import android.widget.ProgressBar;
@@ -81,6 +83,11 @@ public class ScanningActivity extends AppCompatActivity {
     private int userWeight = 70;   // Default weight (kg)
     private String userId = "USER_ID_HERE"; // Replace with actual user ID
 
+    private String lastStatus = null;
+    private long lastStatusTime = System.currentTimeMillis();
+    private int dangerCount = 0;
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -105,6 +112,7 @@ public class ScanningActivity extends AppCompatActivity {
         if (currentUser != null) {
             userId = currentUser.getUid();
             fetchUserData();
+            startSafetyMonitor();
         } else {
             Log.e(TAG, "No logged-in user found.");
         }
@@ -431,6 +439,45 @@ public class ScanningActivity extends AppCompatActivity {
             Log.e("Firestore", "Error: "+e);
         });
     }
+
+    private void startSafetyMonitor() {
+        db.collection("users")
+                .document(userId)
+                .collection("BacEntry")
+                .orderBy("Timestamp", Query.Direction.DESCENDING)
+                .limit(1)
+                .addSnapshotListener((snapshots, e) -> {
+                    if (e != null || snapshots == null || snapshots.isEmpty()) return;
+
+                    DocumentSnapshot doc = snapshots.getDocuments().get(0);
+                    String currentStatus = doc.getString("Status");
+
+                    long now = System.currentTimeMillis();
+
+                    if (lastStatus != null && !lastStatus.equals(currentStatus)) {
+                        long duration = (now - lastStatusTime) / 1000;
+                        Log.d("SafetyMonitor", "Status changed: " + lastStatus + " → " + currentStatus +
+                                " after " + duration + "s");
+
+                        // 🔔 ALERT: You can do something here!
+                        // E.g., show a toast, vibrate, or store an alert
+                    }
+
+                    // Check for Danger duration
+                    if ("Danger".equals(currentStatus)) {
+                        dangerCount++;
+                        if (dangerCount >= 3) {
+                            Log.w("SafetyMonitor", "⚠️ 3 consecutive Danger readings!");
+                        }
+                    } else {
+                        dangerCount = 0;
+                    }
+
+                    lastStatus = currentStatus;
+                    lastStatusTime = now;
+                });
+    }
+
 
 
 
