@@ -30,8 +30,11 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.Timestamp;
 import com.google.firebase.firestore.Query;
 
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 import java.util.List;
 import java.util.ArrayList;
@@ -217,6 +220,9 @@ public class DashboardFragment extends Fragment {
             }
         } else {
             showDefaultBacValue();
+
+            //check for rapid logging and errors
+            checkDrinkLogAndBAC();
         }
 
         // Initialize counters
@@ -262,6 +268,9 @@ public class DashboardFragment extends Fragment {
             updateTotalCalories();
             //updateBACFromManualLogs();
             logDrinkToFirestore("Beer", 150, 0.03);
+
+            //check for rapid logging and errors
+            checkDrinkLogAndBAC();
         });
 
         addWineButton.setOnClickListener(v -> {
@@ -270,6 +279,9 @@ public class DashboardFragment extends Fragment {
             updateTotalCalories();
             //updateBACFromManualLogs();
             logDrinkToFirestore("Wine", 125, 0.05);
+
+            //check for rapid logging and errors
+            checkDrinkLogAndBAC();
         });
 
         addChampagneButton.setOnClickListener(v -> {
@@ -278,6 +290,9 @@ public class DashboardFragment extends Fragment {
             updateTotalCalories();
             //updateBACFromManualLogs();
             logDrinkToFirestore("Champagne", 90, 0.04);
+
+            //check for rapid logging and errors
+            checkDrinkLogAndBAC();
         });
 
         addCocktailButton.setOnClickListener(v -> {
@@ -286,6 +301,9 @@ public class DashboardFragment extends Fragment {
             updateTotalCalories();
             //updateBACFromManualLogs();
             logDrinkToFirestore("Cocktail", 200, 0.07);
+
+            //check for rapid logging and errors
+            checkDrinkLogAndBAC();
         });
 
         addShotButton.setOnClickListener(v -> {
@@ -294,6 +312,9 @@ public class DashboardFragment extends Fragment {
             updateTotalCalories();
             //updateBACFromManualLogs();
             logDrinkToFirestore("Shot", 95, 0.04);
+
+            //check for rapid logging and errors
+            checkDrinkLogAndBAC();
         });
 
         addSakeButton.setOnClickListener(v -> {
@@ -302,6 +323,9 @@ public class DashboardFragment extends Fragment {
             updateTotalCalories();
             //updateBACFromManualLogs();
             logDrinkToFirestore("Sake", 230, 0.06);
+
+            //check for rapid logging and errors
+            checkDrinkLogAndBAC();
         });
 
         minusBeerButton.setOnClickListener(v -> {
@@ -549,4 +573,144 @@ public class DashboardFragment extends Fragment {
                     });
         }
     }
+
+    //TODO: test if it is annoying that the drinks are checked everytime bac updated
+    private String getCurrentUserId() {
+        FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
+        String userId = currentUser != null ? currentUser.getUid() : null;
+        Log.d(TAG, "Current user ID: " + userId);
+        return userId;
+    }
+
+    private void checkDrinkLogAndBAC() {
+        Log.d(TAG, "Loading BAC history");
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        String userId = getCurrentUserId();
+
+        if (userId == null) {
+            Log.e(TAG, "No user is signed in");
+            return;
+        }
+
+        //1. Rapid Drink Logging (soft rec):
+        long tenMinutesAgo = System.currentTimeMillis() - (10 * 60 * 1000); // 10 minutes ago
+        Date tenMinutesAgoDate = new Date(tenMinutesAgo); // Convert long to Date
+        Timestamp timestamp = new Timestamp(tenMinutesAgoDate); // Convert Date to Timestamp
+
+        db.collection("users")
+                .document(userId)
+                .collection("manual_drink_logs")
+                .whereGreaterThan("timestamp", timestamp)
+                .get()
+                .addOnSuccessListener(queryDocumentSnapshots -> {
+                    // Check if we have 5 or more drinks in the past 10 minutes
+                    if (queryDocumentSnapshots.size() >= 5) {
+                        // Log a message indicating that 5 drinks were logged
+                        Log.d(TAG, "You have logged 5 drinks in the past 10 minutes. If this was a mistake, use the minus buttons to decrease the count.");
+
+                        // Iterate over the logged drinks and log each timestamp
+                        for (DocumentSnapshot document : queryDocumentSnapshots.getDocuments()) {
+                            Timestamp drinkTimestamp = document.getTimestamp("timestamp");
+                            if (drinkTimestamp != null) {
+                                Log.d(TAG, "Timestamp of the logged drink: " + drinkTimestamp.toDate());
+                            }
+                        }
+                    }
+                })
+                .addOnFailureListener(e -> Log.e(TAG, "Error checking rapid drink logs", e));
+
+        //2. Unusually Large Drink Entries (hard rec):
+        long oneMinuteAgo = System.currentTimeMillis() - (60 * 1000); // 1 minute ago
+        Date oneMinuteAgoDate = new Date(oneMinuteAgo); // Convert long to Date
+        Timestamp timestamp2 = new Timestamp(oneMinuteAgoDate); // Convert Date to Timestamp
+
+        db.collection("users")
+                .document(userId)
+                .collection("manual_drink_logs")
+                .whereGreaterThan("timestamp", timestamp2)
+                .get()
+                .addOnSuccessListener(queryDocumentSnapshots -> {
+                    // If 5 or more drinks were logged in the last minute
+                    if (queryDocumentSnapshots.size() >= 5) {
+                        Log.d(TAG, "You have logged 5 drinks in the past 1 minute. Would you like to undo these changes?");
+                    }
+                })
+                .addOnFailureListener(e -> Log.e(TAG, "Error checking unusually large drink entries", e));
+
+
+        //3. Rapid BAC Changes and
+        //4. Unusually High BAC
+        db.collection("users")
+                .document(userId)
+                .collection("BacEntry")
+                .orderBy("Date")
+                .get()
+                .addOnSuccessListener(queryDocumentSnapshots -> {
+                    double previousBAC = -1;
+                    long previousTimestamp = -1;
+                    double spikeThreshold = 0.05;  // BAC increase threshold
+                    long timeWindow = 10 * 60 * 1000;  // 10 minutes in milliseconds
+
+                    double unusuallyHighBACThreshold = 0.45;  // Unusually high BAC threshold
+
+
+                    // Get the current date and start of today
+                    long todayStartTimestamp = getStartOfTodayTimestamp();
+                    long currentTimestamp = System.currentTimeMillis();
+
+                    for (DocumentSnapshot document : queryDocumentSnapshots.getDocuments()) {
+                        // Retrieve the Date and BAC value
+                        String dateString = document.getString("Date");
+                        Double bac = document.getDouble("bacValue");
+
+                        if (bac != null && dateString != null) {
+                            try {
+                                SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
+                                Date date = dateFormat.parse(dateString);
+
+                                // Get the timestamp of the current entry
+                                long entryTimestamp = date.getTime();
+
+                                // Only consider entries from today
+                                if (entryTimestamp >= todayStartTimestamp) {
+
+                                    if (bac > unusuallyHighBACThreshold) {
+                                        String message = "Your BAC is EXTREMELY high. Please measure your BAC again to confirm the reading.";
+                                        Log.d(TAG, "Unusually High BAC Detected: " + message);
+                                    }
+
+                                    // Check for rapid BAC change within the 10-minute window
+                                    if (previousBAC != -1 && entryTimestamp - previousTimestamp <= timeWindow) {
+                                        // Log.d(TAG, String.valueOf(bac));
+                                        // Log.d(TAG, String.valueOf(previousBAC));
+
+                                        double bacDifference = bac - previousBAC;
+                                        if (bacDifference >= spikeThreshold) {
+                                            String message = "Your BAC has increased by " + bacDifference + " in the past 10 minutes. Please check again to make sure.";
+                                            Log.d(TAG, "Rapid BAC Change Detected: " + message);
+                                        }
+                                    }
+
+                                    // Update previousBAC and previousTimestamp for next iteration
+                                    previousBAC = bac;
+                                    previousTimestamp = entryTimestamp;
+                                }
+                            } catch (Exception e) {
+                                Log.e(TAG, "Error parsing date: " + e.getMessage());
+                            }
+                        }
+                    }
+                })
+                .addOnFailureListener(e -> Log.e(TAG, "Error checking BAC entries", e));
+    }
+
+    private long getStartOfTodayTimestamp() {
+        Calendar calendar = Calendar.getInstance();
+        calendar.set(Calendar.HOUR_OF_DAY, 0);
+        calendar.set(Calendar.MINUTE, 0);
+        calendar.set(Calendar.SECOND, 0);
+        calendar.set(Calendar.MILLISECOND, 0);
+        return calendar.getTimeInMillis();
+    }
+
 }
