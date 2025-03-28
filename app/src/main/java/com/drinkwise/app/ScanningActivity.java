@@ -408,8 +408,10 @@ public class ScanningActivity extends AppCompatActivity {
 
         Map<String,Object> alertMap = new HashMap<>();
         alertMap.put("bacValue", alert.getBac());
-        alertMap.put("Status", alert.getStatus());
+        alertMap.put("SafetyLevel", alert.getSafetyLevel());
         alertMap.put("Message", alert.getMessage());
+        alertMap.put("EscalationLevel", alert.getEscalationLevel());
+        alertMap.put("Resolved", alert.isResolved());
         alertMap.put("Timestamp", Timestamp.now());
 
         DocumentReference documentReference = db.collection("users")
