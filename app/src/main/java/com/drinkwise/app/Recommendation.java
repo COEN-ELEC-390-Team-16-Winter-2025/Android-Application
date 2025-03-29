@@ -7,7 +7,6 @@ import java.util.Date;
 import java.util.Locale;
 
 public class Recommendation {
-    private final String recommendationId;
     private String message;
     private final Timestamp timestamp;
     private final int drinkCount;
@@ -16,8 +15,7 @@ public class Recommendation {
     private final String date;
     private final String time;
 
-    public Recommendation(String recommendationId, int drinkCount, long interval, Timestamp timestamp) {
-        this.recommendationId = recommendationId;
+    public Recommendation(int drinkCount, long interval, Timestamp timestamp) {
         this.timestamp = timestamp;
         this.drinkCount = drinkCount;
         this.interval = interval;
@@ -84,10 +82,6 @@ public class Recommendation {
 
     public String getDate() {
         return date;
-    }
-
-    public String getRecommendationId() {
-        return recommendationId;
     }
 
     public String getMessage() {
