@@ -5,9 +5,12 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.util.Log;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
 import androidx.activity.result.ActivityResultLauncher;
@@ -20,7 +23,11 @@ import androidx.core.view.WindowInsetsCompat;
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestore;
+
+import java.util.HashMap;
+import java.util.Map;
 
 public class SettingsActivity extends AppCompatActivity {
 
@@ -32,11 +39,21 @@ public class SettingsActivity extends AppCompatActivity {
     private boolean isMetric;
     private String birthday;
 
+    //Emergency contact's information variables
+    private String contact_name;
+    private String contact_phone_no;
+    private String contact_email;
+    private String contact_relationship;
+
     //UI Components
-    protected TextView username_textview;
-    protected ImageView profile_picture;
+    protected TextView username_textview,  edit_profile_information, edit_physical_information, add_emergency_contact;
+    protected ImageView profile_picture, emergency_contact_profile_picture;
     private ActivityResultLauncher<Intent> launchGallery;
-    protected EditText name_edit_text, height_edit_text, weight_edit_text, birthday_edit_text;
+    protected EditText name_edit_text, height_edit_text, weight_edit_text, birthday_edit_text,
+    emergency_contact_name, emergency_contact_phone_no, emergency_contact_email, emergency_contact_relationship;
+    LinearLayout emergency_contact_layout;
+
+    protected Button save_emergency_contact, save_profile_information, save_physical_information;
 
     //Database related variables
     private FirebaseFirestore db;
@@ -78,6 +95,121 @@ public class SettingsActivity extends AppCompatActivity {
             Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
             intent.setType("image/*");
             launchGallery.launch(intent);
+        });
+
+        //Toggles visibility of save profile information button when clicking on edit
+        edit_profile_information.setOnClickListener(v -> {
+            if(save_profile_information.getVisibility() == TextView.GONE){
+                save_profile_information.setVisibility(TextView.VISIBLE);
+                name_edit_text.setText("");
+                birthday_edit_text.setText("");
+                name_edit_text.setEnabled(true);
+                birthday_edit_text.setEnabled(true);
+
+            }
+            else{
+                save_profile_information.setVisibility(TextView.GONE);
+                name_edit_text.setText(userName);
+                birthday_edit_text.setText(birthday);
+                name_edit_text.setEnabled(false);
+                birthday_edit_text.setEnabled(false);
+            }
+        });
+
+        //Toggles visibility of save physical information button when clicking on edit
+        edit_physical_information.setOnClickListener(v -> {
+            if(save_physical_information.getVisibility() == TextView.GONE){
+                save_physical_information.setVisibility(TextView.VISIBLE);
+                height_edit_text.setText("");
+                weight_edit_text.setText("");
+                height_edit_text.setEnabled(true);
+                weight_edit_text.setEnabled(true);
+            }
+            else{
+                save_physical_information.setVisibility(TextView.GONE);
+
+                if(!isMetric){
+                    height_edit_text.setText(userHeight+ " ft");
+                    weight_edit_text.setText(userWeight+ " lb");
+                }
+                else{
+                    height_edit_text.setText(userHeight+ " cm");
+                    weight_edit_text.setText(userWeight+ " kg");
+                }
+
+                height_edit_text.setEnabled(false);
+                weight_edit_text.setEnabled(false);
+            }
+        });
+
+        //Toggles visibility of add_emergency_contact_layout
+        add_emergency_contact.setOnClickListener(v -> {
+            if(emergency_contact_layout.getVisibility() == TextView.GONE){
+                emergency_contact_layout.setVisibility(TextView.VISIBLE);
+            }
+            else {
+                emergency_contact_layout.setVisibility(TextView.GONE);
+            }
+        });
+
+        save_profile_information.setOnClickListener(v -> {
+
+            userName = name_edit_text.getText().toString();
+            birthday = birthday_edit_text.getText().toString();
+
+            store_user_information(userName, birthday, userHeight, userWeight, isMetric);
+
+            name_edit_text.setEnabled(false);
+            name_edit_text.setText(userName);
+            birthday_edit_text.setEnabled(false);
+            birthday_edit_text.setText(birthday);
+            username_textview.setText(userName);
+
+            save_profile_information.setVisibility(TextView.GONE);
+        });
+
+        save_physical_information.setOnClickListener(v -> {
+            userWeight = Long.parseLong(weight_edit_text.getText().toString());
+            userHeight = Long.parseLong(height_edit_text.getText().toString());
+
+            store_user_information(userName, birthday, userHeight, userWeight, isMetric);
+
+            height_edit_text.setEnabled(false);
+            weight_edit_text.setEnabled(false);
+
+            if(!isMetric){
+                height_edit_text.setText(userHeight+ " ft");
+                weight_edit_text.setText(userWeight+ " lb");
+            }
+            else{
+                height_edit_text.setText(userHeight+ " cm");
+                weight_edit_text.setText(userWeight+ " kg");
+            }
+
+            save_physical_information.setVisibility(TextView.GONE);
+        });
+
+        save_emergency_contact.setOnClickListener(v -> {
+            contact_name = emergency_contact_name.getText().toString();
+            contact_phone_no = emergency_contact_phone_no.getText().toString();
+            contact_email = emergency_contact_email.getText().toString();
+            contact_relationship = emergency_contact_relationship.getText().toString();
+
+            if(contact_name.isEmpty() || contact_phone_no.isEmpty() || contact_email.isEmpty() || contact_relationship.isEmpty()){
+                Toast.makeText(this, "Please, fill out all fields", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            store_emergency_contact(contact_name, contact_phone_no, contact_email, contact_relationship);
+
+            //Settings the edit texts to ""
+            emergency_contact_name.setText("");
+            emergency_contact_phone_no.setText("");
+            emergency_contact_email.setText("");
+            emergency_contact_relationship.setText("");
+
+            //Setting visibility to gone
+            emergency_contact_layout.setVisibility(TextView.GONE);
         });
     }
 
@@ -123,14 +255,85 @@ public class SettingsActivity extends AppCompatActivity {
                 });
     }
 
+    //This function stores an emergency contact specified in firestore database
+    public void store_emergency_contact(String name, String phone_no, String email, String relationship){
+
+        Map<String,Object> emergency_contact = new HashMap<>();
+        emergency_contact.put("Name", name);
+        emergency_contact.put("Phone_no", phone_no);
+        emergency_contact.put("Email", email);
+        emergency_contact.put("Relationship", relationship);
+
+        FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
+
+        if (currentUser != null) {
+            userId = currentUser.getUid();
+        } else {
+            Log.e(TAG, "No logged-in user found.");
+        }
+
+        db.collection("users")
+                .document(userId)
+                .collection("profile")
+                .document("Contacts")
+                .collection("Emergency_Contacts")
+                .add(emergency_contact)
+                .addOnSuccessListener(aVoid ->
+                        Toast.makeText(this, "Emergency contact saved!", Toast.LENGTH_SHORT).show())
+                .addOnFailureListener(e ->
+                        Log.d("Firestore", "Failed to add an emergency contact" + e));
+    }
+
+    public void store_user_information(String name, String birthday, long height, long weight, boolean isMetric){
+
+        Map<String,Object> profile_information = new HashMap<>();
+
+        profile_information.put("name", name);
+        profile_information.put("birthday", birthday);
+        profile_information.put("height", height);
+        profile_information.put("weight", weight);
+        profile_information.put("isMetric", isMetric);
+
+        db.collection("users")
+                .document(userId)
+                .collection("profile")
+                .document("stats")
+                .set(profile_information)
+                .addOnSuccessListener(aVoid ->
+                        Toast.makeText(this, "Profile saved!", Toast.LENGTH_SHORT).show())
+                .addOnFailureListener(e ->
+                        Log.d("Firestore", "Failed to store data "+ e));
+    }
+
     //This function initializes all ui components
     public void setupUI(){
+
+        //Username and profile picture UI components
         username_textview = findViewById(R.id.account_name);
         profile_picture = findViewById(R.id.profile_picture);
+
+        //Profile information UI components
         name_edit_text = findViewById(R.id.name_edit_text);
+        birthday_edit_text = findViewById(R.id.birthday_edit_text);
+        edit_profile_information = findViewById(R.id.edit_profile_information);
+        save_profile_information = findViewById(R.id.save_profile_information);
+
+        //Physical information UI components
         height_edit_text = findViewById(R.id.height_edit_text);
         weight_edit_text = findViewById(R.id.weight_edit_text);
-        birthday_edit_text = findViewById(R.id.birthday_edit_text);
+        edit_physical_information = findViewById(R.id.edit_physical_information);
+        save_physical_information = findViewById(R.id.save_physical_information);
+
+        //Emergency contacts UI components
+        add_emergency_contact = findViewById(R.id.add_emergency_contact);
+        emergency_contact_layout = findViewById(R.id.emergency_contact_layout);
+        emergency_contact_profile_picture = findViewById(R.id.emergency_contact_profile_picture);
+        emergency_contact_name = findViewById(R.id.emergency_contact_name);
+        emergency_contact_phone_no = findViewById(R.id.emergency_contact_phone_no);
+        emergency_contact_email = findViewById(R.id.emergency_contact_email);
+        emergency_contact_relationship = findViewById(R.id.emergency_contact_relationship);
+        save_emergency_contact = findViewById(R.id.save_emergency_contact);
+
     }
 
 
