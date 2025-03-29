@@ -17,4 +17,22 @@
         <!-- Optional: text colors for the header title text and other stuff -->
         <item name="android:textColorPrimary">@color/dark_brown</item> <!-- Title text in the header -->
     </style>
+
+    <style name="RedBorderAlertDialog" parent="ThemeOverlay.MaterialComponents.Dialog.Alert">
+        <!-- Dark red border -->
+        <item name="android:windowBackground">@drawable/alert_dialog_red_border</item>
+
+        <!-- Text appearance for title and message -->
+        <item name="materialAlertDialogTitleTextStyle">@style/AlertDialogTitleText</item>
+        <item name="materialAlertDialogBodyTextStyle">@style/AlertDialogMessageText</item>
+    </style>
+
+    <style name="AlertDialogTitleText" parent="MaterialAlertDialog.MaterialComponents.Title.Text">
+        <item name="android:textSize">20sp</item>
+        <item name="android:textColor">@android:color/holo_red_dark</item>
+    </style>
+
+    <style name="AlertDialogMessageText" parent="MaterialAlertDialog.MaterialComponents.Body.Text">
+        <item name="android:textSize">18sp</item>
+    </style>
 </resources>

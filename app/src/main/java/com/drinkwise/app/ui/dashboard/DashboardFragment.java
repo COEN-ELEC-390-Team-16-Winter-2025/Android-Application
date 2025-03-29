@@ -1,9 +1,13 @@
 package com.drinkwise.app.ui.dashboard;
 
+import android.app.AlertDialog;
 import android.content.Intent;
+import android.media.MediaPlayer;
+import android.media.RingtoneManager;
 import android.os.Bundle;
 import android.text.Html;
 import android.util.Log;
+import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -38,6 +42,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class DashboardFragment extends Fragment {
     private static final String TAG = "DashboardFragment";
@@ -252,9 +257,11 @@ public class DashboardFragment extends Fragment {
         });
 
         refreshButton.setOnClickListener(v -> {
+            bacCheckEnabled = true;
             Intent intent = new Intent(getActivity(), ScanningActivity.class);
             intent.putExtra("mode", "refreshBAC");
             startActivity(intent);
+
         });
 
 //        quickHelpButton.setOnClickListener(v -> {
@@ -582,6 +589,9 @@ public class DashboardFragment extends Fragment {
         return userId;
     }
 
+
+    private static int rapidLoggingCount = 0; // Tracks repeated alerts in a session
+
     private void checkDrinkLogAndBAC() {
         Log.d(TAG, "Loading BAC history");
         FirebaseFirestore db = FirebaseFirestore.getInstance();
@@ -591,6 +601,9 @@ public class DashboardFragment extends Fragment {
             Log.e(TAG, "No user is signed in");
             return;
         }
+
+        // Track if alert for 1 or 2 has already been triggered
+        AtomicBoolean alertTriggered = new AtomicBoolean(false);
 
         //1. Rapid Drink Logging (soft rec):
         long tenMinutesAgo = System.currentTimeMillis() - (10 * 60 * 1000); // 10 minutes ago
@@ -607,6 +620,35 @@ public class DashboardFragment extends Fragment {
                     if (queryDocumentSnapshots.size() >= 5) {
                         // Log a message indicating that 5 drinks were logged
                         Log.d(TAG, "You have logged 5 drinks in the past 10 minutes. If this was a mistake, use the minus buttons to decrease the count.");
+                        String title1 = "Too Many Drinks Logged";
+                        String message1;
+
+                        switch (rapidLoggingCount) {
+                            case 1:
+                                message1 = "You logged 5 drinks in a short time. Was this a mistake?";
+                                break;
+                            case 2:
+                                message1 = "You've logged drinks rapidly multiple times. Be mindful of your drinking pace.";
+                                break;
+                            case 3:
+                                message1 = "This is your third time logging drinks too quickly. Please slow down for your safety.";
+                                break;
+                            case 4:
+                                message1 = "Excessive rapid drinking detected. Consider taking a break.";
+                                break;
+                            default:
+                                message1 = "Severe warning: Drinking at this pace can be dangerous. Seek help if needed.";
+                                break;
+                        }
+
+                        if (!alertTriggered.get()) {
+                            showAlertWithUndo(
+                                    title1,
+                                    message1
+                            );
+                        }
+//
+
 
                         // Iterate over the logged drinks and log each timestamp
                         for (DocumentSnapshot document : queryDocumentSnapshots.getDocuments()) {
@@ -633,6 +675,11 @@ public class DashboardFragment extends Fragment {
                     // If 5 or more drinks were logged in the last minute
                     if (queryDocumentSnapshots.size() >= 5) {
                         Log.d(TAG, "You have logged 5 drinks in the past 1 minute. Would you like to undo these changes?");
+                        showAlertWithUndo(
+                                "Too Many Drinks Logged",
+                                "You logged 5 drinks in 1 minute. Was this a mistake?"
+                        );
+                        alertTriggered.set(true);
                     }
                 })
                 .addOnFailureListener(e -> Log.e(TAG, "Error checking unusually large drink entries", e));
@@ -677,6 +724,11 @@ public class DashboardFragment extends Fragment {
                                     if (bac > unusuallyHighBACThreshold) {
                                         String message = "Your BAC is EXTREMELY high. Please measure your BAC again to confirm the reading.";
                                         Log.d(TAG, "Unusually High BAC Detected: " + message);
+                                        showAlert(
+                                                "Unusually High BAC Detected",
+                                                message
+                                        );
+
                                     }
 
                                     // Check for rapid BAC change within the 10-minute window
@@ -688,6 +740,11 @@ public class DashboardFragment extends Fragment {
                                         if (bacDifference >= spikeThreshold) {
                                             String message = "Your BAC has increased by " + bacDifference + " in the past 10 minutes. Please check again to make sure.";
                                             Log.d(TAG, "Rapid BAC Change Detected: " + message);
+
+                                            showAlert(
+                                                    "Rapid BAC Change Detected",
+                                                    message
+                                            );
                                         }
                                     }
 
@@ -711,6 +768,134 @@ public class DashboardFragment extends Fragment {
         calendar.set(Calendar.SECOND, 0);
         calendar.set(Calendar.MILLISECOND, 0);
         return calendar.getTimeInMillis();
+    }
+
+    private final Map<String, Long> alertCooldowns = new HashMap<>();
+    private static final long ALERT_COOLDOWN_PERIOD = 5 * 60 * 1000; // 5 minutes
+    private boolean bacCheckEnabled = false; // Flag to enable BAC checks
+
+
+    private void showAlertWithUndo(String title, String message) {
+        if (!canShowDrinkAlert(title)) return; // Check cooldown
+
+
+        // Create dialog with custom theme
+        AlertDialog dialog = new AlertDialog.Builder(requireContext(), R.style.RedBorderAlertDialog)
+                .setTitle(title)
+                .setMessage(message)
+                .setPositiveButton("OK", (d, which) -> Log.d(TAG, "OK clicked"))
+                .setNegativeButton("UNDO", (d, which) -> Log.d(TAG, "Undo clicked"))
+                .create();
+
+        playNotificationSound();
+
+        // Show before styling buttons
+        dialog.show();
+
+        // Customize buttons
+        int darkRed = ContextCompat.getColor(requireContext(), android.R.color.holo_red_dark);
+        Button positiveButton = dialog.getButton(AlertDialog.BUTTON_POSITIVE);
+        Button negativeButton = dialog.getButton(AlertDialog.BUTTON_NEGATIVE);
+
+        if (positiveButton != null) {
+            positiveButton.setTextColor(darkRed);
+            positiveButton.setTextSize(TypedValue.COMPLEX_UNIT_SP, 18);
+        }
+
+        if (negativeButton != null) {
+            negativeButton.setTextColor(darkRed);
+            negativeButton.setTextSize(TypedValue.COMPLEX_UNIT_SP, 18);
+        }
+
+        // Make title and message larger
+        TextView titleView = dialog.findViewById(android.R.id.title);
+        TextView messageView = dialog.findViewById(android.R.id.message);
+
+        if (titleView != null) {
+            titleView.setTextSize(TypedValue.COMPLEX_UNIT_SP, 20); // Title size
+            titleView.setTextColor(darkRed); // Optional: make title red too
+        }
+
+        if (messageView != null) {
+            messageView.setTextSize(TypedValue.COMPLEX_UNIT_SP, 18); // Message size
+        }
+    }
+
+    private boolean canShowDrinkAlert(String title) {
+        long currentTime = System.currentTimeMillis();
+        Long lastShownTime = alertCooldowns.get(title);
+
+        if (lastShownTime == null || (currentTime - lastShownTime) > ALERT_COOLDOWN_PERIOD) {
+            return true; // Show alert if not shown before or cooldown expired
+        }
+
+        Log.d(TAG, "Alert '" + title + "' is still in cooldown.");
+        return false;
+    }
+
+    private boolean canShowBACAlert(String title) {
+        if (bacCheckEnabled) {
+            return true; // Show alert if new bac logged
+        }
+
+        Log.d(TAG, "Alert '" + title + "' is still in cooldown.");
+        return false;
+    }
+    private void showAlert(String title, String message) {
+        if (!canShowBACAlert(title)) return; // Check cooldown
+
+        // Create dialog with the same custom theme
+        AlertDialog dialog = new AlertDialog.Builder(requireContext(), R.style.RedBorderAlertDialog)
+                .setTitle(title)
+                .setMessage(message)
+                .setPositiveButton("OK", (d, which) -> Log.d(TAG, "OK clicked"))
+                .create();
+
+        // Play the same notification sound
+        playNotificationSound();
+
+        // Show before styling
+        dialog.show();
+
+        // Customize button (same style as Undo version)
+        int darkRed = ContextCompat.getColor(requireContext(), android.R.color.holo_red_dark);
+        Button positiveButton = dialog.getButton(AlertDialog.BUTTON_POSITIVE);
+
+        if (positiveButton != null) {
+            positiveButton.setTextColor(darkRed);
+            positiveButton.setTextSize(TypedValue.COMPLEX_UNIT_SP, 18); // Same 18sp size
+        }
+
+        // Identical title/message styling
+        TextView titleView = dialog.findViewById(android.R.id.title);
+        TextView messageView = dialog.findViewById(android.R.id.message);
+
+        if (titleView != null) {
+            titleView.setTextSize(TypedValue.COMPLEX_UNIT_SP, 20); // Same 20sp title
+            titleView.setTextColor(darkRed); // Same red title
+        }
+
+        if (messageView != null) {
+            messageView.setTextSize(TypedValue.COMPLEX_UNIT_SP, 18); // Same 18sp message
+        }
+
+        bacCheckEnabled = false;
+    }
+
+//    private void playNotificationSound() {
+//        try {
+//            MediaPlayer mediaPlayer = MediaPlayer.create(requireContext(), R.raw.alert2);
+//            mediaPlayer.setOnCompletionListener(MediaPlayer::release);
+//            mediaPlayer.start();
+//        } catch (Exception e) {
+//            Log.e(TAG, "Error playing sound", e);
+//        }
+//    }
+
+    private void playNotificationSound() {
+        RingtoneManager.getRingtone(requireContext(),
+                        RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION))
+                .play();
     }
 
 }
