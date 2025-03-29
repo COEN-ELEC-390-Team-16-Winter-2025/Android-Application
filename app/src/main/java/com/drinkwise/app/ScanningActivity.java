@@ -31,6 +31,9 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.UUID;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
 
 import com.google.firebase.Timestamp;
 import com.google.firebase.auth.FirebaseUser;
@@ -39,6 +42,7 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.Query;
+import com.google.firebase.firestore.FieldPath;
 
 
 import android.view.View;
@@ -441,29 +445,44 @@ public class ScanningActivity extends AppCompatActivity {
     }
 
     private void startSafetyMonitor() {
+        Log.d("SafetyMonitor", "startSafetyMonitor() called");
         db.collection("users")
                 .document(userId)
                 .collection("BacEntry")
-                .orderBy("Timestamp", Query.Direction.DESCENDING)
+                .orderBy(FieldPath.documentId(), Query.Direction.DESCENDING)
                 .limit(1)
                 .addSnapshotListener((snapshots, e) -> {
                     if (e != null || snapshots == null || snapshots.isEmpty()) return;
 
                     DocumentSnapshot doc = snapshots.getDocuments().get(0);
+
+                    String documentId = doc.getId(); // e.g. "2025-03-27 21:30:25"
                     String currentStatus = doc.getString("Status");
+                    Double bac = doc.getDouble("bacValue");
 
-                    long now = System.currentTimeMillis();
+                    long now = System.currentTimeMillis(); // fallback
 
+                    // Parse datetime from the document ID
+                    try {
+                        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault());
+                        Date parsedDate = format.parse(documentId);
+                        if (parsedDate != null) {
+                            now = parsedDate.getTime();
+                        }
+                    } catch (Exception ex) {
+                        Log.e("SafetyMonitor", "Failed to parse document ID as datetime: " + documentId, ex);
+                    }
+
+                    // Detect status change
                     if (lastStatus != null && !lastStatus.equals(currentStatus)) {
                         long duration = (now - lastStatusTime) / 1000;
                         Log.d("SafetyMonitor", "Status changed: " + lastStatus + " → " + currentStatus +
                                 " after " + duration + "s");
 
-                        // 🔔 ALERT: You can do something here!
-                        // E.g., show a toast, vibrate, or store an alert
+                        // 💡 Trigger an alert, show a toast, etc.
                     }
 
-                    // Check for Danger duration
+                    // Detect 3 consecutive Danger readings
                     if ("Danger".equals(currentStatus)) {
                         dangerCount++;
                         if (dangerCount >= 3) {
@@ -475,8 +494,14 @@ public class ScanningActivity extends AppCompatActivity {
 
                     lastStatus = currentStatus;
                     lastStatusTime = now;
+
+                    if (bac != null) {
+                        Log.d("SafetyMonitor", "Latest BAC value: " + bac);
+                    }
                 });
     }
+
+
 
 
 
