@@ -12,7 +12,7 @@
         android:layout_height="wrap_content"
         android:orientation="vertical"
         android:padding="16dp"
-        android:paddingBottom="32dp"
+        android:paddingBottom="64dp"
         android:layout_marginTop="?attr/actionBarSize">
 
         <!-- Header -->
@@ -262,7 +262,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:fontFamily="@font/asul"
-                        android:text="A: If your BAC is high, the safest thing to do is stay where you are and avoid driving or making risky decisions. You can quickly get help by tapping the Quick Help button in the dashboard and alerting an emergency contact."
+                        android:text="A: If your BAC is high, the safest thing to do is stay where you are and avoid driving or making risky decisions. You can quickly get help by tapping the Quick Help button in the dashboard and alerting an emergency contact.\n"
                         android:textColor="@color/deep_red"
                         android:textSize="16sp" />
 
@@ -370,7 +370,9 @@
                         android:textColor="@color/deep_red"
                         android:textSize="16sp"
                         android:autoLink="phone|web"
-                        android:linksClickable="true"/>
+                        android:linksClickable="true"
+                        android:singleLine="false"
+                        android:inputType="textMultiLine"/>
                 </LinearLayout>
             </FrameLayout>
         </androidx.cardview.widget.CardView>
@@ -416,7 +418,10 @@
                 </LinearLayout>
             </FrameLayout>
         </androidx.cardview.widget.CardView>
-
+        <!-- Padding at the end -->
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="64dp" />
     </LinearLayout>
 </ScrollView>
 
