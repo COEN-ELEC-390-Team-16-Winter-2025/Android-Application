@@ -17,6 +17,7 @@ import android.widget.Toast;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
+import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
@@ -76,10 +77,6 @@ public class SettingsActivity extends AppCompatActivity {
     protected SettingsAdapter settingsAdapter;
     protected Switch notifications_switch, alerts_switch, reminders_switch;
 
-
-    // switch to enable/disable reminders
-    private Switch switchReminders;
-
     //Database related variables
     private FirebaseFirestore db;
     private String userId;
@@ -91,6 +88,14 @@ public class SettingsActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_settings);
+
+        ActionBar actionBar = getSupportActionBar();
+        if (actionBar != null) {
+            actionBar.setDisplayShowCustomEnabled(true);
+            actionBar.setCustomView(R.layout.custom_actionbar_title);
+            TextView title = actionBar.getCustomView().findViewById(R.id.action_bar_title);
+            title.setText("Settings");
+        }
 
         launchGallery = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result ->{
             if(result.getResultCode() == RESULT_OK && result.getData() != null){
@@ -288,7 +293,7 @@ public class SettingsActivity extends AppCompatActivity {
 
         // Load and handle the reminders toggle
         loadReminderPreference();
-        switchReminders.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+        reminders_switch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 saveReminderPreference(isChecked);
@@ -326,17 +331,17 @@ public class SettingsActivity extends AppCompatActivity {
             }
         }));
 
-        //Updates firestore preferences when reminders switch is changed
-        reminders_switch.setOnCheckedChangeListener(((buttonView, isChecked) -> {
-            if(isChecked){
-                reminders = true;
-                storePreferences(notifications, alerts, reminders);
-            }
-            else{
-                reminders = false;
-                storePreferences(notifications, alerts, reminders);
-            }
-        }));
+//        //Updates firestore preferences when reminders switch is changed
+//        reminders_switch.setOnCheckedChangeListener(((buttonView, isChecked) -> {
+//            if(isChecked){
+//                reminders = true;
+//                storePreferences(notifications, alerts, reminders);
+//            }
+//            else{
+//                reminders = false;
+//                storePreferences(notifications, alerts, reminders);
+//            }
+//        }));
 
     }
 
@@ -604,8 +609,6 @@ public class SettingsActivity extends AppCompatActivity {
         emergency_contact_email = findViewById(R.id.emergency_contact_email);
         emergency_contact_relationship = findViewById(R.id.emergency_contact_relationship);
         save_emergency_contact = findViewById(R.id.save_emergency_contact);
-        switchReminders = findViewById(R.id.switch_enable_reminders);
-  
         settings_recycler_view = findViewById(R.id.emergency_contact_recycler_view);
 
         //Change Password related UI components
@@ -639,7 +642,7 @@ public class SettingsActivity extends AppCompatActivity {
     private void loadReminderPreference() {
         SharedPreferences prefs = getSharedPreferences("AppPrefs", MODE_PRIVATE);
         boolean remindersEnabled = prefs.getBoolean("remindersEnabled", true);
-        switchReminders.setChecked(remindersEnabled);
+        reminders_switch.setChecked(remindersEnabled);
         Log.d("ReminderTesting", "Reminders have been enabled.");
     }
 
