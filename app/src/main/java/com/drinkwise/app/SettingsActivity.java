@@ -283,10 +283,10 @@ public class SettingsActivity extends AppCompatActivity {
 
             store_emergency_contact(contact_name, contact_phone_no, contact_email, contact_relationship);
 
-            emergency_contact_name.setText("");
-            emergency_contact_phone_no.setText("");
-            emergency_contact_email.setText("");
-            emergency_contact_relationship.setText("");
+            emergency_contact_name.setText(" ");
+            emergency_contact_phone_no.setText(" ");
+            emergency_contact_email.setText(" ");
+            emergency_contact_relationship.setText(" ");
 
             emergency_contact_layout.setVisibility(TextView.GONE);
         });

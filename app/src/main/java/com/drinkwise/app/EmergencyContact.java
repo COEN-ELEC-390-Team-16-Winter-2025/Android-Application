@@ -10,10 +10,10 @@ public class EmergencyContact {
     private String relationship;
 
     public EmergencyContact(String name, String phone_no, String email, String relationship) {
-        this.name = name;
-        this.phone_no = phone_no;
-        this.email = email;
-        this.relationship = relationship;
+        this.name = " " + name;
+        this.phone_no = " " + phone_no;
+        this.email = " " + email;
+        this.relationship = " " + relationship;
     }
 
     public String getName() {
