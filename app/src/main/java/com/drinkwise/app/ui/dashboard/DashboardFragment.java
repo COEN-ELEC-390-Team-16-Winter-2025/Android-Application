@@ -526,13 +526,16 @@ public class DashboardFragment extends Fragment {
         caloriesTextView.setText("Total Calories: " + totalCalories + " kcal");
     }
 
+    int drinkCount;
     private void logDrinkToFirestore(String drinkType, int calories, double BACContribution) {
 
         // Get current user
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
-
-        if (user != null) {
-            String userId = user.getUid();
+        if (user == null) {
+            Log.e("RecTesting", "User ID is null, cannot create reminder.");
+            return;
+        }
+        String userId = user.getUid();  // Retrieve the user ID from the current user
 
             // Get current timestamp
             Timestamp timestamp = new Timestamp(new Date());
@@ -568,13 +571,13 @@ public class DashboardFragment extends Fragment {
                                 .collection("manual_drink_logs")
                                 .add(drinkEntry)
                                 .addOnSuccessListener(documentReference -> {
-                                    Log.d("Firestore", "Drink logged for user: " + userId);
+                                    Log.d("RecTesting", "Drink logged for user: " + userId);
 
                                     //Generate a recommendation after a drink is logged
                                     db.collection("users").document(userId)
                                             .collection("manual_drink_logs")
                                             .get().addOnSuccessListener(drinkSnapshots -> {
-                                                int drinkCount = drinkSnapshots.size(); //Fetch total drinks logged
+                                                drinkCount = drinkSnapshots.size(); //Fetch total drinks logged
                                                 //create recommendation
                                                 Recommendation recommendation = new Recommendation(drinkCount, interval[0], Timestamp.now());
                                                 //Store the recommendation
@@ -582,15 +585,12 @@ public class DashboardFragment extends Fragment {
                                                 //Show the recommendation pop-up
                                                 showRecommendationDialog(drinkCount, recommendation.getMessage());
                                             })
-                                            .addOnFailureListener(e -> Log.e("Firestore", "Error fetching drink logs", e));
+                                            .addOnFailureListener(e -> Log.e("RecTesting", "Error fetching drink logs", e));
 
                                 })
                                 .addOnFailureListener(e ->
-                                        Log.e("Firestore", "Error adding drink log", e));
+                                        Log.e("RecTesting", "Error adding drink log", e));
                     });
-        } else {
-            Log.e("Firestore", "User not logged in, cannot save drink log");
-        }
     }
 
     private void removeDrinkFromFirestore(String drinkType){
@@ -623,30 +623,37 @@ public class DashboardFragment extends Fragment {
     public void storeRecommendation(Recommendation recommendation) {
         db = FirebaseFirestore.getInstance();
 
-        Map<String,Object> recommendationMap = new HashMap<>();
+        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+        if (user == null) {
+            Log.e("RecTesting", "User is not authenticated");
+            return;
+        }
+        String userId = user.getUid();  // Use the current user's UID
+
+        // Create the map with the Recommendation data
+        Map<String, Object> recommendationMap = new HashMap<>();
         recommendationMap.put("DrinkCount", recommendation.getDrinkCount());
         recommendationMap.put("Message", recommendation.getMessage());
         recommendationMap.put("Timestamp", Timestamp.now());
         recommendationMap.put("Resolved", recommendation.isResolved());
 
-        String userId = getCurrentUserId();
-        DocumentReference documentReference = db.collection("users")
+        // Log the information for debugging
+        Log.d("RecTesting", "Drink Count: " + recommendation.getDrinkCount());
+        Log.d("RecTesting", "Recommendation Message: " + recommendation.getMessage());
+
+        // Add a new document to the 'Recommendations' collection for the user
+        db.collection("users")
                 .document(userId)
                 .collection("Recommendations")
-                .document(recommendation.getDate() + " " + recommendation.getTime());
-
-        documentReference.get().addOnSuccessListener(documentSnapshot -> {
-            if (documentSnapshot.exists()) {
-                documentReference.update(recommendationMap);
-                Log.d("Firestore", "Recommendation entry updated successfully");
-            } else {
-                documentReference.set(recommendationMap);
-                Log.d("Firestore", "Recommendation entry saved successfully");
-            }
-        }).addOnFailureListener(e -> {
-            Log.e("Firestore", "Error: "+e);
-        });
+                .add(recommendationMap)  // Adds a new document with a generated ID
+                .addOnSuccessListener(documentReference -> {
+                    Log.d("RecTesting", "Recommendation saved successfully with ID: " + documentReference.getId());
+                })
+                .addOnFailureListener(e -> {
+                    Log.e("RecTesting", "Error saving recommendation: " + e);
+                });
     }
+
 
 
 

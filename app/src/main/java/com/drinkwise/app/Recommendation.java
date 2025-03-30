@@ -43,20 +43,20 @@ public class Recommendation {
         } else if(drinkCount == 10) {
             this.message = "Feeling confused? Dizzy? Want to vomit? Consider getting assistance and some rest";
         } else if(drinkCount > 10 ) {
-            this.message = "";
+            this.message = "You're still awake? Inconceivable.";
         } else {
-            this.message = "";
+            this.message = "Default";
         }
 
         //Binge-drinking checks
         //2 drinks in 1 hour
-        if(drinkCount >= 2 && interval < 3600000) {
-            this.message = "You had two drinks in 1 hour, remember to pace yourself to make your drinking session more enjoyable";
-        }
-        //4 drinks in 2 hour
-        if(drinkCount >= 4 && interval < 7200000) {
-            this.message = "Feeling dizzy and nauseous? Hydrate yourself and try some breathing exercises to refocus!";
-        }
+//        if(drinkCount >= 2 && interval < 3600000) {
+//            this.message = "You had two drinks in 1 hour, remember to pace yourself to make your drinking session more enjoyable";
+//        }
+//        //4 drinks in 2 hour
+//        if(drinkCount >= 4 && interval < 7200000) {
+//            this.message = "Feeling dizzy and nauseous? Hydrate yourself and try some breathing exercises to refocus!";
+//        }
 
 
         //
