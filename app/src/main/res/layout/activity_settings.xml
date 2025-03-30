@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ScrollView
     xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-
         android:orientation="vertical"
         android:background="@drawable/settings_linear_layout_2">
 
@@ -40,16 +40,12 @@
             android:paddingLeft="10dp"
             android:layout_marginTop="20dp"
             android:orientation="horizontal">
-
-
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Profile Information"
                 android:textSize="25dp"
                 android:layout_weight="1"/>
-
-
             <TextView
                 android:id="@+id/edit_profile_information"
                 android:layout_width="wrap_content"
@@ -59,8 +55,6 @@
                 android:clickable="true"
                 android:gravity="end"
                 android:layout_marginRight="10dp"/>
-
-
         </LinearLayout>
 
         <LinearLayout
@@ -69,51 +63,39 @@
             android:orientation="vertical"
             android:paddingLeft="10dp"
             android:background="@drawable/settings_linear_layout">
-
-
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                >
-
+                android:orientation="horizontal">
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Name: "
                     android:textSize="18dp"/>
-
                 <EditText
                     android:id="@+id/name_edit_text"
                     android:layout_width="300dp"
                     android:layout_height="wrap_content"
                     android:paddingLeft="10dp"
                     android:enabled="false"/>
-
             </LinearLayout>
-            
-
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
                 android:layout_marginBottom="10dp">
-
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Birthday"
                     android:textSize="18dp"/>
-
                 <EditText
                     android:id="@+id/birthday_edit_text"
                     android:layout_width="300dp"
                     android:layout_height="wrap_content"
                     android:paddingLeft="10dp"
                     android:enabled="false"/>
-
             </LinearLayout>
-
             <Button
                 android:id="@+id/save_profile_information"
                 android:layout_width="match_parent"
@@ -121,22 +103,20 @@
                 android:text="Save"
                 android:backgroundTint="@color/black"
                 android:visibility="gone"/>
-
         </LinearLayout>
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:paddingLeft="10dp"
-            android:layout_marginTop="25dp">
-
+            android:layout_marginTop="25dp"
+            android:orientation="horizontal">
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:text="Physical Information"
                 android:textSize="25dp"/>
-
             <TextView
                 android:id="@+id/edit_physical_information"
                 android:layout_width="wrap_content"
@@ -146,81 +126,91 @@
                 android:clickable="true"
                 android:gravity="end"
                 android:layout_marginRight="10dp"/>
-"
         </LinearLayout>
-
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:paddingLeft="10dp"
-        android:background="@drawable/settings_linear_layout">
-
-    <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal">
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Height"
-                android:textSize="18dp"/>
-
-            <EditText
-                android:id="@+id/height_edit_text"
-                android:layout_width="300dp"
-                android:layout_height="wrap_content"
-                android:paddingLeft="10dp"
-                android:enabled="false"/>
-
-        </LinearLayout>
-
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal">
+            android:orientation="vertical"
+            android:paddingLeft="10dp"
+            android:background="@drawable/settings_linear_layout">
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Height"
+                    android:textSize="18dp"/>
+                <EditText
+                    android:id="@+id/height_edit_text"
+                    android:layout_width="300dp"
+                    android:layout_height="wrap_content"
+                    android:paddingLeft="10dp"
+                    android:enabled="false"/>
+            </LinearLayout>
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Weight"
+                    android:textSize="18dp"/>
+                <EditText
+                    android:id="@+id/weight_edit_text"
+                    android:layout_width="300dp"
+                    android:layout_height="wrap_content"
+                    android:paddingLeft="10dp"
+                    android:enabled="false"/>
+            </LinearLayout>
+            <Button
+                android:id="@+id/save_physical_information"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Save"
+                android:backgroundTint="@color/black"
+                android:visibility="gone"/>
+        </LinearLayout>
 
+        <!-- Reminders Toggle Section -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:paddingLeft="10dp"
+            android:layout_marginTop="25dp"
+            tools:ignore="RtlHardcoded,RtlSymmetry">
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Weight"
-                android:textSize="18dp"/>
-
-            <EditText
-                android:id="@+id/weight_edit_text"
-                android:layout_width="300dp"
+                android:text="Reminders"
+                android:textSize="25dp"
+                android:layout_weight="1"
+                tools:ignore="HardcodedText,InefficientWeight,SpUsage" />
+            <Switch
+                android:id="@+id/switch_enable_reminders"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:paddingLeft="10dp"
-                android:enabled="false"/>
-
+                android:text="Enable Reminders"
+                tools:ignore="HardcodedText,UseSwitchCompatOrMaterialXml" />
         </LinearLayout>
-
-        <Button
-            android:id="@+id/save_physical_information"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Save"
-            android:backgroundTint="@color/black"
-            android:visibility="gone"/>
-
-    </LinearLayout>
-
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:paddingLeft="10dp"
-            android:layout_marginTop="25dp">
-
+            android:layout_marginTop="25dp"
+            android:orientation="horizontal"
+            tools:ignore="RtlHardcoded,RtlSymmetry">
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:text="Emergency Contact"
                 android:textSize="25dp" />
-
             <TextView
                 android:id="@+id/add_emergency_contact"
                 android:layout_width="wrap_content"
@@ -230,7 +220,6 @@
                 android:clickable="true"
                 android:gravity="end"
                 android:layout_marginEnd="10dp"/>
-
         </LinearLayout>
 
         <LinearLayout
@@ -240,116 +229,86 @@
             android:orientation="vertical"
             android:visibility="gone"
             android:background="@drawable/settings_linear_layout">
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal">
-
-            <ImageView
-                android:id="@+id/emergency_contact_profile_picture"
-                android:layout_width="40dp"
-                android:layout_height="40dp"
-                android:src="@drawable/baseline_account_circle_24"
-                android:contentDescription="Emergency Contact Profile Picture"
-                android:layout_gravity="center_vertical"
-                android:layout_margin="10dp"/>
-
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="vertical">
-
+                android:orientation="horizontal">
+                <ImageView
+                    android:id="@+id/emergency_contact_profile_picture"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:src="@drawable/baseline_account_circle_24"
+                    android:contentDescription="Emergency Contact Profile Picture"
+                    android:layout_gravity="center_vertical"
+                    android:layout_margin="10dp"/>
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="horizontal">
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Name: "
-                        android:textSize="18dp"/>
-
-                    <EditText
-                        android:id="@+id/emergency_contact_name"
+                    android:orientation="vertical">
+                    <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        />
-
-                </LinearLayout>
-
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal">
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Phone #:"
-                        android:textSize="18dp"/>
-
-                    <EditText
-                        android:id="@+id/emergency_contact_phone_no"
+                        android:orientation="horizontal">
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Name: "
+                            android:textSize="18dp"/>
+                        <EditText
+                            android:id="@+id/emergency_contact_name"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"/>
+                    </LinearLayout>
+                    <LinearLayout
                         android:layout_width="match_parent"
-                        android:layout_height="wrap_content"/>
-
-                </LinearLayout>
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal">
-
-                    <TextView
-                        android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Email:"
-                        android:textSize="18dp"/>
-
-                    <EditText
-                        android:id="@+id/emergency_contact_email"
+                        android:orientation="horizontal">
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Phone #:"
+                            android:textSize="18dp"/>
+                        <EditText
+                            android:id="@+id/emergency_contact_phone_no"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"/>
+                    </LinearLayout>
+                    <LinearLayout
                         android:layout_width="match_parent"
-                        android:layout_height="wrap_content"/>
-
-                </LinearLayout>
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal">
-
-                    <TextView
-                        android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Relationship:"
-                        android:textSize="18dp"/>
-
-                    <EditText
-                        android:id="@+id/emergency_contact_relationship"
+                        android:orientation="horizontal">
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Email:"
+                            android:textSize="18dp"/>
+                        <EditText
+                            android:id="@+id/emergency_contact_email"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"/>
+                    </LinearLayout>
+                    <LinearLayout
                         android:layout_width="match_parent"
-                        android:layout_height="wrap_content"/>
-
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal">
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Relationship:"
+                            android:textSize="18dp"/>
+                        <EditText
+                            android:id="@+id/emergency_contact_relationship"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"/>
+                    </LinearLayout>
                 </LinearLayout>
-
             </LinearLayout>
-
-        </LinearLayout>
-
             <Button
                 android:id="@+id/save_emergency_contact"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="Save"
                 android:backgroundTint="@color/black"/>
-
         </LinearLayout>
-
-
-
-
     </LinearLayout>
-
 </ScrollView>
