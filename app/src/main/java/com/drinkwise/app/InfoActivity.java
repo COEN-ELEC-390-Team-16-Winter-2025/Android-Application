@@ -32,15 +32,20 @@ public class InfoActivity extends AppCompatActivity {
 
             infoButton.setVisibility(View.GONE);
             profileButton.setVisibility(View.GONE);
+
+            // Set the custom back arrow on the right side without disturbing the title's position
+            actionBar.setDisplayHomeAsUpEnabled(true);  // Enable the back button
+            actionBar.setHomeAsUpIndicator(R.drawable.arrow_info);  // Set your custom dark brown arrow
         }
     }
 
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        // If the home (back) button is clicked, finish the activity
         if (item.getItemId() == android.R.id.home) {
             finish();
             return true;
         }
-        return super.onOptionsItemSelected(item);
+        return super.onOptionsItemSelected(item);  // Pass the event to the superclass for default behavior
     }
 }

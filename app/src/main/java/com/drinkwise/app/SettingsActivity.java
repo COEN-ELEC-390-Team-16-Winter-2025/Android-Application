@@ -8,6 +8,7 @@ import android.provider.MediaStore;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.CompoundButton;
@@ -21,6 +22,7 @@ import android.widget.Toast;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
@@ -103,6 +105,10 @@ public class SettingsActivity extends AppCompatActivity {
             // Hide the Info and Profile icons
             ImageButton infoButton = actionBar.getCustomView().findViewById(R.id.info_button);
             ImageButton profileButton = actionBar.getCustomView().findViewById(R.id.profile_icon);
+
+            // Set the custom back arrow on the right side without disturbing the title's position
+            actionBar.setDisplayHomeAsUpEnabled(true);  // Enable the back button
+            actionBar.setHomeAsUpIndicator(R.drawable.arrow_settings);  // Set your custom dark brown arrow
 
             infoButton.setVisibility(View.GONE);
             profileButton.setVisibility(View.GONE);
@@ -354,6 +360,17 @@ public class SettingsActivity extends AppCompatActivity {
 //            }
 //        }));
 
+    }
+
+
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        // If the home (back) button is clicked, finish the activity
+        if (item.getItemId() == android.R.id.home) {
+            finish();
+            return true;
+        }
+        return super.onOptionsItemSelected(item);  // Pass the event to the superclass for default behavior
     }
 
     //This function fetches all the user's information from firestore and stores them in their respective variables
