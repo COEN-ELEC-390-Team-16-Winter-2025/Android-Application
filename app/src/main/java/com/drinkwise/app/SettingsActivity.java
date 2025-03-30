@@ -53,6 +53,7 @@ public class SettingsActivity extends AppCompatActivity {
 
     protected Button save_emergency_contact, save_profile_information, save_physical_information;
 
+
     // switch to enable/disable reminders
     private Switch switchReminders;
 
@@ -217,20 +218,26 @@ public class SettingsActivity extends AppCompatActivity {
                 saveReminderPreference(isChecked);
                 if (!isChecked) {
                     // Stop reminders if disabled
+                    Log.d("ReminderTesting", "Reminders have been disabled.");
                     ReminderManager.getInstance(SettingsActivity.this).stopReminders();
+                } else {
+                    Log.d("ReminderTesting", "Reminders have been enabled.");
                 }
             }
         });
     }
 
+    //This function fetches all the user's information from firestore and stores them in their respective variables
     public void fetchUserInformation(onDataFetched callback){
         db = FirebaseFirestore.getInstance();
         FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
+
         if (currentUser != null) {
             userId = currentUser.getUid();
         } else {
             Log.e(TAG, "No logged-in user found.");
         }
+
         db.collection("users")
                 .document(userId)
                 .collection("profile")
@@ -245,11 +252,13 @@ public class SettingsActivity extends AppCompatActivity {
                         birthday = documentSnapshot.getString("birthday");
 
                         Log.d(TAG, "Username: "+userName + " userHeight: "+userHeight+" userWeight: "+userWeight+" isMetric: "+ isMetric+ " birthday: "+birthday);
+
+                        //ensures data is completely fetched before proceeding
                         callback.Fetched(userName, userHeight, userWeight, isMetric, birthday);
-                    }
-                    else{
+                    } else {
                         Log.d(TAG, "No data found for this user");
                     }
+
                 })
                 .addOnFailureListener(e -> {
                     Log.d(TAG, "Error fetching data");
@@ -257,17 +266,20 @@ public class SettingsActivity extends AppCompatActivity {
     }
 
     public void store_emergency_contact(String name, String phone_no, String email, String relationship){
+
         Map<String,Object> emergency_contact = new HashMap<>();
         emergency_contact.put("Name", name);
         emergency_contact.put("Phone_no", phone_no);
         emergency_contact.put("Email", email);
         emergency_contact.put("Relationship", relationship);
         FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
+
         if (currentUser != null) {
             userId = currentUser.getUid();
         } else {
             Log.e(TAG, "No logged-in user found.");
         }
+
         db.collection("users")
                 .document(userId)
                 .collection("profile")
@@ -281,12 +293,15 @@ public class SettingsActivity extends AppCompatActivity {
     }
 
     public void store_user_information(String name, String birthday, long height, long weight, boolean isMetric){
+
         Map<String,Object> profile_information = new HashMap<>();
+
         profile_information.put("name", name);
         profile_information.put("birthday", birthday);
         profile_information.put("height", height);
         profile_information.put("weight", weight);
         profile_information.put("isMetric", isMetric);
+
         db.collection("users")
                 .document(userId)
                 .collection("profile")
@@ -298,17 +313,25 @@ public class SettingsActivity extends AppCompatActivity {
                         Log.d("Firestore", "Failed to store data "+ e));
     }
 
+    //This function initializes all ui components
     public void setupUI(){
+        //Username and profile picture UI components
         username_textview = findViewById(R.id.account_name);
         profile_picture = findViewById(R.id.profile_picture);
+
+        //Profile information UI components
         name_edit_text = findViewById(R.id.name_edit_text);
         birthday_edit_text = findViewById(R.id.birthday_edit_text);
         edit_profile_information = findViewById(R.id.edit_profile_information);
         save_profile_information = findViewById(R.id.save_profile_information);
+
+        //Physical information UI components
         height_edit_text = findViewById(R.id.height_edit_text);
         weight_edit_text = findViewById(R.id.weight_edit_text);
         edit_physical_information = findViewById(R.id.edit_physical_information);
         save_physical_information = findViewById(R.id.save_physical_information);
+
+        //Emergency contacts UI components
         add_emergency_contact = findViewById(R.id.add_emergency_contact);
         emergency_contact_layout = findViewById(R.id.emergency_contact_layout);
         emergency_contact_profile_picture = findViewById(R.id.emergency_contact_profile_picture);
@@ -324,6 +347,7 @@ public class SettingsActivity extends AppCompatActivity {
         SharedPreferences prefs = getSharedPreferences("AppPrefs", MODE_PRIVATE);
         boolean remindersEnabled = prefs.getBoolean("remindersEnabled", true);
         switchReminders.setChecked(remindersEnabled);
+        Log.d("ReminderTesting", "Reminders have been enabled.");
     }
 
     private void saveReminderPreference(boolean enabled) {

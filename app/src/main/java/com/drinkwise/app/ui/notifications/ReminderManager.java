@@ -30,6 +30,9 @@ public class ReminderManager {
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
         if(user != null) {
             this.userId = user.getUid();
+            Log.e("ReminderTesting", "User found:" + userId);
+        } else {
+            Log.e("ReminderTesting", "No logged-in user found.");
         }
         this.handler = new Handler(Looper.getMainLooper());
     }
@@ -147,7 +150,13 @@ public class ReminderManager {
     }
     // Creates and writes a reminder to Firestore
     private void createReminder(String reminderType, String message, int intervalMinutes, String escalation) {
-        if (userId == null) return;
+        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+        if (user == null) {
+            Log.e("ReminderTesting", "User ID is null, cannot create reminder.");
+            return;
+        }
+
+
         ReminderItem reminder = new ReminderItem();
         reminder.setReminderType(reminderType);
         reminder.setMessage(message);
@@ -156,11 +165,20 @@ public class ReminderManager {
         reminder.setStatus("active");
         reminder.setEscalation(escalation);
 
-        Log.d(TAG, "Creating reminder: " + reminderType + " (escalation: " + escalation + ")");
+        Log.d("ReminderTesting", "Creating reminder: " + reminderType + " (escalation: " + escalation + ")");
 
-        db.collection("reminders").add(reminder)
-                .addOnSuccessListener(documentReference -> Log.d(TAG, "Reminder created: " + reminderType))
-                .addOnFailureListener(e -> Log.e(TAG, "Error creating reminder", e));
+        db.collection("users")
+                .document(userId)
+                .collection("reminders")
+                .add(reminder)
+                .addOnSuccessListener(documentReference -> {
+                    Log.d(TAG, "Reminder created: " + reminderType);
+                    Log.d("ReminderTesting", "Reminder document ID: " + documentReference.getId());
+                })
+                .addOnFailureListener(e -> {
+                    Log.e(TAG, "Error creating reminder", e);
+                    Log.e("ReminderTesting", "Failure details: ", e);
+                });
     }
 
     // Checks if no drinks logged for X minutes

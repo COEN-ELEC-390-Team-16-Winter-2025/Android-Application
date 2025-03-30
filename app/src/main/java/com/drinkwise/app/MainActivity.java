@@ -4,6 +4,7 @@ import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -130,11 +131,17 @@ public class MainActivity extends AppCompatActivity {
         }
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
         if (user != null) {
+            Log.d("ReminderTesting", "User is logged in: " + user.getUid());
+
             // Start reminders if enabled
             ReminderManager reminderManager = ReminderManager.getInstance(this);
             reminderManager.startReminders();
+            Log.d("ReminderTesting", "Reminders started successfully");
+
             ReminderListener reminderListener = new ReminderListener(this);
             reminderListener.startListening(user.getUid());
+        } else {
+            Log.d("ReminderTesting", "No user logged in. Reminders not started.");
         }
     }
 
