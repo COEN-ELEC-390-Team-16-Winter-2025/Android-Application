@@ -570,13 +570,16 @@ public class DashboardFragment extends Fragment {
                                     Log.d("Firestore", "Drink logged for user: " + userId);
 
                                     //Generate a recommendation after a drink is logged
-                                    //Fetch total drinks logged
                                     db.collection("users").document(userId)
                                             .collection("manual_drink_logs")
                                             .get().addOnSuccessListener(drinkSnapshots -> {
-                                                int drinkCount = drinkSnapshots.size();
+                                                int drinkCount = drinkSnapshots.size(); //Fetch total drinks logged
+                                                //create recommendation
                                                 Recommendation recommendation = new Recommendation(drinkCount, interval[0], Timestamp.now());
+                                                //Store the recommendation
                                                 storeRecommendation(recommendation);
+                                                //Show the recommendation pop-up
+                                                showRecommendationDialog(drinkCount, recommendation.getMessage());
                                             })
                                             .addOnFailureListener(e -> Log.e("Firestore", "Error fetching drink logs", e));
 
@@ -965,6 +968,46 @@ public class DashboardFragment extends Fragment {
         RingtoneManager.getRingtone(requireContext(),
                         RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION))
                 .play();
+    }
+
+
+    //Recommendation pop-up
+    private void showRecommendationDialog(int drinkCount, String message) {
+        String title = "Healthy tips!";
+        if(!canShowDrinkAlert(title)) return;
+
+        AlertDialog dialog = new AlertDialog.Builder(requireContext(), R.style.RecommendationDialog)
+                .setTitle(title)
+                .setMessage(message)
+                .setPositiveButton("OK", (d, which) -> Log.d(TAG, "OK clicked"))
+                .create();
+
+        //DOES IT NEED A SOUND? playNotificationSound();
+
+        dialog.show();
+
+        //Buttons
+        int greenColor =  ContextCompat.getColor(requireContext(),android.R.color.holo_green_dark);
+        Button positiveButton = dialog.getButton(AlertDialog.BUTTON_POSITIVE);
+
+        if(positiveButton != null) {
+            positiveButton.setTextColor(greenColor);
+            positiveButton.setTextSize(TypedValue.COMPLEX_UNIT_SP, 18);
+        }
+
+        //Title and message
+        TextView titleView = dialog.findViewById(android.R.id.title);
+        TextView messageView = dialog.findViewById(android.R.id.message);
+
+        if(titleView != null) {
+            titleView.setTextSize(TypedValue.COMPLEX_UNIT_SP, 20);
+            titleView.setTextColor(greenColor);
+        }
+
+        if(messageView != null) {
+            messageView.setTextSize(TypedValue.COMPLEX_UNIT_SP, 18);
+        }
+
     }
 
 }

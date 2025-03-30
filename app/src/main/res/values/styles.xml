@@ -35,4 +35,23 @@
     <style name="AlertDialogMessageText" parent="MaterialAlertDialog.MaterialComponents.Body.Text">
         <item name="android:textSize">18sp</item>
     </style>
+
+
+    <style name="RecommendationDialog" parent="ThemeOverlay.MaterialComponents.Dialog.Alert">
+        <item name="android:windowBackground">@drawable/recommendation_dialog</item><!-- Text appearance for title and message -->
+
+        <item name="materialAlertDialogTitleTextStyle">@style/RecommendationDialogTitleText</item>
+        <item name="materialAlertDialogBodyTextStyle">@style/RecommendationDialogMessageText</item>
+    </style>
+
+    <style name="RecommendationDialogTitleText" parent="MaterialAlertDialog.MaterialComponents.Title.Text">
+        <item name="android:textSize">20sp</item>
+        <item name="android:textColor">@color/green</item>
+    </style>
+
+    <style name="RecommendationDialogMessageText" parent="MaterialAlertDialog.MaterialComponents.Body.Text">
+        <item name="android:textSize">18sp</item>
+    </style>
+
+    holo_green_dark
 </resources>
