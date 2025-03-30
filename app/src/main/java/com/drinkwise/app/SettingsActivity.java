@@ -24,11 +24,15 @@ import androidx.core.view.WindowInsetsCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.google.firebase.auth.AuthCredential;
+import com.google.firebase.auth.EmailAuthProvider;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
+
+import org.w3c.dom.Text;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -50,18 +54,22 @@ public class SettingsActivity extends AppCompatActivity {
     private String contact_email;
     private String contact_relationship;
 
+    //Change password related variables
+    String currentPass, newPass, confirmPass;
+
     //Preferences related variables
     private boolean notifications, alerts, reminders;
 
     //UI Components
-    protected TextView username_textview,  edit_profile_information, edit_physical_information, add_emergency_contact;
+    protected TextView username_textview,  edit_profile_information, edit_physical_information, add_emergency_contact, edit_password;
     protected ImageView profile_picture, emergency_contact_profile_picture;
     private ActivityResultLauncher<Intent> launchGallery;
     protected EditText name_edit_text, height_edit_text, weight_edit_text, birthday_edit_text,
-    emergency_contact_name, emergency_contact_phone_no, emergency_contact_email, emergency_contact_relationship;
+    emergency_contact_name, emergency_contact_phone_no, emergency_contact_email, emergency_contact_relationship,
+    current_password, new_password, confirm_password;
     LinearLayout emergency_contact_layout;
 
-    protected Button save_emergency_contact, save_profile_information, save_physical_information;
+    protected Button save_emergency_contact, save_profile_information, save_physical_information, save_password;
     protected RecyclerView settings_recycler_view;
     protected SettingsAdapter settingsAdapter;
     protected Switch notifications_switch, alerts_switch, reminders_switch;
@@ -69,6 +77,8 @@ public class SettingsActivity extends AppCompatActivity {
     //Database related variables
     private FirebaseFirestore db;
     private String userId;
+    private FirebaseAuth auth;
+    private FirebaseUser user;
     private ArrayList<EmergencyContact> emergency_contacts = new ArrayList<>();
 
 
@@ -163,6 +173,44 @@ public class SettingsActivity extends AppCompatActivity {
 
                 height_edit_text.setEnabled(false);
                 weight_edit_text.setEnabled(false);
+            }
+        });
+
+        edit_password.setOnClickListener(v -> {
+            if(save_password.getVisibility() == TextView.GONE){
+                save_password.setVisibility(TextView.VISIBLE);
+                current_password.setEnabled(true);
+                new_password.setEnabled(true);
+                confirm_password.setEnabled(true);
+            }
+            else{
+                save_password.setVisibility(TextView.GONE);
+                current_password.setEnabled(false);
+                new_password.setEnabled(false);
+                confirm_password.setEnabled(false);
+                current_password.setText("");
+                new_password.setText("");
+                confirm_password.setText("");
+            }
+        });
+
+        save_password.setOnClickListener(v -> {
+            //TODO: save the password to firebase upon clicking save
+            currentPass = current_password.getText().toString();
+            newPass = new_password.getText().toString();
+            confirmPass = confirm_password.getText().toString();
+
+            if(currentPass.isEmpty() || newPass.isEmpty() || confirmPass.isEmpty()){
+                Toast.makeText(this, "Please, fill out all fields!", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            if(!newPass.equals(confirmPass)){
+                Toast.makeText(this, "Passwords do not match!", Toast.LENGTH_SHORT).show();
+                return;
+            }
+            else{
+                reauthenticateUserAndChangePass(currentPass, newPass);
             }
         });
 
@@ -401,6 +449,42 @@ public class SettingsActivity extends AppCompatActivity {
                 }));
     }
 
+    public void reauthenticateUserAndChangePass(String currentP, String newP){
+
+        auth = FirebaseAuth.getInstance();
+        user = auth.getCurrentUser();
+
+        String email = user.getEmail();
+
+        AuthCredential credentials = EmailAuthProvider.getCredential(email, currentP);
+
+        user.reauthenticate(credentials)
+                .addOnCompleteListener(task -> {
+                    if(task.isSuccessful()){
+                        Log.d(TAG, "User authenticated successfully");
+                        changePassword(newP);
+                    }
+                    if(!task.isSuccessful()){
+                        Log.d(TAG, "Incorrect Password");
+                        Toast.makeText(this, "Your current password is incorrect", Toast.LENGTH_SHORT).show();
+                    }
+                });
+    }
+
+    public void changePassword(String newP){
+        user.updatePassword(newP)
+                .addOnCompleteListener(task -> {
+                    if(task.isSuccessful()){
+                        Toast.makeText(this, "Password changed successfully!", Toast.LENGTH_SHORT).show();
+                    }
+                    else{
+                        Log.d(TAG, "Error changing password");
+                    }
+                });
+
+
+    }
+
     //This function stores an emergency contact specified in firestore database
     public void store_emergency_contact(String name, String phone_no, String email, String relationship){
 
@@ -509,6 +593,14 @@ public class SettingsActivity extends AppCompatActivity {
         emergency_contact_relationship = findViewById(R.id.emergency_contact_relationship);
         save_emergency_contact = findViewById(R.id.save_emergency_contact);
         settings_recycler_view = findViewById(R.id.emergency_contact_recycler_view);
+
+        //Change Password related UI components
+        edit_password = findViewById(R.id.edit_password);
+        current_password = findViewById(R.id.current_password);
+        new_password = findViewById(R.id.new_password);
+        confirm_password = findViewById(R.id.confirm_password);
+        save_password = findViewById(R.id.save_password);
+
 
         //Preferences UI components
         notifications_switch = findViewById(R.id.notifications_switch);
