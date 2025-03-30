@@ -198,16 +198,6 @@
                 tools:ignore="HardcodedText,UseSwitchCompatOrMaterialXml" />
         </LinearLayout>
 
-        <Button
-            android:id="@+id/save_physical_information"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Save"
-            android:backgroundTint="@color/black"
-            android:visibility="gone"/>
-
-    </LinearLayout>
-
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"

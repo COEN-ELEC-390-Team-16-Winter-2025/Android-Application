@@ -622,8 +622,8 @@ public class SettingsActivity extends AppCompatActivity {
         reminders_switch = findViewById(R.id.reminders_switch);
     }
 
-    public void setupRecyclerView(){
-        fetchEmergencyContacts(emergency_contacts ->{
+    public void setupRecyclerView() {
+        fetchEmergencyContacts(emergency_contacts -> {
             Log.d(TAG, "Data Fetched Successfully");
 
             LinearLayoutManager linearLayoutManager = new LinearLayoutManager(this);
@@ -634,6 +634,7 @@ public class SettingsActivity extends AppCompatActivity {
             settingsAdapter.notifyDataSetChanged();
 
         });
+    }
 
     private void loadReminderPreference() {
         SharedPreferences prefs = getSharedPreferences("AppPrefs", MODE_PRIVATE);
