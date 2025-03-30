@@ -124,7 +124,7 @@ public class DashboardFragment extends Fragment {
 
         View rootView = inflater.inflate(R.layout.fragment_dashboard, container, false);
 
-        // Quick Help button (TEMP!!!!)
+        // Quick Help button
         Button quickHelpButton = rootView.findViewById(R.id.quickHelpButton);
 
         quickHelpButton.setOnClickListener(new View.OnClickListener() {

@@ -59,11 +59,11 @@ public class MainActivity extends AppCompatActivity {
         setupNavigation();
     }
 
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.profile_menu, menu);
-        return true;
-    }
+//    @Override
+//    public boolean onCreateOptionsMenu(Menu menu) {
+//        getMenuInflater().inflate(R.menu.profile_menu, menu);
+//        return true;
+//    }
 
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
@@ -82,23 +82,34 @@ public class MainActivity extends AppCompatActivity {
             LayoutInflater inflater = LayoutInflater.from(this);
             View customView = inflater.inflate(R.layout.custom_actionbar_title, null);
 
+            // Set the title
             actionBarTitle = customView.findViewById(R.id.action_bar_title);
-            ImageButton infoButton = customView.findViewById(R.id.info_button);
+            actionBarTitle.setText(title);
 
-            // Show or hide the info button based on the parameter
+            // Info button logic
+            ImageButton infoButton = customView.findViewById(R.id.info_button);
             if (showInfoButton) {
                 infoButton.setVisibility(View.VISIBLE);
                 infoButton.setOnClickListener(v -> {
-                    // Launch InfoActivity when info button is clicked
-                    startActivity(new Intent(MainActivity.this, InfoActivity.class));
+                    // Launch InfoActivity with reverse sliding animation
+                    Intent intent = new Intent(MainActivity.this, InfoActivity.class);
+                    startActivity(intent);
+                    overridePendingTransition(R.anim.slide_in_left, R.anim.slide_out_right);
                 });
             } else {
                 infoButton.setVisibility(View.GONE);
             }
 
-            // Set the initial title
-            actionBarTitle.setText(title);
+            // Profile button logic
+            ImageButton profileButton = customView.findViewById(R.id.profile_icon);
+            profileButton.setOnClickListener(v -> {
+                // Launch SettingsActivity with the default sliding animation
+                Intent intent = new Intent(MainActivity.this, SettingsActivity.class);
+                startActivity(intent);
+                overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
+            });
 
+            // Apply the custom action bar layout
             ActionBar.LayoutParams layoutParams = new ActionBar.LayoutParams(
                     ActionBar.LayoutParams.MATCH_PARENT,
                     ActionBar.LayoutParams.WRAP_CONTENT,
@@ -106,6 +117,7 @@ public class MainActivity extends AppCompatActivity {
             );
             actionBar.setCustomView(customView, layoutParams);
 
+            // Update action bar title based on navigation destination
             NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment_activity_main);
             navController.addOnDestinationChangedListener((controller, destination, arguments) -> {
                 int destId = destination.getId();
@@ -121,6 +133,7 @@ public class MainActivity extends AppCompatActivity {
             });
         }
     }
+
 
     private void setupNavigation() {
         BottomNavigationView navView = findViewById(R.id.nav_view);

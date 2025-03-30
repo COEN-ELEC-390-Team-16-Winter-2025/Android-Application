@@ -4,16 +4,6 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content">
 
-    <ImageButton
-        android:id="@+id/info_button"
-        android:layout_width="48dp"
-        android:layout_height="48dp"
-        android:layout_alignParentStart="true"
-        android:layout_centerVertical="true"
-        android:background="?attr/selectableItemBackgroundBorderless"
-        android:contentDescription="Information"
-        android:src="@drawable/baseline_info_24" />
-
     <TextView
         android:id="@+id/action_bar_title"
         android:layout_width="wrap_content"
@@ -25,4 +15,26 @@
         android:textAllCaps="true"
         android:textSize="22sp"
         android:textStyle="bold"/>
+
+    <!-- Info Icon on the Left -->
+    <ImageButton
+        android:id="@+id/info_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:src="@drawable/baseline_info_24"
+        android:contentDescription="Info"
+        android:layout_alignParentStart="true"
+        android:layout_centerVertical="true"
+        android:layout_marginStart="16dp" />
+
+    <!-- Profile Icon on the Right -->
+    <ImageButton
+        android:id="@+id/profile_icon"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:src="@drawable/baseline_account_circle_24"
+        android:contentDescription="Profile"
+        android:layout_alignParentEnd="true"
+        android:layout_centerVertical="true"
+        android:layout_marginEnd="16dp" />
 </RelativeLayout>

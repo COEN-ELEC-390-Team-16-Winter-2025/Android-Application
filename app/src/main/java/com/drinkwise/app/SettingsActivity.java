@@ -92,13 +92,20 @@ public class SettingsActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_settings);
-        //setupCustomActionBar(false, "Settings");
+
         ActionBar actionBar = getSupportActionBar();
         if (actionBar != null) {
             actionBar.setDisplayShowCustomEnabled(true);
             actionBar.setCustomView(R.layout.custom_actionbar_title);
             TextView title = actionBar.getCustomView().findViewById(R.id.action_bar_title);
             title.setText("Settings");
+
+            // Hide the Info and Profile icons
+            ImageButton infoButton = actionBar.getCustomView().findViewById(R.id.info_button);
+            ImageButton profileButton = actionBar.getCustomView().findViewById(R.id.profile_icon);
+
+            infoButton.setVisibility(View.GONE);
+            profileButton.setVisibility(View.GONE);
         }
 
         launchGallery = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result ->{

@@ -2,6 +2,9 @@ package com.drinkwise.app;
 
 import android.os.Bundle;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.ImageButton;
+import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBar;
@@ -18,8 +21,17 @@ public class InfoActivity extends AppCompatActivity {
         // Set up action bar
         ActionBar actionBar = getSupportActionBar();
         if (actionBar != null) {
-            actionBar.setDisplayHomeAsUpEnabled(true);
-            actionBar.setTitle("Information Page");
+            actionBar.setDisplayShowCustomEnabled(true);
+            actionBar.setCustomView(R.layout.custom_actionbar_title);
+            TextView title = actionBar.getCustomView().findViewById(R.id.action_bar_title);
+            title.setText("Information Page");
+
+            // Hide the Info and Profile icons
+            ImageButton infoButton = actionBar.getCustomView().findViewById(R.id.info_button);
+            ImageButton profileButton = actionBar.getCustomView().findViewById(R.id.profile_icon);
+
+            infoButton.setVisibility(View.GONE);
+            profileButton.setVisibility(View.GONE);
         }
     }
 

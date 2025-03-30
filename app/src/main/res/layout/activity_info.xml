@@ -21,7 +21,7 @@
             android:layout_marginTop="16dp"
             android:layout_marginBottom="16dp"
             android:fontFamily="@font/artifika"
-            android:text="Information Page"
+            android:text="Welcome!"
             android:textAlignment="center"
             android:textColor="@color/van_dyke"
             android:textSize="24sp"
