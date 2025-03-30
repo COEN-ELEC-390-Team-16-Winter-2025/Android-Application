@@ -440,6 +440,9 @@ public class ScanningActivity extends AppCompatActivity {
         });
     }
 
+
+
+
     private void startSafetyMonitor() {
         db.collection("users")
                 .document(userId)

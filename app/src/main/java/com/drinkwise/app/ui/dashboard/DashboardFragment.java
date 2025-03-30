@@ -23,12 +23,14 @@ import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 
 import com.drinkwise.app.R;
+import com.drinkwise.app.Recommendation;
 import com.drinkwise.app.ScanningActivity;
 import com.drinkwise.app.ui.home.drinklog.BACCalculator;
 import com.drinkwise.app.ui.home.drinklog.DrinkLogItem;
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.Timestamp;
@@ -535,22 +537,54 @@ public class DashboardFragment extends Fragment {
             // Get current timestamp
             Timestamp timestamp = new Timestamp(new Date());
 
-
-            // Store drink log as a HashMap
-            Map<String, Object> drinkEntry = new HashMap<>();
-            drinkEntry.put("drinkType", drinkType);
-            drinkEntry.put("calories", calories);
-            drinkEntry.put("timestamp", timestamp);
-            drinkEntry.put("BAC_Contribution", BACContribution);
-
-            // Save to Firestore inside "users/{userId}/manual_drink_logs"
+            /*Before saving the new drink, query the last logged drink (if any), we will use it's timestamp
+                to calculate time interval between last drink and new drink to determine if binge-drinking */
             db.collection("users").document(userId)
                     .collection("manual_drink_logs")
-                    .add(drinkEntry)
-                    .addOnSuccessListener(documentReference ->
-                            Log.d("Firestore", "Drink logged for user: " + userId))
-                    .addOnFailureListener(e ->
-                            Log.e("Firestore", "Error adding drink log", e));
+                    .orderBy("timestamp", Query.Direction.DESCENDING)
+                    .limit(1)
+                    .get()
+                    .addOnSuccessListener(queryDocumentSnapshots -> {
+                        final int[] interval = {0}; //default is 0 if first log
+                        if (!queryDocumentSnapshots.isEmpty()) {
+                            DocumentSnapshot lastDrink = queryDocumentSnapshots.getDocuments().get(0);
+                            Timestamp lastTimestamp = lastDrink.getTimestamp("timestamp");
+
+                            if (lastTimestamp != null) {
+                                long milliseconds = timestamp.toDate().getTime() - lastTimestamp.toDate().getTime();
+                                interval[0] = (int) (milliseconds / 1000);  //Convert to seconds
+                            }
+                        }
+
+                        // Store drink log as a HashMap
+                        Map<String, Object> drinkEntry = new HashMap<>();
+                        drinkEntry.put("drinkType", drinkType);
+                        drinkEntry.put("calories", calories);
+                        drinkEntry.put("timestamp", timestamp);
+                        drinkEntry.put("BAC_Contribution", BACContribution);
+
+                        // Save to Firestore inside "users/{userId}/manual_drink_logs"
+                        db.collection("users").document(userId)
+                                .collection("manual_drink_logs")
+                                .add(drinkEntry)
+                                .addOnSuccessListener(documentReference -> {
+                                    Log.d("Firestore", "Drink logged for user: " + userId);
+
+                                    //Generate a recommendation after a drink is logged
+                                    //Fetch total drinks logged
+                                    db.collection("users").document(userId)
+                                            .collection("manual_drink_logs")
+                                            .get().addOnSuccessListener(drinkSnapshots -> {
+                                                int drinkCount = drinkSnapshots.size();
+                                                Recommendation recommendation = new Recommendation(drinkCount, interval[0], Timestamp.now());
+                                                storeRecommendation(recommendation);
+                                            })
+                                            .addOnFailureListener(e -> Log.e("Firestore", "Error fetching drink logs", e));
+
+                                })
+                                .addOnFailureListener(e ->
+                                        Log.e("Firestore", "Error adding drink log", e));
+                    });
         } else {
             Log.e("Firestore", "User not logged in, cannot save drink log");
         }
@@ -581,6 +615,41 @@ public class DashboardFragment extends Fragment {
                     });
         }
     }
+
+    //Store the recommendation to firestore
+    public void storeRecommendation(Recommendation recommendation) {
+        db = FirebaseFirestore.getInstance();
+
+        Map<String,Object> recommendationMap = new HashMap<>();
+        recommendationMap.put("DrinkCount", recommendation.getDrinkCount());
+        recommendationMap.put("Message", recommendation.getMessage());
+        recommendationMap.put("Timestamp", Timestamp.now());
+        recommendationMap.put("Resolved", recommendation.isResolved());
+
+        String userId = getCurrentUserId();
+        DocumentReference documentReference = db.collection("users")
+                .document(userId)
+                .collection("Recommendations")
+                .document(recommendation.getDate() + " " + recommendation.getTime());
+
+        documentReference.get().addOnSuccessListener(documentSnapshot -> {
+            if (documentSnapshot.exists()) {
+                documentReference.update(recommendationMap);
+                Log.d("Firestore", "Recommendation entry updated successfully");
+            } else {
+                documentReference.set(recommendationMap);
+                Log.d("Firestore", "Recommendation entry saved successfully");
+            }
+        }).addOnFailureListener(e -> {
+            Log.e("Firestore", "Error: "+e);
+        });
+    }
+
+
+
+
+
+
 
     //TODO: test if it is annoying that the drinks are checked everytime bac updated
     private String getCurrentUserId() {
