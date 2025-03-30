@@ -4,13 +4,13 @@ public class DrinkLogItem {
     private String drinkType;
     private Long calories;
     private String time;
-    private double bacContribution;
+    private Double bacContribution;
 
-    public DrinkLogItem(String drinkType, Long calories, String time ) {
+    public DrinkLogItem(String drinkType, Long calories, String time, Double bacContribution ) {
         this.drinkType = drinkType;
         this.calories = calories;
         this.time = time;
-        //this.bacContribution = bacContribution;
+        this.bacContribution = bacContribution;
     }
 
     public String getDrinkType() {
@@ -25,7 +25,7 @@ public class DrinkLogItem {
         return time;
     }
 
-    public double getBacContribution() {
+    public Double getBacContribution() {
         return bacContribution;
     }
 }

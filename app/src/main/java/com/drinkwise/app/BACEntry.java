@@ -20,13 +20,19 @@ public class BACEntry {
         this.bac = bac;
         this.timestamp = timestamp;
 
-        if(bac <= 0.02){
+        //based on new states defined in s3!! Doc elaborates on them.
+        if (bac <= 0.02) {
             this.status = "Safe";
-        } else if (bac > 0.02 && bac < 0.08) {
-            this.status = "Caution";
-        }
-        else{
-            this.status = "Over Limit";
+        } else if (bac > 0.02 && bac <= 0.05) {
+            this.status = "Mild Impairment";
+        } else if (bac > 0.05 && bac <= 0.08) {
+            this.status = "Impaired";
+        } else if (bac > 0.08 && bac <= 0.15) {
+            this.status = "High Impairment";
+        } else if (bac > 0.15 && bac <= 0.30) {
+            this.status = "Severe Impairment";
+        } else {
+            this.status = "Medical Emergency";
         }
 
         Date temp = timestamp.toDate();
@@ -37,6 +43,7 @@ public class BACEntry {
         date = date1.format(temp);
         time = time1.format(temp);
         }
+
 
     public String getDate() {
         return date;

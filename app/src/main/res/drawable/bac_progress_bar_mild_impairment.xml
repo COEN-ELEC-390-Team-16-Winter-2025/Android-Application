@@ -1,16 +1,18 @@
 <layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Background -->
     <item android:id="@android:id/background">
         <shape>
             <corners android:radius="4dp" />
-            <solid android:color="#D3D3D3" />
+            <solid android:color="#D3D3D3" /> <!-- Light gray background -->
         </shape>
     </item>
 
+    <!-- Progress (Yellow for Mild Impairment) -->
     <item android:id="@android:id/progress">
         <clip>
             <shape>
                 <corners android:radius="4dp" />
-                <solid android:color="@color/bac_caution" /> <!-- Yellow/Orange -->
+                <solid android:color="@color/bac_mild_impairment" /> <!-- Yellow for Mild Impairment -->
             </shape>
         </clip>
     </item>

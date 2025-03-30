@@ -22,6 +22,7 @@ import android.widget.ListView;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 
+import java.sql.Time;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -37,6 +38,8 @@ import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.firestore.Query;
+
 
 import android.view.View;
 import android.widget.ProgressBar;
@@ -65,6 +68,7 @@ public class ScanningActivity extends AppCompatActivity {
     String[] loading = {".", "..", "..."};
 
     private double bac_readings = 0.0;
+    private ArrayList<Double> readings = new ArrayList<>();
     private int count = 0;
     private static int entry_count = 0;
     private ArrayAdapter<String> bacListAdapter;
@@ -78,6 +82,11 @@ public class ScanningActivity extends AppCompatActivity {
     private int userHeight = 170;  // Default height (cm)
     private int userWeight = 70;   // Default weight (kg)
     private String userId = "USER_ID_HERE"; // Replace with actual user ID
+
+    private String lastStatus = null;
+    private long lastStatusTime = System.currentTimeMillis();
+    private int dangerCount = 0;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -103,6 +112,7 @@ public class ScanningActivity extends AppCompatActivity {
         if (currentUser != null) {
             userId = currentUser.getUid();
             fetchUserData();
+            startSafetyMonitor();
         } else {
             Log.e(TAG, "No logged-in user found.");
         }
@@ -232,6 +242,7 @@ public class ScanningActivity extends AppCompatActivity {
                     Log.d("Scanning Activity", "Adjusted BAC: "+adjustedBAC);
                     if(count < 20){
                         bac_readings += bacValue;
+                        readings.add(bacValue);
                         count++;
                     }
 
@@ -249,9 +260,12 @@ public class ScanningActivity extends AppCompatActivity {
                     Log.d(TAG, "Full BAC Result: " + completeMessage); // Log full message
                 }
                 if(count == 20 && MODE_LATEST_BAC){
-                    bac_readings  /= count;
+                    bac_readings  = readings.stream().max(Double::compare).get();
                     BACEntry bacEntry = new BACEntry(bac_readings, Timestamp.now());
+                    Alert alert = new Alert(bac_readings, Timestamp.now());
                     storeBAC(bacEntry);
+                    storeAlert(alert);
+                    count++;
                     String bac_reading = String.format(Locale.US,"%.2f", bac_readings);
                     Intent intent = new Intent(ScanningActivity.this, MainActivity.class);
                     intent.putExtra("latest_bac_entry", bac_reading);
@@ -386,15 +400,87 @@ public class ScanningActivity extends AppCompatActivity {
        documentReference.get().addOnSuccessListener(documentSnapshot -> {
            if(documentSnapshot.exists()){
                documentReference.update(bac);
-               Toast.makeText(this, "Bac Entry Saved", Toast.LENGTH_SHORT).show();
+               Log.d("Firestore", "Bac entry updated successfully");
            }else{
                documentReference.set(bac);
-               Toast.makeText(this, "Bac Entry Saved", Toast.LENGTH_SHORT).show();
+               Log.d("Firestore", "Bac entry updated successfully");
            }
        }).addOnFailureListener(e -> {
            Log.e("Firestore", "Error: "+e);
        });
     }
+
+    //Stores an alert object in firestore database when called. Updates if field already exists or sets if not
+    public void storeAlert(Alert alert){
+        db = FirebaseFirestore.getInstance();
+
+        Map<String,Object> alertMap = new HashMap<>();
+        alertMap.put("bacValue", alert.getBac());
+        alertMap.put("SafetyLevel", alert.getSafetyLevel());
+        alertMap.put("Message", alert.getMessage());
+        alertMap.put("EscalationLevel", alert.getEscalationLevel());
+        alertMap.put("Resolved", alert.isResolved());
+        alertMap.put("Timestamp", Timestamp.now());
+
+        DocumentReference documentReference = db.collection("users")
+                .document(userId)
+                .collection("Alerts")
+                .document(alert.getDate() + " " + alert.getTime());
+
+        documentReference.get().addOnSuccessListener(documentSnapshot -> {
+            if(documentSnapshot.exists()){
+                documentReference.update(alertMap);
+                Log.d("Firestore", "Alert entry updated successfully");
+            }else{
+                documentReference.set(alertMap);
+                Log.d("Firestore", "Alert entry saved successfully");
+            }
+        }).addOnFailureListener(e -> {
+            Log.e("Firestore", "Error: "+e);
+        });
+    }
+
+
+
+
+    private void startSafetyMonitor() {
+        db.collection("users")
+                .document(userId)
+                .collection("BacEntry")
+                .orderBy("Timestamp", Query.Direction.DESCENDING)
+                .limit(1)
+                .addSnapshotListener((snapshots, e) -> {
+                    if (e != null || snapshots == null || snapshots.isEmpty()) return;
+
+                    DocumentSnapshot doc = snapshots.getDocuments().get(0);
+                    String currentStatus = doc.getString("Status");
+
+                    long now = System.currentTimeMillis();
+
+                    if (lastStatus != null && !lastStatus.equals(currentStatus)) {
+                        long duration = (now - lastStatusTime) / 1000;
+                        Log.d("SafetyMonitor", "Status changed: " + lastStatus + " → " + currentStatus +
+                                " after " + duration + "s");
+
+                        // 🔔 ALERT: You can do something here!
+                        // E.g., show a toast, vibrate, or store an alert
+                    }
+
+                    // Check for Danger duration
+                    if ("Danger".equals(currentStatus)) {
+                        dangerCount++;
+                        if (dangerCount >= 3) {
+                            Log.w("SafetyMonitor", "⚠️ 3 consecutive Danger readings!");
+                        }
+                    } else {
+                        dangerCount = 0;
+                    }
+
+                    lastStatus = currentStatus;
+                    lastStatusTime = now;
+                });
+    }
+
 
 
 
