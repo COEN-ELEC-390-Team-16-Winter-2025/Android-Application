@@ -5,6 +5,8 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageButton;
 import android.widget.TextView;
+import android.text.Html;
+import android.text.method.LinkMovementMethod;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBar;
@@ -36,6 +38,17 @@ public class InfoActivity extends AppCompatActivity {
             // Set the custom back arrow on the right side without disturbing the title's position
             actionBar.setDisplayHomeAsUpEnabled(true);  // Enable the back button
             actionBar.setHomeAsUpIndicator(R.drawable.arrow_info);  // Set your custom dark brown arrow
+
+            // For the Support Resources section
+            TextView supportResourcesText = findViewById(R.id.support_resources_text);
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N) {
+                supportResourcesText.setText(Html.fromHtml(getString(R.string.support_resources), Html.FROM_HTML_MODE_LEGACY));
+            } else {
+                supportResourcesText.setText(Html.fromHtml(getString(R.string.support_resources)));
+            }
+
+// To make links clickable
+            supportResourcesText.setMovementMethod(LinkMovementMethod.getInstance());
         }
     }
 
