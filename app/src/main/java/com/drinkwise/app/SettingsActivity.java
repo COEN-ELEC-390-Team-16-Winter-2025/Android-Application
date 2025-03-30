@@ -20,12 +20,16 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -54,10 +58,13 @@ public class SettingsActivity extends AppCompatActivity {
     LinearLayout emergency_contact_layout;
 
     protected Button save_emergency_contact, save_profile_information, save_physical_information;
+    protected RecyclerView settings_recycler_view;
+    protected SettingsAdapter settingsAdapter;
 
     //Database related variables
     private FirebaseFirestore db;
     private String userId;
+    private ArrayList<EmergencyContact> emergency_contacts = new ArrayList<>();
 
 
 
@@ -90,6 +97,8 @@ public class SettingsActivity extends AppCompatActivity {
             birthday_edit_text.setText(birthday);
 
         });
+
+        setupRecyclerView();
 
         profile_picture.setOnClickListener(v -> {
             Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
@@ -255,6 +264,52 @@ public class SettingsActivity extends AppCompatActivity {
                 });
     }
 
+    public void fetchEmergencyContacts(EmergencyContactsCallback callback){
+
+        db = FirebaseFirestore.getInstance();
+
+        FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
+
+        if (currentUser != null) {
+            userId = currentUser.getUid();
+        } else {
+            Log.e(TAG, "No logged-in user found.");
+        }
+
+        db.collection("users")
+                .document(userId)
+                .collection("profile")
+                .document("Contacts")
+                .collection("Emergency_Contacts")
+                .addSnapshotListener((value, error) -> {
+
+                    if(error != null){
+                        Log.d("Firestore", "Error fetching emergency contacts" + error);
+                    }
+
+                    if(value != null && !value.isEmpty()){
+
+                        emergency_contacts.clear();
+
+                        for(DocumentSnapshot doc : value.getDocuments()){
+                            String name = doc.getString("Name");
+                            String phone_no = doc.getString("Phone_no");
+                            String email = doc.getString("Email");
+                            String relationship = doc.getString("Relationship");
+
+                            emergency_contacts.add(new EmergencyContact(name, phone_no, email, relationship));
+
+                            Log.d(TAG, "Emergency Contact: Name: "+name+" Phone no: "+phone_no+" Email: "+email+" Relationship: "+relationship);
+                            callback.onCallback(emergency_contacts);
+                        }
+                    }
+                    else{
+                        Log.d(TAG, "No Emergency Contacts found");
+                        callback.onCallback(emergency_contacts);
+                    }
+                });
+    }
+
     //This function stores an emergency contact specified in firestore database
     public void store_emergency_contact(String name, String phone_no, String email, String relationship){
 
@@ -333,6 +388,21 @@ public class SettingsActivity extends AppCompatActivity {
         emergency_contact_email = findViewById(R.id.emergency_contact_email);
         emergency_contact_relationship = findViewById(R.id.emergency_contact_relationship);
         save_emergency_contact = findViewById(R.id.save_emergency_contact);
+        settings_recycler_view = findViewById(R.id.emergency_contact_recycler_view);
+    }
+
+    public void setupRecyclerView(){
+        fetchEmergencyContacts(emergency_contacts ->{
+            Log.d(TAG, "Data Fetched Successfully");
+
+            LinearLayoutManager linearLayoutManager = new LinearLayoutManager(this);
+            settingsAdapter = new SettingsAdapter(emergency_contacts);
+
+            settings_recycler_view.setLayoutManager(linearLayoutManager);
+            settings_recycler_view.setAdapter(settingsAdapter);
+            settingsAdapter.notifyDataSetChanged();
+
+        });
 
     }
 
@@ -340,5 +410,9 @@ public class SettingsActivity extends AppCompatActivity {
     //onDataFetched interface. Needed because fetching from firestore is asynchronous and we need to wait for the data to be fetched before proceeding
     public interface onDataFetched{
         void Fetched(String userName, long userHeight, long userWeight, boolean isMetric, String birthday);
+    }
+
+    public interface EmergencyContactsCallback {
+        void onCallback(ArrayList<EmergencyContact> contacts);
     }
 }
