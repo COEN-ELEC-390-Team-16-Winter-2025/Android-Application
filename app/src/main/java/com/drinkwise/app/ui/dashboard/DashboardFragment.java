@@ -42,6 +42,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class DashboardFragment extends Fragment {
@@ -591,6 +592,8 @@ public class DashboardFragment extends Fragment {
 
 
     private static int rapidLoggingCount = 0; // Tracks repeated alerts in a session
+    //for undo funtionality
+    List<String> drinkLogToUndo = new ArrayList<>();
 
     private void checkDrinkLogAndBAC() {
         Log.d(TAG, "Loading BAC history");
@@ -604,6 +607,7 @@ public class DashboardFragment extends Fragment {
 
         // Track if alert for 1 or 2 has already been triggered
         AtomicBoolean alertTriggered = new AtomicBoolean(false);
+
 
         //1. Rapid Drink Logging (soft rec):
         long tenMinutesAgo = System.currentTimeMillis() - (10 * 60 * 1000); // 10 minutes ago
@@ -647,7 +651,6 @@ public class DashboardFragment extends Fragment {
                                     message1
                             );
                         }
-//
 
 
                         // Iterate over the logged drinks and log each timestamp
@@ -656,6 +659,9 @@ public class DashboardFragment extends Fragment {
                             if (drinkTimestamp != null) {
                                 Log.d(TAG, "Timestamp of the logged drink: " + drinkTimestamp.toDate());
                             }
+
+                            //to delete five last logs
+                            drinkLogToUndo.add(document.getId());
                         }
                     }
                 })
@@ -680,6 +686,16 @@ public class DashboardFragment extends Fragment {
                                 "You logged 5 drinks in 1 minute. Was this a mistake?"
                         );
                         alertTriggered.set(true);
+
+                        for (DocumentSnapshot document : queryDocumentSnapshots.getDocuments()) {
+                            Timestamp drinkTimestamp = document.getTimestamp("timestamp");
+                            if (drinkTimestamp != null) {
+                                Log.d(TAG, "Timestamp of the logged drink: " + drinkTimestamp.toDate());
+                            }
+
+                            //to delete five last logs
+                            drinkLogToUndo.add(document.getId());
+                        }
                     }
                 })
                 .addOnFailureListener(e -> Log.e(TAG, "Error checking unusually large drink entries", e));
@@ -783,8 +799,17 @@ public class DashboardFragment extends Fragment {
         AlertDialog dialog = new AlertDialog.Builder(requireContext(), R.style.RedBorderAlertDialog)
                 .setTitle(title)
                 .setMessage(message)
-                .setPositiveButton("OK", (d, which) -> Log.d(TAG, "OK clicked"))
-                .setNegativeButton("UNDO", (d, which) -> Log.d(TAG, "Undo clicked"))
+                .setPositiveButton("OK", (d, which) -> {
+                    Log.d(TAG, "OK clicked");
+                    rapidLoggingCount++;
+                })
+                .setNegativeButton("UNDO", (d, which) -> {
+                    Log.d(TAG, "Undo clicked");
+                    rapidLoggingCount--;
+                    // Undo action: delete the last 5 logs
+                    deleteLogs(drinkLogToUndo);
+
+                })
                 .create();
 
         playNotificationSound();
@@ -820,6 +845,77 @@ public class DashboardFragment extends Fragment {
             messageView.setTextSize(TypedValue.COMPLEX_UNIT_SP, 18); // Message size
         }
     }
+
+    private void deleteLogs(List<String> drinkLogToUndo) {
+       // rapidLoggingCount = 0;
+
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        for (String logId : drinkLogToUndo) {
+            db.collection("users")
+                    .document(getCurrentUserId())
+                    .collection("manual_drink_logs")
+                    .document(logId)
+                    .get()
+                    .addOnSuccessListener(documentSnapshot -> {
+                        // Get the drink type from the log
+                        String drinkType = documentSnapshot.getString("drinkType");
+                        //Long calories = documentSnapshot.getLong("calories");
+
+                        // Decrement the respective drink counter based on the drink type
+                        if (drinkType != null) {
+                            switch (drinkType) {
+                                case "Beer":
+                                    if (beerCounter > 0) beerCounter--;
+                                    updateBeerCount();
+                                    totalCalories -= 150;
+                                    break;
+                                case "Wine":
+                                    if (wineCounter > 0) wineCounter--;
+                                    updateWineCount();
+                                    totalCalories -= 125;
+                                    break;
+                                case "Champagne":
+                                    if (champagneCounter > 0) champagneCounter--;
+                                    updateChampagneCount();
+                                    totalCalories -= 90;
+                                    break;
+                                case "Cocktail":
+                                    if (cocktailCounter > 0) cocktailCounter--;
+                                    updateCocktailCount();
+                                    totalCalories -= 200;
+                                    break;
+                                case "Shot":
+                                    if (shotCounter > 0) shotCounter--;
+                                    updateShotCount();
+                                    totalCalories -= 95;
+                                    break;
+                                case "Sake":
+                                    if (sakeCounter > 0) sakeCounter--;
+                                    updateSakeCount();
+                                    totalCalories -= 250;
+                                    break;
+                                default:
+                                    Log.e(TAG, "Unknown drink type: " + drinkType);
+                            }
+
+                            updateTotalCalories();
+
+                            // Delete the log entry after updating the counter
+                            db.collection("users")
+                                    .document(getCurrentUserId())
+                                    .collection("manual_drink_logs")
+                                    .document(logId)
+                                    .delete()
+                                    .addOnSuccessListener(aVoid -> Log.d(TAG, "Log successfully deleted"))
+                                    .addOnFailureListener(e -> Log.e(TAG, "Error deleting log", e));
+                        }
+                    })
+                    .addOnFailureListener(e -> Log.e(TAG, "Error retrieving drink log", e));
+        }
+    }
+
+
+
 
     private boolean canShowDrinkAlert(String title) {
         long currentTime = System.currentTimeMillis();
