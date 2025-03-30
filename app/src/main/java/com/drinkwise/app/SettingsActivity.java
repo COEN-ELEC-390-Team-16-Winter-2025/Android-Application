@@ -6,9 +6,13 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.util.Log;
+import android.view.Gravity;
+import android.view.LayoutInflater;
+import android.view.View;
 import android.widget.Button;
 import android.widget.CompoundButton;
 import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.Switch;
@@ -88,7 +92,7 @@ public class SettingsActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_settings);
-
+        //setupCustomActionBar(false, "Settings");
         ActionBar actionBar = getSupportActionBar();
         if (actionBar != null) {
             actionBar.setDisplayShowCustomEnabled(true);
@@ -663,5 +667,36 @@ public class SettingsActivity extends AppCompatActivity {
 
     public interface PreferencesCallback {
         void onCallback(boolean notifications, boolean alerts, boolean reminders);
+    }
+
+    //Tried to use this method to hide info button from settings page
+    private void setupCustomActionBar(boolean showInfoButton, String title) {
+        ActionBar actionBar = getSupportActionBar();
+        if (actionBar != null) {
+            actionBar.setDisplayShowCustomEnabled(true);
+            actionBar.setDisplayShowTitleEnabled(false);
+            LayoutInflater inflater = LayoutInflater.from(this);
+            View customView = inflater.inflate(R.layout.custom_actionbar_title, null);
+
+            TextView actionBarTitle = customView.findViewById(R.id.action_bar_title);
+            actionBarTitle.setText(title);
+
+            ImageButton infoButton = customView.findViewById(R.id.info_button);
+            if (showInfoButton) {
+                infoButton.setVisibility(View.VISIBLE);
+                infoButton.setOnClickListener(v -> {
+                    startActivity(new Intent(SettingsActivity.this, InfoActivity.class));
+                });
+            } else {
+                infoButton.setVisibility(View.GONE);
+            }
+
+            ActionBar.LayoutParams layoutParams = new ActionBar.LayoutParams(
+                    ActionBar.LayoutParams.MATCH_PARENT,
+                    ActionBar.LayoutParams.WRAP_CONTENT,
+                    Gravity.CENTER_HORIZONTAL
+            );
+            actionBar.setCustomView(customView, layoutParams);
+        }
     }
 }

@@ -10,6 +10,7 @@ import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.ImageButton;
 import android.widget.TextView;
 
 import com.google.android.material.bottomnavigation.BottomNavigationView;
@@ -54,7 +55,7 @@ public class MainActivity extends AppCompatActivity {
             return;
         }
 
-        setupCustomActionBar();
+        setupCustomActionBar(true, "DrinkWise");
         setupNavigation();
     }
 
@@ -72,21 +73,39 @@ public class MainActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
-    @SuppressLint("SetTextI18n")
-    private void setupCustomActionBar() {
+    @SuppressLint("SetTextI18")
+    private void setupCustomActionBar(boolean showInfoButton, String title) {
         ActionBar actionBar = getSupportActionBar();
         if (actionBar != null) {
             actionBar.setDisplayShowCustomEnabled(true);
             actionBar.setDisplayShowTitleEnabled(false);
             LayoutInflater inflater = LayoutInflater.from(this);
             View customView = inflater.inflate(R.layout.custom_actionbar_title, null);
+
             actionBarTitle = customView.findViewById(R.id.action_bar_title);
+            ImageButton infoButton = customView.findViewById(R.id.info_button);
+
+            // Show or hide the info button based on the parameter
+            if (showInfoButton) {
+                infoButton.setVisibility(View.VISIBLE);
+                infoButton.setOnClickListener(v -> {
+                    // Launch InfoActivity when info button is clicked
+                    startActivity(new Intent(MainActivity.this, InfoActivity.class));
+                });
+            } else {
+                infoButton.setVisibility(View.GONE);
+            }
+
+            // Set the initial title
+            actionBarTitle.setText(title);
+
             ActionBar.LayoutParams layoutParams = new ActionBar.LayoutParams(
                     ActionBar.LayoutParams.MATCH_PARENT,
                     ActionBar.LayoutParams.WRAP_CONTENT,
                     Gravity.CENTER_HORIZONTAL
             );
             actionBar.setCustomView(customView, layoutParams);
+
             NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment_activity_main);
             navController.addOnDestinationChangedListener((controller, destination, arguments) -> {
                 int destId = destination.getId();

@@ -1,19 +1,28 @@
 <!-- res/layout/custom_actionbar_title.xml -->
-<LinearLayout
+<RelativeLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:gravity="center"
-    android:orientation="horizontal">
+    android:layout_height="wrap_content">
+
+    <ImageButton
+        android:id="@+id/info_button"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:layout_alignParentStart="true"
+        android:layout_centerVertical="true"
+        android:background="?attr/selectableItemBackgroundBorderless"
+        android:contentDescription="Information"
+        android:src="@drawable/baseline_info_24" />
 
     <TextView
         android:id="@+id/action_bar_title"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_centerInParent="true"
         android:text="YOUR TITLE"
         android:textColor="@color/van_dyke"
         android:fontFamily="@font/artifika"
         android:textAllCaps="true"
         android:textSize="22sp"
         android:textStyle="bold"/>
-</LinearLayout>
+</RelativeLayout>
