@@ -9,6 +9,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -49,6 +50,9 @@ public class SettingsActivity extends AppCompatActivity {
     private String contact_email;
     private String contact_relationship;
 
+    //Preferences related variables
+    private boolean notifications, alerts, reminders;
+
     //UI Components
     protected TextView username_textview,  edit_profile_information, edit_physical_information, add_emergency_contact;
     protected ImageView profile_picture, emergency_contact_profile_picture;
@@ -60,6 +64,7 @@ public class SettingsActivity extends AppCompatActivity {
     protected Button save_emergency_contact, save_profile_information, save_physical_information;
     protected RecyclerView settings_recycler_view;
     protected SettingsAdapter settingsAdapter;
+    protected Switch notifications_switch, alerts_switch, reminders_switch;
 
     //Database related variables
     private FirebaseFirestore db;
@@ -79,7 +84,10 @@ public class SettingsActivity extends AppCompatActivity {
                 profile_picture.setImageURI(uri);
             }
         });
-        setupUI();
+
+        setupUI(); //Initializes UI components
+
+        //Fetches users information from firestore, edit the corresponding textviews and edit texts
         fetchUserInformation((userName, userHeight, userWeight, isMetric, birthday) -> {
 
             username_textview.setText(userName);
@@ -96,6 +104,13 @@ public class SettingsActivity extends AppCompatActivity {
 
             birthday_edit_text.setText(birthday);
 
+        });
+
+        //Fetches the users preferences and edit the switches accordingly
+        fetchPreferences((notifications, alerts, reminders) -> {
+            notifications_switch.setChecked(notifications);
+            alerts_switch.setChecked(alerts);
+            reminders_switch.setChecked(reminders);
         });
 
         setupRecyclerView();
@@ -220,6 +235,44 @@ public class SettingsActivity extends AppCompatActivity {
             //Setting visibility to gone
             emergency_contact_layout.setVisibility(TextView.GONE);
         });
+
+        //Updates firestore preferences when notification switch is changed
+        notifications_switch.setOnCheckedChangeListener(((buttonView, isChecked) -> {
+            if(isChecked){
+                notifications = true;
+                storePreferences(notifications, alerts, reminders);
+            }
+            else{
+                notifications = false;
+                storePreferences(notifications, alerts, reminders);
+            }
+        }));
+
+        //Updates firestore preferences when alerts switch is changed
+        alerts_switch.setOnCheckedChangeListener(((buttonView, isChecked) -> {
+            if(isChecked){
+                alerts = true;
+                storePreferences(notifications, alerts, reminders);
+            }
+            else{
+                alerts = false;
+                storePreferences(notifications, alerts, reminders);
+            }
+        }));
+
+        //Updates firestore preferences when reminders switch is changed
+        reminders_switch.setOnCheckedChangeListener(((buttonView, isChecked) -> {
+            if(isChecked){
+                reminders = true;
+                storePreferences(notifications, alerts, reminders);
+            }
+            else{
+                reminders = false;
+                storePreferences(notifications, alerts, reminders);
+            }
+        }));
+
+
     }
 
     //This function fetches all the user's information from firestore and stores them in their respective variables
@@ -310,6 +363,44 @@ public class SettingsActivity extends AppCompatActivity {
                 });
     }
 
+    public void fetchPreferences(PreferencesCallback callback){
+
+        db = FirebaseFirestore.getInstance();
+
+        FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
+
+        if (currentUser != null) {
+            userId = currentUser.getUid();
+        } else {
+            Log.e(TAG, "No logged-in user found.");
+        }
+
+        db.collection("users")
+                .document(userId)
+                .collection("profile")
+                .document("Preferences")
+                .addSnapshotListener(((value, error) -> {
+                    if(error != null){
+                        Log.d(TAG, "Error fetching preferences");
+                    }
+
+                    if(value != null && value.exists()){
+                        notifications = value.getBoolean("Notifications");
+                        alerts = value.getBoolean("Alerts");
+                        reminders = value.getBoolean("Reminders");
+
+                        callback.onCallback(notifications, alerts, reminders);
+                    }
+                    else{
+                        notifications = false;
+                        alerts = false;
+                        reminders = false;
+
+                        callback.onCallback(notifications, alerts, reminders);
+                    }
+                }));
+    }
+
     //This function stores an emergency contact specified in firestore database
     public void store_emergency_contact(String name, String phone_no, String email, String relationship){
 
@@ -360,6 +451,35 @@ public class SettingsActivity extends AppCompatActivity {
                         Log.d("Firestore", "Failed to store data "+ e));
     }
 
+    public void storePreferences(boolean notifications, boolean alerts, boolean reminders){
+
+        Map<String, Object> preferences = new HashMap<>();
+
+        preferences.put("Notifications", notifications);
+        preferences.put("Alerts", alerts);
+        preferences.put("Reminders", reminders);
+
+        db = FirebaseFirestore.getInstance();
+
+        FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
+
+        if (currentUser != null) {
+            userId = currentUser.getUid();
+        } else {
+            Log.e(TAG, "No logged-in user found.");
+        }
+
+        db.collection("users")
+                .document(userId)
+                .collection("profile")
+                .document("Preferences")
+                .set(preferences)
+                .addOnSuccessListener(aVoid ->
+                        Log.d(TAG, "Preferences saved."))
+                .addOnFailureListener(e ->
+                        Log.d("Firestore", "Failed to store data "+ e));
+    }
+
     //This function initializes all ui components
     public void setupUI(){
 
@@ -389,6 +509,11 @@ public class SettingsActivity extends AppCompatActivity {
         emergency_contact_relationship = findViewById(R.id.emergency_contact_relationship);
         save_emergency_contact = findViewById(R.id.save_emergency_contact);
         settings_recycler_view = findViewById(R.id.emergency_contact_recycler_view);
+
+        //Preferences UI components
+        notifications_switch = findViewById(R.id.notifications_switch);
+        alerts_switch = findViewById(R.id.alerts_switch);
+        reminders_switch = findViewById(R.id.reminders_switch);
     }
 
     public void setupRecyclerView(){
@@ -412,7 +537,12 @@ public class SettingsActivity extends AppCompatActivity {
         void Fetched(String userName, long userHeight, long userWeight, boolean isMetric, String birthday);
     }
 
+    //Interface used for the callback for fetching of emergency contacts. Fetching is asynchronous so need to wait for the data to be fetched before proceeding
     public interface EmergencyContactsCallback {
         void onCallback(ArrayList<EmergencyContact> contacts);
+    }
+
+    public interface PreferencesCallback {
+        void onCallback(boolean notifications, boolean alerts, boolean reminders);
     }
 }
