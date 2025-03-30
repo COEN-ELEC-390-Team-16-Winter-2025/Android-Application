@@ -23,12 +23,14 @@ import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 
 import com.drinkwise.app.R;
+import com.drinkwise.app.Recommendation;
 import com.drinkwise.app.ScanningActivity;
 import com.drinkwise.app.ui.home.drinklog.BACCalculator;
 import com.drinkwise.app.ui.home.drinklog.DrinkLogItem;
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.Timestamp;
@@ -42,6 +44,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class DashboardFragment extends Fragment {
@@ -534,22 +537,57 @@ public class DashboardFragment extends Fragment {
             // Get current timestamp
             Timestamp timestamp = new Timestamp(new Date());
 
-
-            // Store drink log as a HashMap
-            Map<String, Object> drinkEntry = new HashMap<>();
-            drinkEntry.put("drinkType", drinkType);
-            drinkEntry.put("calories", calories);
-            drinkEntry.put("timestamp", timestamp);
-            drinkEntry.put("BAC_Contribution", BACContribution);
-
-            // Save to Firestore inside "users/{userId}/manual_drink_logs"
+            /*Before saving the new drink, query the last logged drink (if any), we will use it's timestamp
+                to calculate time interval between last drink and new drink to determine if binge-drinking */
             db.collection("users").document(userId)
                     .collection("manual_drink_logs")
-                    .add(drinkEntry)
-                    .addOnSuccessListener(documentReference ->
-                            Log.d("Firestore", "Drink logged for user: " + userId))
-                    .addOnFailureListener(e ->
-                            Log.e("Firestore", "Error adding drink log", e));
+                    .orderBy("timestamp", Query.Direction.DESCENDING)
+                    .limit(1)
+                    .get()
+                    .addOnSuccessListener(queryDocumentSnapshots -> {
+                        final int[] interval = {0}; //default is 0 if first log
+                        if (!queryDocumentSnapshots.isEmpty()) {
+                            DocumentSnapshot lastDrink = queryDocumentSnapshots.getDocuments().get(0);
+                            Timestamp lastTimestamp = lastDrink.getTimestamp("timestamp");
+
+                            if (lastTimestamp != null) {
+                                long milliseconds = timestamp.toDate().getTime() - lastTimestamp.toDate().getTime();
+                                interval[0] = (int) (milliseconds / 1000);  //Convert to seconds
+                            }
+                        }
+
+                        // Store drink log as a HashMap
+                        Map<String, Object> drinkEntry = new HashMap<>();
+                        drinkEntry.put("drinkType", drinkType);
+                        drinkEntry.put("calories", calories);
+                        drinkEntry.put("timestamp", timestamp);
+                        drinkEntry.put("BAC_Contribution", BACContribution);
+
+                        // Save to Firestore inside "users/{userId}/manual_drink_logs"
+                        db.collection("users").document(userId)
+                                .collection("manual_drink_logs")
+                                .add(drinkEntry)
+                                .addOnSuccessListener(documentReference -> {
+                                    Log.d("Firestore", "Drink logged for user: " + userId);
+
+                                    //Generate a recommendation after a drink is logged
+                                    db.collection("users").document(userId)
+                                            .collection("manual_drink_logs")
+                                            .get().addOnSuccessListener(drinkSnapshots -> {
+                                                int drinkCount = drinkSnapshots.size(); //Fetch total drinks logged
+                                                //create recommendation
+                                                Recommendation recommendation = new Recommendation(drinkCount, interval[0], Timestamp.now());
+                                                //Store the recommendation
+                                                storeRecommendation(recommendation);
+                                                //Show the recommendation pop-up
+                                                showRecommendationDialog(drinkCount, recommendation.getMessage());
+                                            })
+                                            .addOnFailureListener(e -> Log.e("Firestore", "Error fetching drink logs", e));
+
+                                })
+                                .addOnFailureListener(e ->
+                                        Log.e("Firestore", "Error adding drink log", e));
+                    });
         } else {
             Log.e("Firestore", "User not logged in, cannot save drink log");
         }
@@ -581,6 +619,41 @@ public class DashboardFragment extends Fragment {
         }
     }
 
+    //Store the recommendation to firestore
+    public void storeRecommendation(Recommendation recommendation) {
+        db = FirebaseFirestore.getInstance();
+
+        Map<String,Object> recommendationMap = new HashMap<>();
+        recommendationMap.put("DrinkCount", recommendation.getDrinkCount());
+        recommendationMap.put("Message", recommendation.getMessage());
+        recommendationMap.put("Timestamp", Timestamp.now());
+        recommendationMap.put("Resolved", recommendation.isResolved());
+
+        String userId = getCurrentUserId();
+        DocumentReference documentReference = db.collection("users")
+                .document(userId)
+                .collection("Recommendations")
+                .document(recommendation.getDate() + " " + recommendation.getTime());
+
+        documentReference.get().addOnSuccessListener(documentSnapshot -> {
+            if (documentSnapshot.exists()) {
+                documentReference.update(recommendationMap);
+                Log.d("Firestore", "Recommendation entry updated successfully");
+            } else {
+                documentReference.set(recommendationMap);
+                Log.d("Firestore", "Recommendation entry saved successfully");
+            }
+        }).addOnFailureListener(e -> {
+            Log.e("Firestore", "Error: "+e);
+        });
+    }
+
+
+
+
+
+
+
     //TODO: test if it is annoying that the drinks are checked everytime bac updated
     private String getCurrentUserId() {
         FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
@@ -591,6 +664,8 @@ public class DashboardFragment extends Fragment {
 
 
     private static int rapidLoggingCount = 0; // Tracks repeated alerts in a session
+    //for undo funtionality
+    List<String> drinkLogToUndo = new ArrayList<>();
 
     private void checkDrinkLogAndBAC() {
         Log.d(TAG, "Loading BAC history");
@@ -604,6 +679,7 @@ public class DashboardFragment extends Fragment {
 
         // Track if alert for 1 or 2 has already been triggered
         AtomicBoolean alertTriggered = new AtomicBoolean(false);
+
 
         //1. Rapid Drink Logging (soft rec):
         long tenMinutesAgo = System.currentTimeMillis() - (10 * 60 * 1000); // 10 minutes ago
@@ -647,7 +723,6 @@ public class DashboardFragment extends Fragment {
                                     message1
                             );
                         }
-//
 
 
                         // Iterate over the logged drinks and log each timestamp
@@ -656,6 +731,9 @@ public class DashboardFragment extends Fragment {
                             if (drinkTimestamp != null) {
                                 Log.d(TAG, "Timestamp of the logged drink: " + drinkTimestamp.toDate());
                             }
+
+                            //to delete five last logs
+                            drinkLogToUndo.add(document.getId());
                         }
                     }
                 })
@@ -680,6 +758,16 @@ public class DashboardFragment extends Fragment {
                                 "You logged 5 drinks in 1 minute. Was this a mistake?"
                         );
                         alertTriggered.set(true);
+
+                        for (DocumentSnapshot document : queryDocumentSnapshots.getDocuments()) {
+                            Timestamp drinkTimestamp = document.getTimestamp("timestamp");
+                            if (drinkTimestamp != null) {
+                                Log.d(TAG, "Timestamp of the logged drink: " + drinkTimestamp.toDate());
+                            }
+
+                            //to delete five last logs
+                            drinkLogToUndo.add(document.getId());
+                        }
                     }
                 })
                 .addOnFailureListener(e -> Log.e(TAG, "Error checking unusually large drink entries", e));
@@ -783,8 +871,17 @@ public class DashboardFragment extends Fragment {
         AlertDialog dialog = new AlertDialog.Builder(requireContext(), R.style.RedBorderAlertDialog)
                 .setTitle(title)
                 .setMessage(message)
-                .setPositiveButton("OK", (d, which) -> Log.d(TAG, "OK clicked"))
-                .setNegativeButton("UNDO", (d, which) -> Log.d(TAG, "Undo clicked"))
+                .setPositiveButton("OK", (d, which) -> {
+                    Log.d(TAG, "OK clicked");
+                    rapidLoggingCount++;
+                })
+                .setNegativeButton("UNDO", (d, which) -> {
+                    Log.d(TAG, "Undo clicked");
+                    rapidLoggingCount--;
+                    // Undo action: delete the last 5 logs
+                    deleteLogs(drinkLogToUndo);
+
+                })
                 .create();
 
         playNotificationSound();
@@ -820,6 +917,77 @@ public class DashboardFragment extends Fragment {
             messageView.setTextSize(TypedValue.COMPLEX_UNIT_SP, 18); // Message size
         }
     }
+
+    private void deleteLogs(List<String> drinkLogToUndo) {
+       // rapidLoggingCount = 0;
+
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        for (String logId : drinkLogToUndo) {
+            db.collection("users")
+                    .document(getCurrentUserId())
+                    .collection("manual_drink_logs")
+                    .document(logId)
+                    .get()
+                    .addOnSuccessListener(documentSnapshot -> {
+                        // Get the drink type from the log
+                        String drinkType = documentSnapshot.getString("drinkType");
+                        //Long calories = documentSnapshot.getLong("calories");
+
+                        // Decrement the respective drink counter based on the drink type
+                        if (drinkType != null) {
+                            switch (drinkType) {
+                                case "Beer":
+                                    if (beerCounter > 0) beerCounter--;
+                                    updateBeerCount();
+                                    totalCalories -= 150;
+                                    break;
+                                case "Wine":
+                                    if (wineCounter > 0) wineCounter--;
+                                    updateWineCount();
+                                    totalCalories -= 125;
+                                    break;
+                                case "Champagne":
+                                    if (champagneCounter > 0) champagneCounter--;
+                                    updateChampagneCount();
+                                    totalCalories -= 90;
+                                    break;
+                                case "Cocktail":
+                                    if (cocktailCounter > 0) cocktailCounter--;
+                                    updateCocktailCount();
+                                    totalCalories -= 200;
+                                    break;
+                                case "Shot":
+                                    if (shotCounter > 0) shotCounter--;
+                                    updateShotCount();
+                                    totalCalories -= 95;
+                                    break;
+                                case "Sake":
+                                    if (sakeCounter > 0) sakeCounter--;
+                                    updateSakeCount();
+                                    totalCalories -= 250;
+                                    break;
+                                default:
+                                    Log.e(TAG, "Unknown drink type: " + drinkType);
+                            }
+
+                            updateTotalCalories();
+
+                            // Delete the log entry after updating the counter
+                            db.collection("users")
+                                    .document(getCurrentUserId())
+                                    .collection("manual_drink_logs")
+                                    .document(logId)
+                                    .delete()
+                                    .addOnSuccessListener(aVoid -> Log.d(TAG, "Log successfully deleted"))
+                                    .addOnFailureListener(e -> Log.e(TAG, "Error deleting log", e));
+                        }
+                    })
+                    .addOnFailureListener(e -> Log.e(TAG, "Error retrieving drink log", e));
+        }
+    }
+
+
+
 
     private boolean canShowDrinkAlert(String title) {
         long currentTime = System.currentTimeMillis();
@@ -896,6 +1064,46 @@ public class DashboardFragment extends Fragment {
         RingtoneManager.getRingtone(requireContext(),
                         RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION))
                 .play();
+    }
+
+
+    //Recommendation pop-up
+    private void showRecommendationDialog(int drinkCount, String message) {
+        String title = "Healthy tips!";
+        if(!canShowDrinkAlert(title)) return;
+
+        AlertDialog dialog = new AlertDialog.Builder(requireContext(), R.style.RecommendationDialog)
+                .setTitle(title)
+                .setMessage(message)
+                .setPositiveButton("OK", (d, which) -> Log.d(TAG, "OK clicked"))
+                .create();
+
+        //DOES IT NEED A SOUND? playNotificationSound();
+
+        dialog.show();
+
+        //Buttons
+        int greenColor =  ContextCompat.getColor(requireContext(),android.R.color.holo_green_dark);
+        Button positiveButton = dialog.getButton(AlertDialog.BUTTON_POSITIVE);
+
+        if(positiveButton != null) {
+            positiveButton.setTextColor(greenColor);
+            positiveButton.setTextSize(TypedValue.COMPLEX_UNIT_SP, 18);
+        }
+
+        //Title and message
+        TextView titleView = dialog.findViewById(android.R.id.title);
+        TextView messageView = dialog.findViewById(android.R.id.message);
+
+        if(titleView != null) {
+            titleView.setTextSize(TypedValue.COMPLEX_UNIT_SP, 20);
+            titleView.setTextColor(greenColor);
+        }
+
+        if(messageView != null) {
+            messageView.setTextSize(TypedValue.COMPLEX_UNIT_SP, 18);
+        }
+
     }
 
 }
