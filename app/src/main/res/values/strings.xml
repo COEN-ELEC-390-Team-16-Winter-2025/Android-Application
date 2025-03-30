@@ -4,4 +4,7 @@
     <string name="title_dashboard">Dashboard</string>
     <string name="title_notifications">Notifications</string>
     <string name="drink_image_desc">Beer</string>
+
+
+    <string name="support_resources">Alcoholics Anonymous (AA) – Montreal\nWebsite: https://www.aa87.org/\nContact: 514-350-3444\n\nMADD Canada\nWebsite: https://madd.ca\n\nÉduc'alcool\nWebsite: https://www.educalcool.qc.ca/\n\n211 Grand Montréal\nWebsite: https://www.211qc.ca/en/mental-health-and-addictions\nContact: Dial 211</string>
 </resources>
