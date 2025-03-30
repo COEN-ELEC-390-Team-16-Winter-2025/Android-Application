@@ -1,11 +1,13 @@
 package com.drinkwise.app;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.util.Log;
 import android.widget.Button;
+import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -13,9 +15,7 @@ import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import androidx.activity.EdgeToEdge;
 import androidx.activity.result.ActivityResultLauncher;
-import androidx.activity.result.contract.ActivityResultContract;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
@@ -24,6 +24,7 @@ import androidx.core.view.WindowInsetsCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+
 import com.google.firebase.auth.AuthCredential;
 import com.google.firebase.auth.EmailAuthProvider;
 import com.google.firebase.auth.FirebaseAuth;
@@ -31,6 +32,7 @@ import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.drinkwise.app.ui.notifications.ReminderManager;
 
 import org.w3c.dom.Text;
 
@@ -74,14 +76,16 @@ public class SettingsActivity extends AppCompatActivity {
     protected SettingsAdapter settingsAdapter;
     protected Switch notifications_switch, alerts_switch, reminders_switch;
 
+
+    // switch to enable/disable reminders
+    private Switch switchReminders;
+
     //Database related variables
     private FirebaseFirestore db;
     private String userId;
     private FirebaseAuth auth;
     private FirebaseUser user;
     private ArrayList<EmergencyContact> emergency_contacts = new ArrayList<>();
-
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -274,16 +278,30 @@ public class SettingsActivity extends AppCompatActivity {
 
             store_emergency_contact(contact_name, contact_phone_no, contact_email, contact_relationship);
 
-            //Settings the edit texts to ""
             emergency_contact_name.setText("");
             emergency_contact_phone_no.setText("");
             emergency_contact_email.setText("");
             emergency_contact_relationship.setText("");
 
-            //Setting visibility to gone
             emergency_contact_layout.setVisibility(TextView.GONE);
         });
 
+        // Load and handle the reminders toggle
+        loadReminderPreference();
+        switchReminders.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                saveReminderPreference(isChecked);
+                if (!isChecked) {
+                    // Stop reminders if disabled
+                    Log.d("ReminderTesting", "Reminders have been disabled.");
+                    ReminderManager.getInstance(SettingsActivity.this).stopReminders();
+                } else {
+                    Log.d("ReminderTesting", "Reminders have been enabled.");
+                }
+            }
+        });
+      
         //Updates firestore preferences when notification switch is changed
         notifications_switch.setOnCheckedChangeListener(((buttonView, isChecked) -> {
             if(isChecked){
@@ -320,14 +338,11 @@ public class SettingsActivity extends AppCompatActivity {
             }
         }));
 
-
     }
 
     //This function fetches all the user's information from firestore and stores them in their respective variables
     public void fetchUserInformation(onDataFetched callback){
-
         db = FirebaseFirestore.getInstance();
-
         FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
 
         if (currentUser != null) {
@@ -342,7 +357,6 @@ public class SettingsActivity extends AppCompatActivity {
                 .document("stats")
                 .get()
                 .addOnSuccessListener(documentSnapshot -> {
-
                     if (documentSnapshot.exists()) {
                         userName = documentSnapshot.getString("name");
                         userHeight = documentSnapshot.getLong("height");
@@ -354,8 +368,7 @@ public class SettingsActivity extends AppCompatActivity {
 
                         //ensures data is completely fetched before proceeding
                         callback.Fetched(userName, userHeight, userWeight, isMetric, birthday);
-                    }
-                    else{
+                    } else {
                         Log.d(TAG, "No data found for this user");
                     }
 
@@ -364,6 +377,7 @@ public class SettingsActivity extends AppCompatActivity {
                     Log.d(TAG, "Error fetching data");
                 });
     }
+
 
     public void fetchEmergencyContacts(EmergencyContactsCallback callback){
 
@@ -493,7 +507,6 @@ public class SettingsActivity extends AppCompatActivity {
         emergency_contact.put("Phone_no", phone_no);
         emergency_contact.put("Email", email);
         emergency_contact.put("Relationship", relationship);
-
         FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
 
         if (currentUser != null) {
@@ -566,7 +579,6 @@ public class SettingsActivity extends AppCompatActivity {
 
     //This function initializes all ui components
     public void setupUI(){
-
         //Username and profile picture UI components
         username_textview = findViewById(R.id.account_name);
         profile_picture = findViewById(R.id.profile_picture);
@@ -592,6 +604,8 @@ public class SettingsActivity extends AppCompatActivity {
         emergency_contact_email = findViewById(R.id.emergency_contact_email);
         emergency_contact_relationship = findViewById(R.id.emergency_contact_relationship);
         save_emergency_contact = findViewById(R.id.save_emergency_contact);
+        switchReminders = findViewById(R.id.switch_enable_reminders);
+  
         settings_recycler_view = findViewById(R.id.emergency_contact_recycler_view);
 
         //Change Password related UI components
@@ -621,10 +635,19 @@ public class SettingsActivity extends AppCompatActivity {
 
         });
 
+    private void loadReminderPreference() {
+        SharedPreferences prefs = getSharedPreferences("AppPrefs", MODE_PRIVATE);
+        boolean remindersEnabled = prefs.getBoolean("remindersEnabled", true);
+        switchReminders.setChecked(remindersEnabled);
+        Log.d("ReminderTesting", "Reminders have been enabled.");
     }
 
+    private void saveReminderPreference(boolean enabled) {
+        SharedPreferences prefs = getSharedPreferences("AppPrefs", MODE_PRIVATE);
+        prefs.edit().putBoolean("remindersEnabled", enabled).apply();
+        Toast.makeText(this, "Reminders are now " + (enabled ? "enabled" : "disabled"), Toast.LENGTH_SHORT).show();
+    }
 
-    //onDataFetched interface. Needed because fetching from firestore is asynchronous and we need to wait for the data to be fetched before proceeding
     public interface onDataFetched{
         void Fetched(String userName, long userHeight, long userWeight, boolean isMetric, String birthday);
     }
