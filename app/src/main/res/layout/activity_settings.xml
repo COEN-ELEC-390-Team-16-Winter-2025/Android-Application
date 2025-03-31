@@ -656,7 +656,8 @@
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="horizontal">
+                    android:orientation="horizontal"
+                    android:layout_marginBottom="16dp">
 
                     <TextView
                         android:layout_width="wrap_content"
@@ -668,6 +669,34 @@
 
                     <Switch
                         android:id="@+id/reminders_switch"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:thumbTint="@color/switch_thumb_color"
+                        android:trackTint="@color/switch_track_color" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Quick Help"
+                        android:textSize="16sp"
+                        android:textColor="#333333"
+                        android:layout_weight="1"/>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Always/BAC > 0.5"
+                        android:textSize="13dp"
+                        android:textColor="#333333"/>
+
+                    <Switch
+                        android:id="@+id/quick_help_switch"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:thumbTint="@color/switch_thumb_color"
