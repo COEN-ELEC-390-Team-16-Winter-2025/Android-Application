@@ -11,6 +11,8 @@ import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
@@ -25,6 +27,7 @@ import androidx.fragment.app.Fragment;
 import com.drinkwise.app.R;
 import com.drinkwise.app.Recommendation;
 import com.drinkwise.app.ScanningActivity;
+import com.drinkwise.app.SettingsActivity;
 import com.drinkwise.app.ui.home.drinklog.BACCalculator;
 import com.drinkwise.app.ui.home.drinklog.DrinkLogItem;
 
@@ -93,6 +96,13 @@ public class DashboardFragment extends Fragment {
     private static int shotCounter = 0;
     private static int sakeCounter = 0;
 
+    //Quick Help Related variables
+    private static int quickHelpCounter = 0;
+    private double bacValue = 0;
+
+    //Preferences Related variables
+    private boolean notifications, alerts, reminders, quickHelp;
+
     //Total calories
     private static int totalCalories = 0;
     private TextView caloriesTextView;
@@ -127,13 +137,13 @@ public class DashboardFragment extends Fragment {
         // Quick Help button
         Button quickHelpButton = rootView.findViewById(R.id.quickHelpButton);
 
-        quickHelpButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Toast.makeText(getActivity(), "Notify Emergency Contact Feature Still In Progress", Toast.LENGTH_SHORT).show();
-
-            }
-        });
+//        quickHelpButton.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//                Toast.makeText(getActivity(), "Notify Emergency Contact Feature Still In Progress", Toast.LENGTH_SHORT).show();
+//
+//            }
+//        });
 
         return rootView;
     }
@@ -188,6 +198,10 @@ public class DashboardFragment extends Fragment {
         // Initialize TextView for displaying drink info
         drinkInfo = view.findViewById(R.id.drinkInfo);
 
+        fetchPreferences((notifications, alerts, reminders, quickHelp) -> {
+            displayQuickHelp(quickHelp);
+        });
+
         // Set click listeners for drink images
         beerImage.setOnClickListener(v -> displayDrinkInfo("Beer", 355, 0.03, 150));
         wineImage.setOnClickListener(v -> displayDrinkInfo("Wine", 150, 0.05, 125));
@@ -217,7 +231,7 @@ public class DashboardFragment extends Fragment {
             String latestBacEntry = getArguments().getString("latest_bac_entry");
             if (latestBacEntry != null) {
                 try {
-                    double bacValue = Double.parseDouble(latestBacEntry);
+                    bacValue = Double.parseDouble(latestBacEntry);
                     updateBacLevel(bacValue);
                 } catch (NumberFormatException e) {
                     Log.e(TAG, "Invalid BAC entry from arguments: " + latestBacEntry, e);
@@ -232,6 +246,7 @@ public class DashboardFragment extends Fragment {
             //check for rapid logging and errors
             checkDrinkLogAndBAC();
         }
+
 
         // Initialize counters
         updateBeerCount();
@@ -267,10 +282,14 @@ public class DashboardFragment extends Fragment {
 
         });
 
-//        quickHelpButton.setOnClickListener(v -> {
-//            // TODO: Implement quick help functionality
-//            Log.d(TAG, "Quick Help button clicked");
-//        });
+        quickHelpButton.setOnClickListener(v -> {
+            //TODO: Implement quickhelp button
+
+            quickHelpCounter++;
+
+
+
+        });
 
         addBeerButton.setOnClickListener(v -> {
             beerCounter++;
@@ -492,6 +511,7 @@ public class DashboardFragment extends Fragment {
             bacProgressBar.setProgressDrawable(ContextCompat.getDrawable(requireContext(), R.drawable.bac_progress_bar_medical_emergency));
         }
 
+        displayQuickHelp(quickHelp);
         Log.d(TAG, "BAC updated: " + bacValue + ", progress: " + progress);
     }
 
@@ -1113,4 +1133,67 @@ public class DashboardFragment extends Fragment {
 
     }
 
+    public void fetchPreferences(SettingsActivity.PreferencesCallback callback){
+
+        db = FirebaseFirestore.getInstance();
+
+        db.collection("users")
+                .document(getCurrentUserId())
+                .collection("profile")
+                .document("Preferences")
+                .addSnapshotListener(((value, error) -> {
+                    if(error != null){
+                        Log.d(TAG, "Error fetching preferences");
+                    }
+
+                    if(value != null && value.exists()){
+                        notifications = value.getBoolean("Notifications");
+                        alerts = value.getBoolean("Alerts");
+                        reminders = value.getBoolean("Reminders");
+                        quickHelp = value.getBoolean("Quick_help");
+
+                        Log.d(TAG, "Notifications: "+notifications + " Alerts: "+alerts+" Reminders: "+reminders+" Quick Help: "+quickHelp);
+                        callback.onCallback(notifications, alerts, reminders, quickHelp);
+
+                    }
+                    else{
+                        notifications = false;
+                        alerts = false;
+                        reminders = false;
+                        quickHelp = false;
+
+                        callback.onCallback(notifications, alerts, reminders, quickHelp);
+                    }
+                }));
+    }
+
+
+    //this function updates how the quickhelp button is displayed
+    public void displayQuickHelp(boolean quickHelp){
+
+        //Dislays the button or not based on settings preferences for quick help button
+        if(!quickHelp){
+            quickHelpButton.setVisibility(View.VISIBLE);
+        }
+        else{
+            if(bacValue < 0.05){
+                quickHelpButton.setVisibility(View.GONE);
+            }
+            else{
+                quickHelpButton.setVisibility(View.VISIBLE);
+            }
+        }
+
+        switch(bacStatus.getText().toString()){
+            case "High Impairment":
+            case "Severe Impairment":
+            case "Medical Emergency":
+                Animation animation = AnimationUtils.loadAnimation(requireContext(), R.anim.button_pulse);
+                quickHelpButton.startAnimation(animation);
+        }
+    }
+
+    public interface PreferencesCallback {
+        void onCallback(boolean notifications, boolean alerts, boolean reminders, boolean quickHelp);
+    }
 }

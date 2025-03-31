@@ -67,7 +67,7 @@ public class SettingsActivity extends AppCompatActivity {
     String currentPass, newPass, confirmPass;
 
     //Preferences related variables
-    private boolean notifications, alerts, reminders;
+    private boolean notifications, alerts, reminders, quickHelp;
 
     //UI Components
     protected TextView username_textview,  edit_profile_information, edit_physical_information, add_emergency_contact, edit_password;
@@ -81,7 +81,7 @@ public class SettingsActivity extends AppCompatActivity {
     protected Button save_emergency_contact, save_profile_information, save_physical_information, save_password;
     protected RecyclerView settings_recycler_view;
     protected SettingsAdapter settingsAdapter;
-    protected Switch notifications_switch, alerts_switch, reminders_switch;
+    protected Switch notifications_switch, alerts_switch, reminders_switch, quick_help_switch;
 
     //Database related variables
     private FirebaseFirestore db;
@@ -143,10 +143,11 @@ public class SettingsActivity extends AppCompatActivity {
         });
 
         //Fetches the users preferences and edit the switches accordingly
-        fetchPreferences((notifications, alerts, reminders) -> {
+        fetchPreferences((notifications, alerts, reminders, quickHelp) -> {
             notifications_switch.setChecked(notifications);
             alerts_switch.setChecked(alerts);
             reminders_switch.setChecked(reminders);
+            quick_help_switch.setChecked(quickHelp);
         });
 
         setupRecyclerView();
@@ -221,7 +222,6 @@ public class SettingsActivity extends AppCompatActivity {
         });
 
         save_password.setOnClickListener(v -> {
-            //TODO: save the password to firebase upon clicking save
             currentPass = current_password.getText().toString();
             newPass = new_password.getText().toString();
             confirmPass = confirm_password.getText().toString();
@@ -309,30 +309,30 @@ public class SettingsActivity extends AppCompatActivity {
         });
 
         // Load and handle the reminders toggle
-        loadReminderPreference();
-        reminders_switch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                saveReminderPreference(isChecked);
-                if (!isChecked) {
-                    // Stop reminders if disabled
-                    Log.d("ReminderTesting", "Reminders have been disabled.");
-                    ReminderManager.getInstance(SettingsActivity.this).stopReminders();
-                } else {
-                    Log.d("ReminderTesting", "Reminders have been enabled.");
-                }
-            }
-        });
+//        loadReminderPreference();
+//        reminders_switch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+//            @Override
+//            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+//                saveReminderPreference(isChecked);
+//                if (!isChecked) {
+//                    // Stop reminders if disabled
+//                    Log.d("ReminderTesting", "Reminders have been disabled.");
+//                    ReminderManager.getInstance(SettingsActivity.this).stopReminders();
+//                } else {
+//                    Log.d("ReminderTesting", "Reminders have been enabled.");
+//                }
+//            }
+//        });
       
         //Updates firestore preferences when notification switch is changed
         notifications_switch.setOnCheckedChangeListener(((buttonView, isChecked) -> {
             if(isChecked){
                 notifications = true;
-                storePreferences(notifications, alerts, reminders);
+                storePreferences(notifications, alerts, reminders, quickHelp);
             }
             else{
                 notifications = false;
-                storePreferences(notifications, alerts, reminders);
+                storePreferences(notifications, alerts, reminders, quickHelp);
             }
         }));
 
@@ -340,25 +340,36 @@ public class SettingsActivity extends AppCompatActivity {
         alerts_switch.setOnCheckedChangeListener(((buttonView, isChecked) -> {
             if(isChecked){
                 alerts = true;
-                storePreferences(notifications, alerts, reminders);
+                storePreferences(notifications, alerts, reminders, quickHelp);
             }
             else{
                 alerts = false;
-                storePreferences(notifications, alerts, reminders);
+                storePreferences(notifications, alerts, reminders, quickHelp);
             }
         }));
 
-//        //Updates firestore preferences when reminders switch is changed
-//        reminders_switch.setOnCheckedChangeListener(((buttonView, isChecked) -> {
-//            if(isChecked){
-//                reminders = true;
-//                storePreferences(notifications, alerts, reminders);
-//            }
-//            else{
-//                reminders = false;
-//                storePreferences(notifications, alerts, reminders);
-//            }
-//        }));
+        //Updates firestore preferences when reminders switch is changed
+        reminders_switch.setOnCheckedChangeListener(((buttonView, isChecked) -> {
+            if(isChecked){
+                reminders = true;
+                storePreferences(notifications, alerts, reminders, quickHelp);
+            }
+            else{
+                reminders = false;
+                storePreferences(notifications, alerts, reminders, quickHelp);
+            }
+        }));
+
+        quick_help_switch.setOnCheckedChangeListener(((buttonView, isChecked) -> {
+            if(isChecked){
+                quickHelp = true;
+                storePreferences(notifications, alerts, reminders, quickHelp);
+            }
+            else{
+                quickHelp = false;
+                storePreferences(notifications, alerts, reminders, quickHelp);
+            }
+        }));
 
     }
 
@@ -483,15 +494,19 @@ public class SettingsActivity extends AppCompatActivity {
                         notifications = value.getBoolean("Notifications");
                         alerts = value.getBoolean("Alerts");
                         reminders = value.getBoolean("Reminders");
+                        quickHelp = value.getBoolean("Quick_help");
 
-                        callback.onCallback(notifications, alerts, reminders);
+                        Log.d(TAG, "Notifications: "+notifications + " Alerts: "+alerts+" Reminders: "+reminders+" Quick Help: "+quickHelp);
+
+                        callback.onCallback(notifications, alerts, reminders, quickHelp);
                     }
                     else{
                         notifications = false;
                         alerts = false;
                         reminders = false;
+                        quickHelp = false;
 
-                        callback.onCallback(notifications, alerts, reminders);
+                        callback.onCallback(notifications, alerts, reminders, quickHelp);
                     }
                 }));
     }
@@ -581,13 +596,14 @@ public class SettingsActivity extends AppCompatActivity {
                         Log.d("Firestore", "Failed to store data "+ e));
     }
 
-    public void storePreferences(boolean notifications, boolean alerts, boolean reminders){
+    public void storePreferences(boolean notifications, boolean alerts, boolean reminders, boolean quickHelp){
 
         Map<String, Object> preferences = new HashMap<>();
 
         preferences.put("Notifications", notifications);
         preferences.put("Alerts", alerts);
         preferences.put("Reminders", reminders);
+        preferences.put("Quick_help", quickHelp);
 
         db = FirebaseFirestore.getInstance();
 
@@ -651,6 +667,7 @@ public class SettingsActivity extends AppCompatActivity {
         notifications_switch = findViewById(R.id.notifications_switch);
         alerts_switch = findViewById(R.id.alerts_switch);
         reminders_switch = findViewById(R.id.reminders_switch);
+        quick_help_switch = findViewById(R.id.quick_help_switch);
     }
 
     public void setupRecyclerView() {
@@ -690,7 +707,7 @@ public class SettingsActivity extends AppCompatActivity {
     }
 
     public interface PreferencesCallback {
-        void onCallback(boolean notifications, boolean alerts, boolean reminders);
+        void onCallback(boolean notifications, boolean alerts, boolean reminders, boolean quickHelp);
     }
 
     //Tried to use this method to hide info button from settings page
