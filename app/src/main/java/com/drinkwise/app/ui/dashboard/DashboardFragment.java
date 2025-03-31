@@ -247,9 +247,6 @@ public class DashboardFragment extends Fragment {
             checkDrinkLogAndBAC();
         }
 
-        bacValue = 16.0;
-        updateBacLevel(bacValue);
-
 
         // Initialize counters
         updateBeerCount();
