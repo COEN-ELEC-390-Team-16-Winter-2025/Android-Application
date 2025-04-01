@@ -197,6 +197,8 @@ public class DashboardFragment extends Fragment {
         // Initialize TextView for displaying drink info
         drinkInfo = view.findViewById(R.id.drinkInfo);
 
+        minusButtonState();
+
         fetchPreferences((notifications, alerts, reminders, quickHelp) -> {
             displayQuickHelp(quickHelp);
         });
@@ -293,7 +295,14 @@ public class DashboardFragment extends Fragment {
         saveDashboardData(); //Save the changes
     }
 
-
+    private void minusButtonState(){
+        minusBeerButton.setEnabled(beerCounter>0);
+        minusWineButton.setEnabled(wineCounter>0);
+        minusChampagneButton.setEnabled(champagneCounter>0);
+        minusCocktailButton.setEnabled(cocktailCounter>0);
+        minusShotButton.setEnabled(shotCounter>0);
+        minusSakeButton.setEnabled(sakeCounter>0);
+    }
     private void setupButtonListeners() {
         seeListButton.setOnClickListener(v -> {
             Intent intent = new Intent(getActivity(), ScanningActivity.class);
@@ -326,6 +335,7 @@ public class DashboardFragment extends Fragment {
             logDrinkToFirestore("Beer", 150, 0.03);
             //check for rapid logging and errors
             checkDrinkLogAndBAC();
+            minusButtonState();
         });
 
         addWineButton.setOnClickListener(v -> {
@@ -336,6 +346,7 @@ public class DashboardFragment extends Fragment {
             logDrinkToFirestore("Wine", 125, 0.05);
             //check for rapid logging and errors
             checkDrinkLogAndBAC();
+            minusButtonState();
         });
 
         addChampagneButton.setOnClickListener(v -> {
@@ -346,6 +357,7 @@ public class DashboardFragment extends Fragment {
             logDrinkToFirestore("Champagne", 90, 0.04);
             //check for rapid logging and errors
             checkDrinkLogAndBAC();
+            minusButtonState();
         });
 
         addCocktailButton.setOnClickListener(v -> {
@@ -356,6 +368,7 @@ public class DashboardFragment extends Fragment {
             logDrinkToFirestore("Cocktail", 200, 0.07);
             //check for rapid logging and errors
             checkDrinkLogAndBAC();
+            minusButtonState();
         });
 
         addShotButton.setOnClickListener(v -> {
@@ -366,6 +379,7 @@ public class DashboardFragment extends Fragment {
             logDrinkToFirestore("Shot", 95, 0.04);
             //check for rapid logging and errors
             checkDrinkLogAndBAC();
+            minusButtonState();
         });
 
         addSakeButton.setOnClickListener(v -> {
@@ -376,6 +390,7 @@ public class DashboardFragment extends Fragment {
             logDrinkToFirestore("Sake", 230, 0.06);
             //check for rapid logging and errors
             checkDrinkLogAndBAC();
+            minusButtonState();
         });
 
         minusBeerButton.setOnClickListener(v -> {
@@ -385,6 +400,7 @@ public class DashboardFragment extends Fragment {
                 updateTotalCalories();
                 removeDrinkFromFirestore("Beer");
                 //updateBACFromManualLogs();
+                minusButtonState();
             }
         });
 
@@ -395,6 +411,7 @@ public class DashboardFragment extends Fragment {
                 updateTotalCalories();
                 removeDrinkFromFirestore("Wine");
                 //updateBACFromManualLogs();
+                minusButtonState();
             }
         });
 
@@ -405,6 +422,7 @@ public class DashboardFragment extends Fragment {
                 updateTotalCalories();
                 removeDrinkFromFirestore("Champagne");
                 //updateBACFromManualLogs();
+                minusButtonState();
             }
         });
 
@@ -415,6 +433,7 @@ public class DashboardFragment extends Fragment {
                 updateTotalCalories();
                 removeDrinkFromFirestore("Cocktail");
                 //updateBACFromManualLogs();
+                minusButtonState();
             }
         });
 
@@ -425,6 +444,7 @@ public class DashboardFragment extends Fragment {
                 updateTotalCalories();
                 removeDrinkFromFirestore("Shot");
                 //updateBACFromManualLogs();
+                minusButtonState();
             }
         });
 
@@ -435,10 +455,13 @@ public class DashboardFragment extends Fragment {
                 updateTotalCalories();
                 removeDrinkFromFirestore("Sake");
                 //updateBACFromManualLogs();
+                minusButtonState();
             }
         });
 
     }
+
+
 
     /**
      * Retrieves manual drink logs from Firestore, calculates overall BAC using BACCalculator, and updates the BAC display.
