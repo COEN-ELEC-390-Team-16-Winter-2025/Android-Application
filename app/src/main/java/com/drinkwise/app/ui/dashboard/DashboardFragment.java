@@ -1,9 +1,11 @@
 package com.drinkwise.app.ui.dashboard;
 
 import android.app.AlertDialog;
+import android.app.ProgressDialog;
 import android.content.Intent;
 import android.media.MediaPlayer;
 import android.media.RingtoneManager;
+import android.net.Uri;
 import android.os.Bundle;
 import android.text.Html;
 import android.util.Log;
@@ -23,7 +25,11 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
+import com.drinkwise.app.EmergencyContact;
+import com.drinkwise.app.QuickHelpMessage;
 import com.drinkwise.app.R;
 import com.drinkwise.app.Recommendation;
 import com.drinkwise.app.ScanningActivity;
@@ -31,6 +37,7 @@ import com.drinkwise.app.SettingsActivity;
 import com.drinkwise.app.ui.home.drinklog.BACCalculator;
 import com.drinkwise.app.ui.home.drinklog.DrinkLogItem;
 
+import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.DocumentReference;
@@ -99,6 +106,8 @@ public class DashboardFragment extends Fragment {
     //Quick Help Related variables
     private static int quickHelpCounter = 0;
     private double bacValue = 0;
+    ArrayList<EmergencyContact> emergencyContacts = new ArrayList<>();
+    BottomSheetDialog bottomSheetDialog;
 
     //Preferences Related variables
     private boolean notifications, alerts, reminders, quickHelp;
@@ -283,12 +292,15 @@ public class DashboardFragment extends Fragment {
         });
 
         quickHelpButton.setOnClickListener(v -> {
-            //TODO: Implement quickhelp button
 
             quickHelpCounter++;
 
-
-
+            if(quickHelpCounter < 7){
+                showEmergencyContactFromQuickHelp();
+            }
+            else{
+                call911();
+            }
         });
 
         addBeerButton.setOnClickListener(v -> {
@@ -1193,7 +1205,119 @@ public class DashboardFragment extends Fragment {
         }
     }
 
+
+    //This function fetches the emergency contacts from firestore and displays them in a recyclerview within a bottomsheetdialog
+    //It then intents to the message app to send a message to the contact with a predefined message
+    //If the button was clicked 7 times or more, it calls 911.
+    public void showEmergencyContactFromQuickHelp(){
+
+        bottomSheetDialog = new BottomSheetDialog(requireContext());
+        View view = LayoutInflater.from(requireContext()).inflate(R.layout.quickhelp_bottomsheetdialog, null);
+
+        RecyclerView emergencyContactRecyclerView = view.findViewById(R.id.emergency_contact_list);
+        emergencyContactRecyclerView.setLayoutManager(new LinearLayoutManager(requireContext()));
+
+        fetchEmergencyContacts(contacts -> {
+            emergencyContacts = contacts;
+            EmergencyContactAdapter emergencyContactAdapter = new EmergencyContactAdapter(emergencyContacts, contact -> {
+
+                if(quickHelpCounter < 7){
+                    QuickHelpMessage message = new QuickHelpMessage(quickHelpCounter);
+                    textEmergencyContact(contact.getPhone_no(), message.getMessage());
+                }
+                else{
+                    call911();
+                }
+
+                if (bottomSheetDialog != null && bottomSheetDialog.isShowing()) {
+                    bottomSheetDialog.dismiss();
+                }
+
+            });
+
+
+            emergencyContactRecyclerView.setAdapter(emergencyContactAdapter);
+
+            bottomSheetDialog.setContentView(view);
+            bottomSheetDialog.show();
+
+        });
+    }
+
+
+    //This function intents to the messaging app with a predefined phone number and message to be sent
+    public void textEmergencyContact(String phone_no, String message) {
+
+        Intent intent = new Intent(Intent.ACTION_SENDTO);
+        intent.setData(Uri.parse("smsto:"+phone_no));
+        intent.putExtra("sms_body", message);
+
+        try {
+            startActivity(intent);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    //This function intents to the dial app to call 911
+    public void call911(){
+
+
+        Intent intent = new Intent(Intent.ACTION_DIAL);
+        intent.setData(Uri.parse("tel:" + "911"));
+
+
+        try {
+            startActivity(intent);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    //This function fetches emergency contacts from firestore
+    public void fetchEmergencyContacts(SettingsActivity.EmergencyContactsCallback callback){
+
+        db = FirebaseFirestore.getInstance();
+
+        db.collection("users")
+                .document(getCurrentUserId())
+                .collection("profile")
+                .document("Contacts")
+                .collection("Emergency_Contacts")
+                .addSnapshotListener((value, error) -> {
+
+                    if(error != null){
+                        Log.d("Firestore", "Error fetching emergency contacts" + error);
+                    }
+
+                    if(value != null && !value.isEmpty()){
+
+                        emergencyContacts.clear();
+
+                        for(DocumentSnapshot doc : value.getDocuments()){
+                            String name = doc.getString("Name");
+                            String phone_no = doc.getString("Phone_no");
+                            String email = doc.getString("Email");
+                            String relationship = doc.getString("Relationship");
+
+                            emergencyContacts.add(new EmergencyContact(name, phone_no, email, relationship));
+
+                            Log.d(TAG, "Emergency Contact: Name: "+name+" Phone no: "+phone_no+" Email: "+email+" Relationship: "+relationship);
+                            callback.onCallback(emergencyContacts);
+                        }
+                    }
+                    else{
+                        Log.d(TAG, "No Emergency Contacts found");
+                        callback.onCallback(emergencyContacts);
+                    }
+                });
+    }
+
     public interface PreferencesCallback {
         void onCallback(boolean notifications, boolean alerts, boolean reminders, boolean quickHelp);
+    }
+
+    public interface EmergencyContactsCallback {
+        void onCallback(ArrayList<EmergencyContact> contacts);
     }
 }
