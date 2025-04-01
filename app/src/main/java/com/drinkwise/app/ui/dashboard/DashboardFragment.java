@@ -1004,6 +1004,9 @@ public class DashboardFragment extends Fragment {
         }
         Log.d(TAG, "showAlertWithUndo: Showing alert with title: " + title);
 
+
+        // alertCooldowns.put(title, System.currentTimeMillis());
+
         // Create dialog with custom theme
         AlertDialog dialog = new AlertDialog.Builder(requireContext(), R.style.RedBorderAlertDialog)
                 .setTitle(title)
@@ -1206,6 +1209,7 @@ public class DashboardFragment extends Fragment {
             Log.d(TAG, "Recommendation dialog not shown due to alert cooldown.");
             return;
         }
+        alertCooldowns.put(title, System.currentTimeMillis());
         AlertDialog dialog = new AlertDialog.Builder(requireContext(), R.style.RecommendationDialog)
                 .setTitle(title)
                 .setMessage(message)
