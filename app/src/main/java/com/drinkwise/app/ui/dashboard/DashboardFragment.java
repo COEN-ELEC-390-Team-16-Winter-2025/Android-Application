@@ -1,7 +1,9 @@
 package com.drinkwise.app.ui.dashboard;
 
 import android.app.AlertDialog;
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.media.MediaPlayer;
 import android.media.RingtoneManager;
 import android.os.Bundle;
@@ -99,6 +101,7 @@ public class DashboardFragment extends Fragment {
     private static int quickHelpCounter = 0;
     private double bacValue = 0;
 
+
     // Preferences Related variables
     private boolean notifications, alerts, reminders, quickHelp;
 
@@ -111,6 +114,10 @@ public class DashboardFragment extends Fragment {
 
     // Firestore database
     private FirebaseFirestore db;
+
+    //Drinking session
+    private String currentSessionId;
+
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -138,10 +145,12 @@ public class DashboardFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        // Initialize views (omitted for brevity, same as your current code)
+        // Initialize BAC section views
         bacLevel = view.findViewById(R.id.bacLevel);
         bacProgressBar = view.findViewById(R.id.bacProgressBar);
         bacStatus = view.findViewById(R.id.bacStatus);
+
+        // Initialize alcohol counter views
         beerCount = view.findViewById(R.id.beerCount);
         wineCount = view.findViewById(R.id.wineCount);
         champagneCount = view.findViewById(R.id.champagneCount);
@@ -163,10 +172,12 @@ public class DashboardFragment extends Fragment {
         minusShotButton = view.findViewById(R.id.minusShotButton);
         minusSakeButton = view.findViewById(R.id.minusSakeButton);
 
+        // Initialize action buttons
         seeListButton = view.findViewById(R.id.seeListButton);
         refreshButton = view.findViewById(R.id.refreshButton);
         quickHelpButton = view.findViewById(R.id.quickHelpButton);
 
+        // Initialize ImageViews
         beerImage = view.findViewById(R.id.beerImage);
         wineImage = view.findViewById(R.id.wineImage);
         champagneImage = view.findViewById(R.id.champagneImage);
@@ -174,18 +185,47 @@ public class DashboardFragment extends Fragment {
         shotImage = view.findViewById(R.id.shotImage);
         sakeImage = view.findViewById(R.id.sakeImage);
 
+        // Initialize TextView for displaying drink info
         drinkInfo = view.findViewById(R.id.drinkInfo);
-        caloriesTextView = view.findViewById(R.id.caloriesTextView);
 
-        db = FirebaseFirestore.getInstance();
-
-        // Setup additional listeners and preferences
         fetchPreferences((notifications, alerts, reminders, quickHelp) -> {
             displayQuickHelp(quickHelp);
         });
+
+        // Set click listeners for drink images
+        beerImage.setOnClickListener(v -> displayDrinkInfo("Beer", 355, 0.03, 150));
+        wineImage.setOnClickListener(v -> displayDrinkInfo("Wine", 150, 0.05, 125));
+        champagneImage.setOnClickListener(v -> displayDrinkInfo("Champagne", 125, 0.04, 90));
+        cocktailImage.setOnClickListener(v -> displayDrinkInfo("Cocktail", 200, 0.07, 200));
+        shotImage.setOnClickListener(v -> displayDrinkInfo("Shot", 45, 0.04, 95));
+        sakeImage.setOnClickListener(v -> displayDrinkInfo("Sake", 180, 0.06, 230));
+
+        //Initialize total calories TextView
+        caloriesTextView = view.findViewById(R.id.caloriesTextView);
+
+        // Initialize firestore
+        db = FirebaseFirestore.getInstance();
+
+        // Define calorie values per drink
+        drinkCalories.put("Beer", 150);
+        drinkCalories.put("Wine", 125);
+        drinkCalories.put("Champagne", 90);
+        drinkCalories.put("Cocktail", 200);
+        drinkCalories.put("Shot", 95);
+        drinkCalories.put("Sake", 230);
+
         setupButtonListeners();
 
-        // Handle arguments and default BAC
+
+        //Load dashboard data
+        loadDashboardData();
+
+        // Show default values if no sessionId
+        if(currentSessionId ==null) {
+            showDefaultBacValue();
+        }
+
+        // Handle arguments passed to the fragment (latest BAC)
         if (getArguments() != null) {
             String latestBacEntry = getArguments().getString("latest_bac_entry");
             if (latestBacEntry != null) {
@@ -202,9 +242,11 @@ public class DashboardFragment extends Fragment {
             }
         } else {
             showDefaultBacValue();
+            //check for rapid logging and errors
             checkDrinkLogAndBAC();
         }
 
+        // Initialize counters
         updateBeerCount();
         updateWineCount();
         updateChampagneCount();
@@ -221,6 +263,28 @@ public class DashboardFragment extends Fragment {
         bacStatus.setTextColor(ContextCompat.getColor(requireContext(), R.color.bac_default));
     }
 
+    //Clear the counters and UI
+    private void resetDashboard() {
+        beerCounter = 0;
+        wineCounter = 0;
+        champagneCounter = 0;
+        cocktailCounter = 0;
+        shotCounter = 0;
+        sakeCounter = 0;
+        totalCalories = 0;
+        updateBeerCount();
+        updateWineCount();
+        updateChampagneCount();
+        updateCocktailCount();
+        updateShotCount();
+        updateSakeCount();
+        updateTotalCalories();
+        showDefaultBacValue();
+
+        saveDashboardData(); //Save the changes
+    }
+
+
     private void setupButtonListeners() {
         seeListButton.setOnClickListener(v -> {
             Intent intent = new Intent(getActivity(), ScanningActivity.class);
@@ -235,15 +299,17 @@ public class DashboardFragment extends Fragment {
         });
 
         quickHelpButton.setOnClickListener(v -> {
+            //TODO: Implement quickhelp button
             quickHelpCounter++;
-            Log.d(TAG, "Quick help button clicked. Count: " + quickHelpCounter);
         });
 
         addBeerButton.setOnClickListener(v -> {
             beerCounter++;
             updateBeerCount();
             updateTotalCalories();
+            //updateBACFromManualLogs();
             logDrinkToFirestore("Beer", 150, 0.03);
+            //check for rapid logging and errors
             checkDrinkLogAndBAC();
         });
 
@@ -251,7 +317,9 @@ public class DashboardFragment extends Fragment {
             wineCounter++;
             updateWineCount();
             updateTotalCalories();
+            //updateBACFromManualLogs();
             logDrinkToFirestore("Wine", 125, 0.05);
+            //check for rapid logging and errors
             checkDrinkLogAndBAC();
         });
 
@@ -259,7 +327,9 @@ public class DashboardFragment extends Fragment {
             champagneCounter++;
             updateChampagneCount();
             updateTotalCalories();
+            //updateBACFromManualLogs();
             logDrinkToFirestore("Champagne", 90, 0.04);
+            //check for rapid logging and errors
             checkDrinkLogAndBAC();
         });
 
@@ -267,7 +337,9 @@ public class DashboardFragment extends Fragment {
             cocktailCounter++;
             updateCocktailCount();
             updateTotalCalories();
+            //updateBACFromManualLogs();
             logDrinkToFirestore("Cocktail", 200, 0.07);
+            //check for rapid logging and errors
             checkDrinkLogAndBAC();
         });
 
@@ -275,7 +347,9 @@ public class DashboardFragment extends Fragment {
             shotCounter++;
             updateShotCount();
             updateTotalCalories();
+            //updateBACFromManualLogs();
             logDrinkToFirestore("Shot", 95, 0.04);
+            //check for rapid logging and errors
             checkDrinkLogAndBAC();
         });
 
@@ -283,15 +357,76 @@ public class DashboardFragment extends Fragment {
             sakeCounter++;
             updateSakeCount();
             updateTotalCalories();
+            //updateBACFromManualLogs();
             logDrinkToFirestore("Sake", 230, 0.06);
+            //check for rapid logging and errors
             checkDrinkLogAndBAC();
         });
 
-        // Similarly add listeners for minus buttons with logs if needed...
+        minusBeerButton.setOnClickListener(v -> {
+            if (beerCounter > 0) {
+                beerCounter--;
+                updateBeerCount();
+                updateTotalCalories();
+                removeDrinkFromFirestore("Beer");
+                //updateBACFromManualLogs();
+            }
+        });
+
+        minusWineButton.setOnClickListener(v -> {
+            if (wineCounter > 0) {
+                wineCounter--;
+                updateWineCount();
+                updateTotalCalories();
+                removeDrinkFromFirestore("Wine");
+                //updateBACFromManualLogs();
+            }
+        });
+
+        minusChampagneButton.setOnClickListener(v -> {
+            if (champagneCounter > 0) {
+                champagneCounter--;
+                updateChampagneCount();
+                updateTotalCalories();
+                removeDrinkFromFirestore("Champagne");
+                //updateBACFromManualLogs();
+            }
+        });
+
+        minusCocktailButton.setOnClickListener(v -> {
+            if (cocktailCounter > 0) {
+                cocktailCounter--;
+                updateCocktailCount();
+                updateTotalCalories();
+                removeDrinkFromFirestore("Cocktail");
+                //updateBACFromManualLogs();
+            }
+        });
+
+        minusShotButton.setOnClickListener(v -> {
+            if (shotCounter > 0) {
+                shotCounter--;
+                updateShotCount();
+                updateTotalCalories();
+                removeDrinkFromFirestore("Shot");
+                //updateBACFromManualLogs();
+            }
+        });
+
+        minusSakeButton.setOnClickListener(v -> {
+            if (sakeCounter > 0) {
+                sakeCounter--;
+                updateSakeCount();
+                updateTotalCalories();
+                removeDrinkFromFirestore("Sake");
+                //updateBACFromManualLogs();
+            }
+        });
+
     }
 
     /**
-     * Retrieves manual drink logs from Firestore, calculates overall BAC, and updates the display.
+     * Retrieves manual drink logs from Firestore, calculates overall BAC using BACCalculator, and updates the BAC display.
      */
     private void updateBACFromManualLogs() {
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
@@ -322,6 +457,48 @@ public class DashboardFragment extends Fragment {
                     Log.e(TAG, "Error retrieving manual drink logs", e);
                 });
     }
+
+
+    //Saving the dashboard data locally
+    private void saveDashboardData() {
+        SharedPreferences prefs = requireContext().getSharedPreferences("DashboardPrefs", Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = prefs.edit();
+        editor.putString("currentSessionId", currentSessionId);
+        editor.putInt("beerCounter", beerCounter);
+        editor.putInt("wineCounter", wineCounter);
+        editor.putInt("champagneCounter", champagneCounter);
+        editor.putInt("cocktailCounter", cocktailCounter);
+        editor.putInt("shotCounter", shotCounter);
+        editor.putInt("sakeCounter", sakeCounter);
+        editor.putInt("totalCalories", totalCalories);
+        editor.putFloat("bacValue", (float) bacValue);
+        editor.apply();
+    }
+
+    //Loading the dashboard data from local save
+    private void loadDashboardData() {
+        SharedPreferences prefs = requireContext().getSharedPreferences("DashboardPrefs", Context.MODE_PRIVATE);
+        currentSessionId = prefs.getString("currentSessionId", null);
+        beerCounter = prefs.getInt("beerCounter", 0);
+        wineCounter = prefs.getInt("wineCounter", 0);
+        champagneCounter = prefs.getInt("champagneCounter", 0);
+        cocktailCounter = prefs.getInt("cocktailCounter", 0);
+        shotCounter = prefs.getInt("shotCounter", 0);
+        sakeCounter = prefs.getInt("sakeCounter", 0);
+        totalCalories = prefs.getInt("totalCalories", 0);
+        bacValue = prefs.getFloat("bacValue", 0);
+
+        //Update the UI
+        updateBeerCount();
+        updateWineCount();
+        updateChampagneCount();
+        updateCocktailCount();
+        updateShotCount();
+        updateSakeCount();
+        updateTotalCalories();
+        updateBacLevel(bacValue);
+    }
+
 
     private void updateBeerCount() {
         beerCount.setText(String.valueOf(beerCounter));
@@ -388,9 +565,13 @@ public class DashboardFragment extends Fragment {
         if (drinkInfo.getVisibility() == View.VISIBLE) {
             drinkInfo.setVisibility(View.GONE);
         } else {
+            // Format the name to be bold and underlined using HTML
             String formattedName = "<b><u>" + name + "</u></b>";
+
+            // Multiply bac by 100 to show as a percentage and add a % symbol
             String info = String.format("%s<br>Volume: %dml<br>BAC: %.2f%%<br>Calories: %d kcal",
                     formattedName, volume, bac, calories);
+            // Set the text using Html.fromHtml() to render the formatting
             drinkInfo.setText(Html.fromHtml(info));
             drinkInfo.setVisibility(View.VISIBLE);
         }
@@ -403,6 +584,8 @@ public class DashboardFragment extends Fragment {
                 (cocktailCounter * drinkCalories.get("Cocktail")) +
                 (shotCounter * drinkCalories.get("Shot")) +
                 (sakeCounter * drinkCalories.get("Sake"));
+
+        // Update UI
         caloriesTextView.setText("Total Calories: " + totalCalories + " kcal");
     }
 
@@ -417,8 +600,17 @@ public class DashboardFragment extends Fragment {
         String userId = user.getUid();
         Timestamp timestamp = new Timestamp(new Date());
 
+        //Set currentSessionId or create a new one
+        if(currentSessionId == null) {
+            currentSessionId = db.collection("users").document(userId)
+                    .collection("drinking_sessions").document().getId();
+            startNewSession(userId, currentSessionId);
+        }
+
+        //Query for last drink
         db.collection("users").document(userId)
                 .collection("manual_drink_logs")
+                .whereEqualTo("sessionId", currentSessionId)
                 .orderBy("timestamp", Query.Direction.DESCENDING)
                 .limit(1)
                 .get()
@@ -439,6 +631,7 @@ public class DashboardFragment extends Fragment {
                         }
                     }
 
+                    //Fetch or create drinking session
                     db.collection("users").document(userId)
                             .collection("drinking_sessions")
                             .orderBy("startTimestamp", Query.Direction.DESCENDING)
@@ -463,12 +656,13 @@ public class DashboardFragment extends Fragment {
                                     startNewSession(userId, sessionId);
                                 }
 
+                                //Log the drink
                                 db.collection("users").document(userId)
                                         .collection("manual_drink_logs")
                                         .whereEqualTo("sessionId", sessionId)
                                         .get()
                                         .addOnSuccessListener(drinkSnapshots -> {
-                                            drinkCount = drinkSnapshots.size() + 1;
+                                            drinkCount = drinkSnapshots.size() ;
                                             Log.d(TAG, "Total drink count for session: " + drinkCount);
 
                                             Map<String, Object> drinkEntry = new HashMap<>();
@@ -491,6 +685,7 @@ public class DashboardFragment extends Fragment {
                                                         // Store recommendation and then show pop-up
                                                         storeRecommendation(recommendation);
                                                         showRecommendationDialog(drinkCount, recommendation.getMessage());
+                                                        saveDashboardData();   //Persist the updated dashboard state
                                                     })
                                                     .addOnFailureListener(e -> Log.e(TAG, "Error adding drink log", e));
                                         });
@@ -512,18 +707,24 @@ public class DashboardFragment extends Fragment {
                     .limit(1)
                     .get()
                     .addOnSuccessListener(queryDocumentSnapshots -> {
-                        DocumentSnapshot drinkEntry = queryDocumentSnapshots.getDocuments().get(0);
+                        if(!queryDocumentSnapshots.isEmpty()) {
+                        DocumentSnapshot drinkEntry = queryDocumentSnapshots.getDocuments().get(0);   //need to check if empty before doing this
                         drinkEntry.getReference().delete()
                                 .addOnSuccessListener(result -> {
                                     Log.d(TAG, drinkType + " successfully deleted");
+                                    saveDashboardData();    //Local saving
                                 })
                                 .addOnFailureListener(error -> {
                                     Log.d(TAG, "Error deleting entry: " + error);
                                 });
-                    });
+                    } else {
+                            Log.d(TAG, "No drink log found for" + drinkType);
+                        }
+                        });
         }
     }
 
+    //Prompt to ask user if they want to start a new session
     private void askUserToStartNewSession(String userId) {
         new AlertDialog.Builder(requireContext())
                 .setTitle("New Drinking Session")
@@ -546,9 +747,15 @@ public class DashboardFragment extends Fragment {
                 .collection("drinking_sessions")
                 .document(sessionId)
                 .set(sessionData)
-                .addOnSuccessListener(aVoid -> Log.d(TAG, "New drinking session started: " + sessionId))
+                .addOnSuccessListener(aVoid -> {
+                    Log.d(TAG, "New drinking session started: " + sessionId);
+                    currentSessionId = sessionId;
+                    //Reset dashboard if new session
+                    resetDashboard();
+                })
                 .addOnFailureListener(e -> Log.e(TAG, "Failed to start a new drinking session", e));
     }
+
 
     // Store recommendation to Firestore with added logs.
     public void storeRecommendation(Recommendation recommendation) {
@@ -577,7 +784,16 @@ public class DashboardFragment extends Fragment {
                 });
     }
 
-    // List for undo logs
+    //TODO: test if it is annoying that the drinks are checked everytime bac updated
+    private String getCurrentUserId() {
+        FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
+        String userId = currentUser != null ? currentUser.getUid() : null;
+        Log.d(TAG, "Current user ID: " + userId);
+        return userId;
+    }
+
+    private static int rapidLoggingCount = 0; // Tracks repeated alerts in a session
+    //for undo funtionality
     List<String> drinkLogToUndo = new ArrayList<>();
 
     private void checkDrinkLogAndBAC() {
@@ -589,7 +805,10 @@ public class DashboardFragment extends Fragment {
             return;
         }
 
+        // Track if alert for 1 or 2 has already been triggered
         AtomicBoolean alertTriggered = new AtomicBoolean(false);
+
+        //1. Rapid Drink Logging (soft rec):
         long tenMinutesAgo = System.currentTimeMillis() - (10 * 60 * 1000);
         Date tenMinutesAgoDate = new Date(tenMinutesAgo);
         Timestamp timestamp = new Timestamp(tenMinutesAgoDate);
@@ -600,11 +819,13 @@ public class DashboardFragment extends Fragment {
                 .whereGreaterThan("timestamp", timestamp)
                 .get()
                 .addOnSuccessListener(queryDocumentSnapshots -> {
+                    // Check if we have 5 or more drinks in the past 10 minutes
                     if (queryDocumentSnapshots.size() >= 5) {
                         Log.d(TAG, "Rapid logging detected: " + queryDocumentSnapshots.size() + " drinks in past 10 minutes.");
                         String title1 = "Too Many Drinks Logged";
                         String message1;
-                        switch (quickHelpCounter) {
+
+                        switch (rapidLoggingCount) {
                             case 1:
                                 message1 = "You logged 5 drinks in a short time. Was this a mistake?";
                                 break;
@@ -624,43 +845,128 @@ public class DashboardFragment extends Fragment {
                         if (!alertTriggered.get()) {
                             showAlertWithUndo(title1, message1);
                         }
+
+                        // Iterate over the logged drinks and log each timestamp
                         for (DocumentSnapshot document : queryDocumentSnapshots.getDocuments()) {
                             Timestamp drinkTimestamp = document.getTimestamp("timestamp");
                             if (drinkTimestamp != null) {
                                 Log.d(TAG, "Rapid log timestamp: " + drinkTimestamp.toDate());
                             }
+
+                            //to delete five last logs
                             drinkLogToUndo.add(document.getId());
                         }
                     }
                 })
                 .addOnFailureListener(e -> Log.e(TAG, "Error checking rapid drink logs", e));
 
-        // Check for unusually large drink entries in 1 minute
+        //2. Unusually Large Drink Entries (hard rec):
         long oneMinuteAgo = System.currentTimeMillis() - (60 * 1000);
         Date oneMinuteAgoDate = new Date(oneMinuteAgo);
         Timestamp timestamp2 = new Timestamp(oneMinuteAgoDate);
+
         db.collection("users")
                 .document(userId)
                 .collection("manual_drink_logs")
                 .whereGreaterThan("timestamp", timestamp2)
                 .get()
                 .addOnSuccessListener(queryDocumentSnapshots -> {
+                    // If 5 or more drinks were logged in the last minute
                     if (queryDocumentSnapshots.size() >= 5) {
-                        Log.d(TAG, "Unusually large drink entries detected: " + queryDocumentSnapshots.size() + " drinks in 1 minute.");
-                        showAlertWithUndo("Too Many Drinks Logged", "You logged 5 drinks in 1 minute. Was this a mistake?");
+                        Log.d(TAG, "You have logged 5 drinks in the past 1 minute. Would you like to undo these changes?");
+                        showAlertWithUndo(
+                                "Too Many Drinks Logged",
+                                "You logged 5 drinks in 1 minute. Was this a mistake?");
                         alertTriggered.set(true);
+
                         for (DocumentSnapshot document : queryDocumentSnapshots.getDocuments()) {
                             Timestamp drinkTimestamp = document.getTimestamp("timestamp");
                             if (drinkTimestamp != null) {
                                 Log.d(TAG, "Unusually large log timestamp: " + drinkTimestamp.toDate());
                             }
+
+                            //to delete five last logs
                             drinkLogToUndo.add(document.getId());
                         }
                     }
                 })
                 .addOnFailureListener(e -> Log.e(TAG, "Error checking unusually large drink entries", e));
 
-        // Additional checks for rapid BAC changes and unusually high BAC (omitted for brevity)
+        //3. Rapid BAC Changes and
+        //4. Unusually High BAC
+        db.collection("users")
+                .document(userId)
+                .collection("BacEntry")
+                .orderBy("Date")
+                .get()
+                .addOnSuccessListener(queryDocumentSnapshots -> {
+                    double previousBAC = -1;
+                    long previousTimestamp = -1;
+                    double spikeThreshold = 0.05;  // BAC increase threshold
+                    long timeWindow = 10 * 60 * 1000;  // 10 minutes in milliseconds
+
+                    double unusuallyHighBACThreshold = 0.45;  // Unusually high BAC threshold
+
+
+                    // Get the current date and start of today
+                    long todayStartTimestamp = getStartOfTodayTimestamp();
+                    long currentTimestamp = System.currentTimeMillis();
+
+                    for (DocumentSnapshot document : queryDocumentSnapshots.getDocuments()) {
+                        // Retrieve the Date and BAC value
+                        String dateString = document.getString("Date");
+                        Double bac = document.getDouble("bacValue");
+
+                        if (bac != null && dateString != null) {
+                            try {
+                                SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
+                                Date date = dateFormat.parse(dateString);
+
+                                // Get the timestamp of the current entry
+                                long entryTimestamp = date.getTime();
+
+                                // Only consider entries from today
+                                if (entryTimestamp >= todayStartTimestamp) {
+
+                                    if (bac > unusuallyHighBACThreshold) {
+                                        String message = "Your BAC is EXTREMELY high. Please measure your BAC again to confirm the reading.";
+                                        Log.d(TAG, "Unusually High BAC Detected: " + message);
+                                        showAlert(
+                                                "Unusually High BAC Detected",
+                                                message
+                                        );
+
+                                    }
+
+                                    // Check for rapid BAC change within the 10-minute window
+                                    if (previousBAC != -1 && entryTimestamp - previousTimestamp <= timeWindow) {
+                                        // Log.d(TAG, String.valueOf(bac));
+                                        // Log.d(TAG, String.valueOf(previousBAC));
+
+                                        double bacDifference = bac - previousBAC;
+                                        if (bacDifference >= spikeThreshold) {
+                                            String message = "Your BAC has increased by " + bacDifference + " in the past 10 minutes. Please check again to make sure.";
+                                            Log.d(TAG, "Rapid BAC Change Detected: " + message);
+
+                                            showAlert(
+                                                    "Rapid BAC Change Detected",
+                                                    message
+                                            );
+                                        }
+                                    }
+
+                                    // Update previousBAC and previousTimestamp for next iteration
+                                    previousBAC = bac;
+                                    previousTimestamp = entryTimestamp;
+                                }
+                            } catch (Exception e) {
+                                Log.e(TAG, "Error parsing date: " + e.getMessage());
+                            }
+                        }
+                    }
+                })
+                .addOnFailureListener(e -> Log.e(TAG, "Error checking BAC entries", e));
+
     }
 
     private long getStartOfTodayTimestamp() {
@@ -682,24 +988,32 @@ public class DashboardFragment extends Fragment {
             return;
         }
         Log.d(TAG, "showAlertWithUndo: Showing alert with title: " + title);
+
+        // Create dialog with custom theme
         AlertDialog dialog = new AlertDialog.Builder(requireContext(), R.style.RedBorderAlertDialog)
                 .setTitle(title)
                 .setMessage(message)
                 .setPositiveButton("OK", (d, which) -> {
-                    Log.d(TAG, "Alert OK clicked");
-                    quickHelpCounter++;
+                    Log.d(TAG, "OK clicked");
+                    rapidLoggingCount++;
                 })
                 .setNegativeButton("UNDO", (d, which) -> {
-                    Log.d(TAG, "Alert UNDO clicked");
-                    quickHelpCounter--;
+                    Log.d(TAG, "UNDO clicked");
+                    rapidLoggingCount--;
                     deleteLogs(drinkLogToUndo);
                 })
                 .create();
+
         playNotificationSound();
+
+        // Show before styling buttons
         dialog.show();
+
+        // Customize buttons
         int darkRed = ContextCompat.getColor(requireContext(), android.R.color.holo_red_dark);
         Button positiveButton = dialog.getButton(AlertDialog.BUTTON_POSITIVE);
         Button negativeButton = dialog.getButton(AlertDialog.BUTTON_NEGATIVE);
+
         if (positiveButton != null) {
             positiveButton.setTextColor(darkRed);
             positiveButton.setTextSize(TypedValue.COMPLEX_UNIT_SP, 18);
@@ -708,18 +1022,24 @@ public class DashboardFragment extends Fragment {
             negativeButton.setTextColor(darkRed);
             negativeButton.setTextSize(TypedValue.COMPLEX_UNIT_SP, 18);
         }
+
+        // Make title and message larger
         TextView titleView = dialog.findViewById(android.R.id.title);
         TextView messageView = dialog.findViewById(android.R.id.message);
+
         if (titleView != null) {
             titleView.setTextSize(TypedValue.COMPLEX_UNIT_SP, 20);
             titleView.setTextColor(darkRed);
         }
+
         if (messageView != null) {
             messageView.setTextSize(TypedValue.COMPLEX_UNIT_SP, 18);
         }
     }
 
     private void deleteLogs(List<String> drinkLogToUndo) {
+        // rapidLoggingCount = 0;
+
         Log.d(TAG, "Deleting logs: " + drinkLogToUndo.toString());
         FirebaseFirestore db = FirebaseFirestore.getInstance();
         for (String logId : drinkLogToUndo) {
@@ -729,7 +1049,11 @@ public class DashboardFragment extends Fragment {
                     .document(logId)
                     .get()
                     .addOnSuccessListener(documentSnapshot -> {
+                        // Get the drink type from the log
                         String drinkType = documentSnapshot.getString("drinkType");
+                        //Long calories = documentSnapshot.getLong("calories");
+
+                        // Decrement the respective drink counter based on the drink type
                         if (drinkType != null) {
                             switch (drinkType) {
                                 case "Beer":
@@ -765,13 +1089,19 @@ public class DashboardFragment extends Fragment {
                                 default:
                                     Log.e(TAG, "Unknown drink type: " + drinkType);
                             }
+
                             updateTotalCalories();
+
+                            // Delete the log entry after updating the counter
                             db.collection("users")
                                     .document(getCurrentUserId())
                                     .collection("manual_drink_logs")
                                     .document(logId)
                                     .delete()
-                                    .addOnSuccessListener(aVoid -> Log.d(TAG, "Log " + logId + " successfully deleted"))
+                                    .addOnSuccessListener(aVoid -> {
+                                        Log.d(TAG, "Log " + logId + " successfully deleted");
+                                        saveDashboardData();
+                                    })
                                     .addOnFailureListener(e -> Log.e(TAG, "Error deleting log " + logId, e));
                         }
                     })
@@ -783,36 +1113,47 @@ public class DashboardFragment extends Fragment {
         long currentTime = System.currentTimeMillis();
         Long lastShownTime = alertCooldowns.get(title);
         if (lastShownTime == null || (currentTime - lastShownTime) > ALERT_COOLDOWN_PERIOD) {
-            alertCooldowns.put(title, currentTime);
             return true;
         }
-        Log.d(TAG, "Alert '" + title + "' is in cooldown.");
+        Log.d(TAG, "Alert '" + title + "' is still in cooldown.");
         return false;
     }
 
     private boolean canShowBACAlert(String title) {
         if (bacCheckEnabled) {
-            return true;
+            return true; // Show alert if new bac logged
         }
-        Log.d(TAG, "BAC Alert '" + title + "' is in cooldown.");
+
+        Log.d(TAG, "BAC Alert '" + title + "' is still in cooldown.");
         return false;
     }
 
     private void showAlert(String title, String message) {
         if (!canShowBACAlert(title)) return;
+
+        // Create dialog with the same custom theme
         AlertDialog dialog = new AlertDialog.Builder(requireContext(), R.style.RedBorderAlertDialog)
                 .setTitle(title)
                 .setMessage(message)
                 .setPositiveButton("OK", (d, which) -> Log.d(TAG, "Alert OK clicked"))
                 .create();
+
+        // Play the same notification sound
         playNotificationSound();
+
+        // Show before styling
         dialog.show();
+
+        // Customize button (same style as Undo version)
         int darkRed = ContextCompat.getColor(requireContext(), android.R.color.holo_red_dark);
         Button positiveButton = dialog.getButton(AlertDialog.BUTTON_POSITIVE);
+
         if (positiveButton != null) {
             positiveButton.setTextColor(darkRed);
             positiveButton.setTextSize(TypedValue.COMPLEX_UNIT_SP, 18);
         }
+
+        // Identical title/message styling
         TextView titleView = dialog.findViewById(android.R.id.title);
         TextView messageView = dialog.findViewById(android.R.id.message);
         if (titleView != null) {
@@ -825,13 +1166,24 @@ public class DashboardFragment extends Fragment {
         bacCheckEnabled = false;
     }
 
+    //    private void playNotificationSound() {
+//        try {
+//            MediaPlayer mediaPlayer = MediaPlayer.create(requireContext(), R.raw.alert2);
+//            mediaPlayer.setOnCompletionListener(MediaPlayer::release);
+//            mediaPlayer.start();
+//        } catch (Exception e) {
+//            Log.e(TAG, "Error playing sound", e);
+//        }
+//    }
+
+
     private void playNotificationSound() {
         RingtoneManager.getRingtone(requireContext(),
                         RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION))
                 .play();
     }
 
-    // Recommendation pop-up with extra logging
+    // Recommendation pop-up
     private void showRecommendationDialog(int drinkCount, String message) {
         String title = "Healthy tips!";
         Log.d(TAG, "Preparing to show recommendation dialog. Drink count: " + drinkCount + ", Message: " + message);
@@ -844,15 +1196,18 @@ public class DashboardFragment extends Fragment {
                 .setMessage(message)
                 .setPositiveButton("OK", (d, which) -> Log.d(TAG, "Recommendation dialog OK clicked"))
                 .create();
-        // Uncomment if you want a sound here
-        // playNotificationSound();
+
         dialog.show();
+
+        //Buttons
         int greenColor = ContextCompat.getColor(requireContext(), android.R.color.holo_green_dark);
         Button positiveButton = dialog.getButton(AlertDialog.BUTTON_POSITIVE);
         if (positiveButton != null) {
             positiveButton.setTextColor(greenColor);
             positiveButton.setTextSize(TypedValue.COMPLEX_UNIT_SP, 18);
         }
+
+        //Title and message
         TextView titleView = dialog.findViewById(android.R.id.title);
         TextView messageView = dialog.findViewById(android.R.id.message);
         if (titleView != null) {
@@ -863,13 +1218,6 @@ public class DashboardFragment extends Fragment {
             messageView.setTextSize(TypedValue.COMPLEX_UNIT_SP, 18);
         }
         Log.d(TAG, "Recommendation dialog displayed.");
-    }
-
-    private String getCurrentUserId() {
-        FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
-        String userId = currentUser != null ? currentUser.getUid() : null;
-        Log.d(TAG, "Current user ID: " + userId);
-        return userId;
     }
 
     public void fetchPreferences(SettingsActivity.PreferencesCallback callback) {
@@ -900,6 +1248,7 @@ public class DashboardFragment extends Fragment {
                 });
     }
 
+    //this function updates how the quickhelp button is displayed
     public void displayQuickHelp(boolean quickHelp) {
         if (!quickHelp) {
             quickHelpButton.setVisibility(View.VISIBLE);
