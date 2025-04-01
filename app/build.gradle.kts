@@ -35,19 +35,18 @@ android {
 }
 
 dependencies {
-
-    implementation ("com.github.PhilJay:MPAndroidChart:v3.1.0")
-
-    implementation(platform("com.google.firebase:firebase-bom:32.8.0")) // Use latest BOM version
+    implementation(platform("com.google.firebase:firebase-bom:32.8.0")) // Firebase BOM version
 
     implementation("com.google.firebase:firebase-auth") // Version managed by BOM
     implementation("com.google.firebase:firebase-firestore") // Version managed by BOM
+    implementation("com.google.firebase:firebase-database") // Version managed by BOM
+    implementation("com.google.firebase:firebase-messaging") // Version managed by BOM
 
-    implementation ("com.google.android.material:material:1.10.0")
+    implementation ("com.github.PhilJay:MPAndroidChart:v3.1.0")
 
 
+    // Other dependencies
     implementation(libs.appcompat)
-    //implementation(libs.material)
     implementation(libs.constraintlayout)
     implementation(libs.lifecycle.livedata.ktx)
     implementation(libs.lifecycle.viewmodel.ktx)
@@ -55,9 +54,11 @@ dependencies {
     implementation(libs.navigation.ui)
     implementation(libs.activity)
 
+    // Testing libraries
     testImplementation(libs.junit)
     androidTestImplementation(libs.ext.junit)
     androidTestImplementation(libs.espresso.core)
 }
+
 
 
