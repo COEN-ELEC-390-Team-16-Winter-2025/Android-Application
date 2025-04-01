@@ -151,6 +151,18 @@ public class SettingsActivity extends AppCompatActivity {
 
         setupRecyclerView();
 
+        settingsAdapter.setOnContactActionListener(new SettingsAdapter.OnContactActionListener() {
+            @Override
+            public void onEditContact(EmergencyContact contact, int position) {
+                showEditContactDialog(contact, position);  // <-- NEW: Open the edit dialog
+            }
+
+            @Override
+            public void onDeleteContact(EmergencyContact contact, int position) {
+                deleteEmergencyContact(contact, position);  // <-- NEW: Delete the contact
+            }
+        });
+
         profile_picture.setOnClickListener(v -> {
             Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
             intent.setType("image/*");
@@ -412,46 +424,34 @@ public class SettingsActivity extends AppCompatActivity {
     }
 
 
-    public void fetchEmergencyContacts(EmergencyContactsCallback callback){
-
+    public void fetchEmergencyContacts(EmergencyContactsCallback callback) {
         db = FirebaseFirestore.getInstance();
-
         FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
-
         if (currentUser != null) {
             userId = currentUser.getUid();
         } else {
             Log.e(TAG, "No logged-in user found.");
         }
-
         db.collection("users")
                 .document(userId)
                 .collection("profile")
                 .document("Contacts")
                 .collection("Emergency_Contacts")
                 .addSnapshotListener((value, error) -> {
-
                     if(error != null){
-                        Log.d("Firestore", "Error fetching emergency contacts" + error);
+                        Log.d("Firestore", "Error fetching emergency contacts: " + error);
                     }
-
                     if(value != null && !value.isEmpty()){
-
                         emergency_contacts.clear();
-
                         for(DocumentSnapshot doc : value.getDocuments()){
-                            String name = doc.getString("Name");
-                            String phone_no = doc.getString("Phone_no");
-                            String email = doc.getString("Email");
-                            String relationship = doc.getString("Relationship");
-
-                            emergency_contacts.add(new EmergencyContact(name, phone_no, email, relationship));
-
-                            Log.d(TAG, "Emergency Contact: Name: "+name+" Phone no: "+phone_no+" Email: "+email+" Relationship: "+relationship);
-                            callback.onCallback(emergency_contacts);
+                            EmergencyContact contact = doc.toObject(EmergencyContact.class);
+                            if(contact != null) {
+                                contact.setId(doc.getId()); // <-- Store document ID
+                                emergency_contacts.add(contact);
+                            }
                         }
-                    }
-                    else{
+                        callback.onCallback(emergency_contacts);
+                    } else {
                         Log.d(TAG, "No Emergency Contacts found");
                         callback.onCallback(emergency_contacts);
                     }
@@ -689,6 +689,81 @@ public class SettingsActivity extends AppCompatActivity {
         void onCallback(ArrayList<EmergencyContact> contacts);
     }
 
+    private void deleteEmergencyContact(EmergencyContact contact, int position) {
+        if (contact.getId() == null) {
+            Toast.makeText(this, "Contact ID not found", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        db.collection("users")
+                .document(userId)
+                .collection("profile")
+                .document("Contacts")
+                .collection("Emergency_Contacts")
+                .document(contact.getId())
+                .delete()
+                .addOnSuccessListener(aVoid -> {
+                    Toast.makeText(SettingsActivity.this, "Contact deleted", Toast.LENGTH_SHORT).show();
+                    // Remove the contact from the local list and update the adapter
+                    emergency_contacts.remove(position);
+                    settingsAdapter.notifyItemRemoved(position);
+                })
+                .addOnFailureListener(e -> {
+                    Toast.makeText(SettingsActivity.this, "Error deleting contact", Toast.LENGTH_SHORT).show();
+                    Log.d(TAG, "Error deleting contact: " + e);
+                });
+    }
+
+    private void showEditContactDialog(EmergencyContact contact, int position) {
+        android.app.AlertDialog.Builder builder = new android.app.AlertDialog.Builder(this);
+        // Inflate the custom dialog layout
+        View dialogView = LayoutInflater.from(this).inflate(R.layout.dialog_edit_contact, null);
+        builder.setView(dialogView);
+
+        // Find EditTexts in the dialog layout
+        EditText editName = dialogView.findViewById(R.id.edit_name);
+        EditText editPhone = dialogView.findViewById(R.id.edit_phone);
+        EditText editEmail = dialogView.findViewById(R.id.edit_email);
+        EditText editRelationship = dialogView.findViewById(R.id.edit_relationship);
+
+        // Pre-fill fields with current contact values
+        editName.setText(contact.getName());
+        editPhone.setText(contact.getPhone_no());
+        editEmail.setText(contact.getEmail());
+        editRelationship.setText(contact.getRelationship());
+
+        builder.setTitle("Edit Contact");
+        builder.setPositiveButton("Save", (dialog, which) -> {
+            String newName = editName.getText().toString();
+            String newPhone = editPhone.getText().toString();
+            String newEmail = editEmail.getText().toString();
+            String newRelationship = editRelationship.getText().toString();
+
+            // Create a map with the updated values
+            Map<String, Object> updates = new HashMap<>();
+            updates.put("Name", newName);
+            updates.put("Phone_no", newPhone);
+            updates.put("Email", newEmail);
+            updates.put("Relationship", newRelationship);
+
+            // Update the Firestore document using the stored document id
+            db.collection("users")
+                    .document(userId)
+                    .collection("profile")
+                    .document("Contacts")
+                    .collection("Emergency_Contacts")
+                    .document(contact.getId())
+                    .update(updates)
+                    .addOnSuccessListener(aVoid -> {
+                        Toast.makeText(SettingsActivity.this, "Contact updated", Toast.LENGTH_SHORT).show();
+                    })
+                    .addOnFailureListener(e -> {
+                        Toast.makeText(SettingsActivity.this, "Error updating contact", Toast.LENGTH_SHORT).show();
+                        Log.d(TAG, "Error updating contact: " + e);
+                    });
+        });
+        builder.setNegativeButton("Cancel", (dialog, which) -> dialog.dismiss());
+        builder.create().show();
+    }
     public interface PreferencesCallback {
         void onCallback(boolean notifications, boolean alerts, boolean reminders);
     }

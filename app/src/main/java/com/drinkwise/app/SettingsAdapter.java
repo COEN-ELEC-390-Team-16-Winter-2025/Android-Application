@@ -1,57 +1,26 @@
 package com.drinkwise.app;
 
-import android.text.Layout;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageView;
-import android.widget.LinearLayout;
+import android.widget.Button;
 import android.widget.TextView;
-
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
-
 import java.util.ArrayList;
 
 public class SettingsAdapter extends RecyclerView.Adapter<SettingsAdapter.ViewHolder>{
 
-    private ArrayList<EmergencyContact> emergency_contacts = new ArrayList<EmergencyContact>();
-    public static class ViewHolder extends RecyclerView.ViewHolder{
+    private final ArrayList<EmergencyContact> emergency_contacts;
+    private OnContactActionListener actionListener;
 
-        TextView name, phone_no, email, relationship;
-        ImageView profile_picture;
-        LinearLayout recycler_layout, phone_no_layout, email_layout, relationship_layout;
-        public ViewHolder(@NonNull View itemView) {
-            super(itemView);
+    public interface OnContactActionListener {
+        void onEditContact(EmergencyContact contact, int position);
+        void onDeleteContact(EmergencyContact contact, int position);
+    }
 
-            name = itemView.findViewById(R.id.name_recycler);
-            phone_no = itemView.findViewById(R.id.phone_no_recycler);
-            email = itemView.findViewById(R.id.email_recycler);
-            relationship = itemView.findViewById(R.id.relationship_recycler);
-
-            recycler_layout = itemView.findViewById(R.id.recycler_layout);
-            phone_no_layout = itemView.findViewById(R.id.phone_no_layout_recycler);
-            email_layout = itemView.findViewById(R.id.email_layout_recycler);
-            relationship_layout = itemView.findViewById(R.id.relationship_layout_recycler);
-        }
-
-        public TextView getName() {return name;}
-
-        public TextView getPhone_no() {return phone_no;}
-
-        public TextView getEmail() {return email;}
-
-        public TextView getRelationship() {return relationship;}
-
-        public ImageView getProfile_picture() {return profile_picture;}
-
-        public LinearLayout getPhone_no_layout() {return phone_no_layout;}
-
-        public LinearLayout getEmail_layout() {return email_layout;}
-
-        public LinearLayout getRelationship_layout() {return relationship_layout;}
-
-        public LinearLayout getRecycler_layout() {return recycler_layout;}
+    public void setOnContactActionListener(OnContactActionListener listener) {
+        this.actionListener = listener;
     }
 
     public SettingsAdapter(ArrayList<EmergencyContact> emergency_contacts) {
@@ -67,31 +36,57 @@ public class SettingsAdapter extends RecyclerView.Adapter<SettingsAdapter.ViewHo
 
     @Override
     public void onBindViewHolder(@NonNull SettingsAdapter.ViewHolder holder, int position) {
+        EmergencyContact contact = emergency_contacts.get(position);
+        holder.name.setText(contact.getName());
+        holder.phone_no.setText(contact.getPhone_no());
+        holder.email.setText(contact.getEmail());
+        holder.relationship.setText(contact.getRelationship());
 
-        holder.getName().setText(emergency_contacts.get(position).getName());
-        holder.getPhone_no().setText(emergency_contacts.get(position).getPhone_no());
-        holder.getEmail().setText(emergency_contacts.get(position).getEmail());
-        holder.getRelationship().setText(emergency_contacts.get(position).getRelationship());
-
-        holder.getRecycler_layout().setOnClickListener(v -> {
-            if(holder.getPhone_no_layout().getVisibility() == View.GONE){
-                holder.getPhone_no_layout().setVisibility(View.VISIBLE);
-                holder.getEmail_layout().setVisibility(View.VISIBLE);
-                holder.getRelationship_layout().setVisibility(View.VISIBLE);
+        // Set up Edit button listener
+        holder.editButton.setOnClickListener(v -> {
+            if(actionListener != null){
+                actionListener.onEditContact(contact, position);
             }
-            else{
-                holder.getPhone_no_layout().setVisibility(View.GONE);
-                holder.getEmail_layout().setVisibility(View.GONE);
-                holder.getRelationship_layout().setVisibility(View.GONE);
+        });
+        // Set up Delete button listener
+        holder.deleteButton.setOnClickListener(v -> {
+            if(actionListener != null){
+                actionListener.onDeleteContact(contact, position);
             }
         });
 
-
-
+        holder.recycler_layout.setOnClickListener(v -> {
+            if(holder.phone_no.getVisibility() == View.GONE){
+                holder.phone_no.setVisibility(View.VISIBLE);
+                holder.email.setVisibility(View.VISIBLE);
+                holder.relationship.setVisibility(View.VISIBLE);
+            } else {
+                holder.phone_no.setVisibility(View.GONE);
+                holder.email.setVisibility(View.GONE);
+                holder.relationship.setVisibility(View.GONE);
+            }
+        });
     }
 
     @Override
     public int getItemCount() {
         return emergency_contacts.size();
+    }
+
+    public static class ViewHolder extends RecyclerView.ViewHolder {
+        TextView name, phone_no, email, relationship;
+        Button editButton, deleteButton;
+        View recycler_layout;
+
+        public ViewHolder(@NonNull View itemView) {
+            super(itemView);
+            name = itemView.findViewById(R.id.name_recycler);
+            phone_no = itemView.findViewById(R.id.phone_no_recycler);
+            email = itemView.findViewById(R.id.email_recycler);
+            relationship = itemView.findViewById(R.id.relationship_recycler);
+            recycler_layout = itemView.findViewById(R.id.recycler_layout);
+            editButton = itemView.findViewById(R.id.edit_contact_button);
+            deleteButton = itemView.findViewById(R.id.delete_contact_button);
+        }
     }
 }
