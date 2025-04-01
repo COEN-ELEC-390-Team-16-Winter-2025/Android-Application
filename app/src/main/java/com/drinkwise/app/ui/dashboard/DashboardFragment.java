@@ -1399,8 +1399,6 @@ public class DashboardFragment extends Fragment {
     public interface PreferencesCallback {
         void onCallback(boolean notifications, boolean alerts, boolean reminders, boolean quickHelp);
     }
-}
-=======
 
     public interface EmergencyContactsCallback {
         void onCallback(ArrayList<EmergencyContact> contacts);
