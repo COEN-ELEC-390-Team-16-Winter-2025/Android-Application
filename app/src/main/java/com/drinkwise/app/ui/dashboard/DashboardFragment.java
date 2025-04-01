@@ -292,7 +292,7 @@ public class DashboardFragment extends Fragment {
         });
 
         quickHelpButton.setOnClickListener(v -> {
-            //TODO: Implement quickhelp button
+
             quickHelpCounter++;
 
             if(quickHelpCounter < 7){
@@ -301,8 +301,6 @@ public class DashboardFragment extends Fragment {
             else{
                 call911();
             }
-
-            Toast.makeText(getContext(), "Counter: "+quickHelpCounter, Toast.LENGTH_SHORT).show();
         });
 
         addBeerButton.setOnClickListener(v -> {
