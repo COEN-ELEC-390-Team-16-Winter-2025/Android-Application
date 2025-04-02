@@ -19,6 +19,7 @@ import com.google.firebase.firestore.QuerySnapshot;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 public class NotificationsFragment extends Fragment {
 
@@ -46,7 +47,7 @@ public class NotificationsFragment extends Fragment {
         FirebaseFirestore db = FirebaseFirestore.getInstance();
         // Assuming userId is already available
         db.collection("users")
-                .document(userId)  // Point to the specific user document
+                .document(Objects.requireNonNull(userId))  // Point to the specific user document
                 .collection("reminders")  // Fetch from the "reminders" subcollection of that user
                 .get()
                 .addOnCompleteListener(task -> {

@@ -1,5 +1,6 @@
 package com.drinkwise.app;
 
+import android.annotation.SuppressLint;
 import android.util.Log;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -8,6 +9,7 @@ import com.google.firebase.Timestamp;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 public class BACService {
     private final FirebaseFirestore db = FirebaseFirestore.getInstance();
@@ -16,12 +18,8 @@ public class BACService {
     //Upload BAC readings
     public void uploadBACReading(float bacValue) {
         //Retrieve user by userID
-        String userId = auth.getCurrentUser().getUid();
+        String userId = Objects.requireNonNull(auth.getCurrentUser()).getUid();
         //Ensure user is logged in
-        if(userId == null) {
-            Log.e("Firestore", "User not authenticated");
-            return;
-        }
         //Validate BAC Range (0.00-0.50%)
         if(bacValue < 0.00 || bacValue > 0.50 ) {
             Log.e("Firestore", "Invalid BAC value: " + bacValue);
@@ -29,7 +27,7 @@ public class BACService {
         }
 
         //Generate a timestamp
-        String timeStamp = new java.text.SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date());
+        @SuppressLint("SimpleDateFormat") String timeStamp = new java.text.SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date());
 
         //Check for duplicate timestamp in collection
         db.collection("users").document(userId).collection("bacData").document(timeStamp)

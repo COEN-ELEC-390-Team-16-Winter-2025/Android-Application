@@ -1,10 +1,12 @@
 package com.drinkwise.app.ui.notifications;
 
+import android.annotation.SuppressLint;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
+import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.drinkwise.app.R;
@@ -41,6 +43,7 @@ public class NotifAdapter extends RecyclerView.Adapter<NotifAdapter.NotifViewHol
         this.reminderList = reminders;
     }
 
+    @NonNull
     @Override
     public NotifViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         // Inflate the layout for each item (item_reminder.xml)
@@ -49,6 +52,7 @@ public class NotifAdapter extends RecyclerView.Adapter<NotifAdapter.NotifViewHol
         return new NotifViewHolder(itemView);
     }
 
+    @SuppressLint("SetTextI18n")
     @Override
     public void onBindViewHolder(NotifViewHolder holder, int position) {
         // Get the current reminder item
@@ -60,7 +64,7 @@ public class NotifAdapter extends RecyclerView.Adapter<NotifAdapter.NotifViewHol
 
         // Format the timestamp (convert Timestamp to a readable format)
         Timestamp timestamp = reminderItem.getTimestamp();
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        @SuppressLint("SimpleDateFormat") SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         String formattedTimestamp = sdf.format(new Date(timestamp.getSeconds() * 1000));
         holder.timestampTextView.setText(formattedTimestamp);
 

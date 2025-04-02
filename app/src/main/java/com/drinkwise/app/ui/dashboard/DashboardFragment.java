@@ -1,6 +1,8 @@
 package com.drinkwise.app.ui.dashboard;
 
+import android.annotation.SuppressLint;
 import android.app.AlertDialog;
+import android.content.Intent;
 import android.content.Context;
 import android.app.ProgressDialog;
 import android.content.Intent;
@@ -21,7 +23,6 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -42,7 +43,6 @@ import com.drinkwise.app.ui.home.drinklog.DrinkLogItem;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.Timestamp;
@@ -63,9 +63,9 @@ public class DashboardFragment extends Fragment {
     private static final String TAG = "DashboardFragment";
 
     // Top Section Views
-    private TextView bacLevel;
-    private ProgressBar bacProgressBar;
-    private TextView bacStatus;
+    private TextView bacLevel;           // Shows BAC level as a percentage (like 0.06%)
+    private ProgressBar bacProgressBar;  // Horizontal progress bar for BAC level
+    private TextView bacStatus;          // Text status like "Safe", "Caution", "Danger"
 
     // Alcohol counters
     private TextView beerCount;
@@ -87,6 +87,7 @@ public class DashboardFragment extends Fragment {
     private Button minusCocktailButton;
     private Button minusShotButton;
     private Button minusSakeButton;
+
 
     // Drinks info
     private ImageView beerImage, wineImage, champagneImage, cocktailImage, shotImage, sakeImage;
@@ -193,19 +194,18 @@ public class DashboardFragment extends Fragment {
 
 
         // Initialize ImageViews
-        beerImage = view.findViewById(R.id.beerImage);
-        wineImage = view.findViewById(R.id.wineImage);
-        champagneImage = view.findViewById(R.id.champagneImage);
-        cocktailImage = view.findViewById(R.id.cocktailImage);
-        shotImage = view.findViewById(R.id.shotImage);
-        sakeImage = view.findViewById(R.id.sakeImage);
+        //Drinks info
+        ImageView beerImage = view.findViewById(R.id.beerImage);
+        ImageView wineImage = view.findViewById(R.id.wineImage);
+        ImageView champagneImage = view.findViewById(R.id.champagneImage);
+        ImageView cocktailImage = view.findViewById(R.id.cocktailImage);
+        ImageView shotImage = view.findViewById(R.id.shotImage);
+        ImageView sakeImage = view.findViewById(R.id.sakeImage);
 
         // Initialize TextView for displaying drink info
         drinkInfo = view.findViewById(R.id.drinkInfo);
 
-        fetchPreferences((notifications, alerts, reminders, quickHelp) -> {
-            displayQuickHelp(quickHelp);
-        });
+        fetchPreferences((notifications, alerts, reminders, quickHelp) -> displayQuickHelp(quickHelp));
 
         // Set click listeners for drink images
         beerImage.setOnClickListener(v -> displayDrinkInfo("Beer", 355, 0.03, 150));
@@ -273,6 +273,7 @@ public class DashboardFragment extends Fragment {
         minusButtonState();
     }
 
+    @SuppressLint("SetTextI18n")
     private void showDefaultBacValue() {
         bacLevel.setText("No Reading");
         bacProgressBar.setProgress(0);
@@ -479,10 +480,12 @@ public class DashboardFragment extends Fragment {
      */
     private void updateBACFromManualLogs() {
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
-        if (user == null) {
-            Log.e(TAG, "User not logged in; cannot update BAC");
-            return;
-        }
+//        if (user == null) {
+//            Log.e(TAG, "User not logged in; cannot update BAC");
+//            return;
+//        }
+        assert user != null;
+
         String userId = user.getUid();
         db.collection("users")
                 .document(userId)
@@ -502,9 +505,7 @@ public class DashboardFragment extends Fragment {
                     Log.d(TAG, "Calculated BAC from manual logs: " + estimatedBAC);
                     updateBacLevel(estimatedBAC);
                 })
-                .addOnFailureListener(e -> {
-                    Log.e(TAG, "Error retrieving manual drink logs", e);
-                });
+                .addOnFailureListener(e -> Log.e(TAG, "Error retrieving manual drink logs", e));
     }
 
 
@@ -573,6 +574,7 @@ public class DashboardFragment extends Fragment {
         sakeCount.setText(String.valueOf(sakeCounter));
     }
 
+    @SuppressLint({"DefaultLocale", "SetTextI18n"})
     private void updateBacLevel(double bacValue) {
         if (getContext() == null) return;
 
@@ -618,7 +620,7 @@ public class DashboardFragment extends Fragment {
             String formattedName = "<b><u>" + name + "</u></b>";
 
             // Multiply bac by 100 to show as a percentage and add a % symbol
-            String info = String.format("%s<br>Volume: %dml<br>BAC: %.2f%%<br>Calories: %d kcal",
+            @SuppressLint("DefaultLocale") String info = String.format("%s<br>Volume: %dml<br>BAC: %.2f%%<br>Calories: %d kcal",
                     formattedName, volume, bac, calories);
             // Set the text using Html.fromHtml() to render the formatting
             drinkInfo.setText(Html.fromHtml(info));
@@ -626,16 +628,31 @@ public class DashboardFragment extends Fragment {
         }
     }
 
+
+    @SuppressLint("SetTextI18n")
     private void updateTotalCalories() {
-        totalCalories = (beerCounter * drinkCalories.get("Beer")) +
-                (wineCounter * drinkCalories.get("Wine")) +
-                (champagneCounter * drinkCalories.get("Champagne")) +
-                (cocktailCounter * drinkCalories.get("Cocktail")) +
-                (shotCounter * drinkCalories.get("Shot")) +
-                (sakeCounter * drinkCalories.get("Sake"));
+        // Provide a safe helper method to get the integer value or return 0 if null
+        int beerCalories   = getSafeInt(drinkCalories.get("Beer"));
+        int wineCalories   = getSafeInt(drinkCalories.get("Wine"));
+        int champCalories  = getSafeInt(drinkCalories.get("Champagne"));
+        int cocktCalories  = getSafeInt(drinkCalories.get("Cocktail"));
+        int shotCalories   = getSafeInt(drinkCalories.get("Shot"));
+        int sakeCalories   = getSafeInt(drinkCalories.get("Sake"));
+
+        totalCalories = (beerCounter * beerCalories) +
+                (wineCounter * wineCalories) +
+                (champagneCounter * champCalories) +
+                (cocktailCounter * cocktCalories) +
+                (shotCounter * shotCalories) +
+                (sakeCounter * sakeCalories);
 
         // Update UI
         caloriesTextView.setText("Total Calories: " + totalCalories + " kcal");
+    }
+
+    // Helper method: returns 0 if value is null, otherwise returns the int value
+    private int getSafeInt(Integer value) {
+        return (value != null) ? value : 0;
     }
 
     int drinkCount;
@@ -847,7 +864,7 @@ public class DashboardFragment extends Fragment {
     }
 
     private static int rapidLoggingCount = 0; // Tracks repeated alerts in a session
-    //for undo funtionality
+    //for undo functionality
     List<String> drinkLogToUndo = new ArrayList<>();
 
     private void checkDrinkLogAndBAC() {
@@ -977,6 +994,7 @@ public class DashboardFragment extends Fragment {
                                 Date date = dateFormat.parse(dateString);
 
                                 // Get the timestamp of the current entry
+                                assert date != null;
                                 long entryTimestamp = date.getTime();
 
                                 // Only consider entries from today
@@ -1281,13 +1299,14 @@ public class DashboardFragment extends Fragment {
     public void fetchPreferences(SettingsActivity.PreferencesCallback callback) {
         db = FirebaseFirestore.getInstance();
         db.collection("users")
-                .document(getCurrentUserId())
+                .document(Objects.requireNonNull(getCurrentUserId()))
                 .collection("profile")
                 .document("Preferences")
                 .addSnapshotListener((value, error) -> {
                     if (error != null) {
                         Log.d(TAG, "Error fetching preferences: " + error.getMessage());
                     }
+
                     if (value != null && value.exists()) {
                         notifications = value.getBoolean("Notifications");
                         alerts = value.getBoolean("Alerts");
@@ -1306,9 +1325,11 @@ public class DashboardFragment extends Fragment {
                 });
     }
 
-    //this function updates how the quickhelp button is displayed
-    public void displayQuickHelp(boolean quickHelp) {
-        if (!quickHelp) {
+    //this function updates how the quick help button is displayed
+    public void displayQuickHelp(boolean quickHelp){
+
+        //Displays the button or not based on settings preferences for quick help button
+        if(!quickHelp){
             quickHelpButton.setVisibility(View.VISIBLE);
         } else {
             if (bacValue < 0.05) {
@@ -1334,7 +1355,7 @@ public class DashboardFragment extends Fragment {
     public void showEmergencyContactFromQuickHelp(){
 
         bottomSheetDialog = new BottomSheetDialog(requireContext());
-        View view = LayoutInflater.from(requireContext()).inflate(R.layout.quickhelp_bottomsheetdialog, null);
+        @SuppressLint("InflateParams") View view = LayoutInflater.from(requireContext()).inflate(R.layout.quickhelp_bottomsheetdialog, null);
 
         RecyclerView emergencyContactRecyclerView = view.findViewById(R.id.emergency_contact_list);
         emergencyContactRecyclerView.setLayoutManager(new LinearLayoutManager(requireContext()));
@@ -1402,7 +1423,7 @@ public class DashboardFragment extends Fragment {
         db = FirebaseFirestore.getInstance();
 
         db.collection("users")
-                .document(getCurrentUserId())
+                .document(Objects.requireNonNull(getCurrentUserId()))
                 .collection("profile")
                 .document("Contacts")
                 .collection("Emergency_Contacts")

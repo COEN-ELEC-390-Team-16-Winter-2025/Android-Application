@@ -12,7 +12,6 @@ import android.widget.Toast;
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.google.firebase.Firebase;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -138,7 +137,7 @@ public class UserProfileActivity1 extends AppCompatActivity {
 
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
 
-        String userId = user.getUid();
+        String userId = Objects.requireNonNull(user).getUid();
         FirebaseFirestore db = FirebaseFirestore.getInstance();
 
         // convert to float
