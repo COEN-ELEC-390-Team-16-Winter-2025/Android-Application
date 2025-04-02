@@ -48,6 +48,7 @@ dependencies {
     //dependencies needed for google map
     implementation("com.google.android.gms:play-services-maps:18.1.0")
     implementation("com.google.android.gms:play-services-location:21.0.1")
+    implementation("com.google.maps.android:android-maps-utils:3.4.0")
     implementation("com.android.volley:volley:1.2.1")
 
 
