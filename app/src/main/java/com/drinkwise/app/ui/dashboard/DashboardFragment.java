@@ -197,8 +197,6 @@ public class DashboardFragment extends Fragment {
         // Initialize TextView for displaying drink info
         drinkInfo = view.findViewById(R.id.drinkInfo);
 
-        minusButtonState();
-
         fetchPreferences((notifications, alerts, reminders, quickHelp) -> {
             displayQuickHelp(quickHelp);
         });
@@ -265,6 +263,8 @@ public class DashboardFragment extends Fragment {
         updateShotCount();
         updateSakeCount();
         updateTotalCalories();
+
+        minusButtonState();
     }
 
     private void showDefaultBacValue() {
@@ -644,6 +644,7 @@ public class DashboardFragment extends Fragment {
                     .collection("drinking_sessions").document().getId();
             startNewSession(userId, currentSessionId);
         }
+        Log.d(TAG, "Current session id: "+currentSessionId);
 
         //Query for last drink
         db.collection("users").document(userId)
@@ -654,14 +655,18 @@ public class DashboardFragment extends Fragment {
                 .get()
                 .addOnSuccessListener(queryDocumentSnapshots -> {
                     final int[] interval = {0};
+                    if(queryDocumentSnapshots.isEmpty()){
+                        Log.d(TAG, "Document is empty");
+                    }
                     if (!queryDocumentSnapshots.isEmpty()) {
                         DocumentSnapshot lastDrink = queryDocumentSnapshots.getDocuments().get(0);
                         Timestamp lastTimestamp = lastDrink.getTimestamp("timestamp");
+                        Log.d(TAG, "Document is not empty");
                         if (lastTimestamp != null) {
                             long milliseconds = timestamp.toDate().getTime() - lastTimestamp.toDate().getTime();
                             interval[0] = (int) (milliseconds / 1000);
                             Log.d(TAG, "Time interval since last drink: " + interval[0] + " seconds");
-                            if (interval[0] > 7200) {
+                            if (interval[0] > 0) {
                                 Log.d(TAG, "Interval > 2 hours, prompting new session.");
                                 askUserToStartNewSession(userId);
                                 return;

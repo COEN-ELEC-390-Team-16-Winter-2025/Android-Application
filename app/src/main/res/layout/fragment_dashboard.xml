@@ -530,6 +530,14 @@
             android:backgroundTint="@color/quick_help_background_color"
             android:textColor="@color/quick_help_text_color" />
 
+        <Button
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="GET HOME"
+            android:textSize="18sp"
+            android:padding="16dp"
+            android:layout_marginTop="16dp"/>
+
     </LinearLayout>
 </ScrollView>
 
