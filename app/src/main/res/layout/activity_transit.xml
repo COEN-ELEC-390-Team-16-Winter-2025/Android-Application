@@ -15,6 +15,7 @@
         android:textSize="40dp"
         android:layout_gravity="center"
         android:layout_marginTop="100dp"
+        android:visibility="visible"
         />
 
     <Button
@@ -24,7 +25,8 @@
         android:text="TRANSIT 🚌"
         android:textSize="40dp"
         android:layout_gravity="center"
-        android:layout_marginTop="100dp"/>
+        android:layout_marginTop="100dp"
+        android:visibility="visible"/>
 
     <Button
         android:id="@+id/ride"
@@ -33,7 +35,12 @@
         android:text="RIDE 🚖"
         android:textSize="40dp"
         android:layout_gravity="center"
-        android:layout_marginTop="100dp"/>
+        android:layout_marginTop="100dp"
+        android:visibility="visible"/>
 
+    <com.google.android.gms.maps.MapView
+        android:id="@+id/Map"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"/>
 
 </LinearLayout>
