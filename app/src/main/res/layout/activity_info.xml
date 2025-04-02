@@ -23,7 +23,7 @@
             android:layout_marginTop="16dp"
             android:layout_marginBottom="16dp"
             android:fontFamily="@font/artifika"
-            android:text="Welcome!"
+            android:text="Welcome to DrinkWise!"
             android:textAlignment="center"
             android:textColor="@color/van_dyke"
             android:textSize="24sp"
@@ -108,7 +108,7 @@
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:fontFamily="@font/asul"
-                            android:text="Step 2: Open the DrinkWise app and navigate to the Dashboard. Press the 'MEASURE BAC' button when you're ready to take a reading."
+                            android:text="Step 2: Open the DrinkWise app and navigate to the Dashboard. Press the MEASURE BAC button when you're ready to take a reading."
                             android:textColor="@color/deep_red"
                             android:textAlignment="center"
                             android:textSize="16sp"/>
@@ -323,7 +323,7 @@
                         android:layout_height="wrap_content"
                         android:layout_marginTop="8dp"
                         android:fontFamily="@font/asul"
-                        android:text="• Pace yourself - try to have no more than one standard drink per hour.\n\n• Stay hydrated - alternate alcoholic drinks with water.\n\n• Eat before and while drinking to slow alcohol absorption.\n\n• Know your limits and stick to them.\n\n• Plan for safe transportation home before you start drinking."
+                        android:text="• Pace yourself. Try to have no more than one standard drink per hour.\n\n• Stay hydrated. Alternate alcoholic drinks with water.\n\n• Eat before and while drinking to slow alcohol absorption.\n\n• Know your limits and stick to them.\n\n• Plan for safe transportation home before you start drinking."
                         android:textColor="@color/deep_red"
                         android:textSize="16sp" />
                 </LinearLayout>
@@ -377,7 +377,7 @@
             </FrameLayout>
         </androidx.cardview.widget.CardView>
 
-        <!-- Section 5: About DrinkWise -->
+        <!-- Section 5: About DrinkWise
         <androidx.cardview.widget.CardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -418,6 +418,50 @@
                 </LinearLayout>
             </FrameLayout>
         </androidx.cardview.widget.CardView>
+        -->
+        <!-- Section 6: Important Disclaimers -->
+        <androidx.cardview.widget.CardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
+            app:cardCornerRadius="8dp"
+            app:cardElevation="12dp"
+            app:cardUseCompatPadding="true">
+
+            <FrameLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="@drawable/card_border">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="16dp">
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:fontFamily="@font/artifika"
+                        android:text="Important Disclaimers\n"
+                        android:textAlignment="center"
+                        android:textColor="@color/van_dyke"
+                        android:textSize="20sp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:fontFamily="@font/asul"
+                        android:text="• The BAC readings provided by this app are not legally certified and cannot be used as evidence of sobriety or impairment.\n\n• Warning: The sensor used in this app may provide less accurate results in cold weather. For best accuracy, avoid using the device if the ambient temperature is below 0°C (32°F).\n\n• Regardless of your BAC reading, if you have consumed any amount of alcohol, do not drive. Always choose a safe option like a taxi, rideshare, or designated driver.
+                                        \n\nWe strongly encourage users to prioritize safety and never rely solely on this app to determine their fitness to drive."
+                        android:textColor="@color/deep_red"
+                        android:textSize="16sp" />
+                </LinearLayout>
+            </FrameLayout>
+        </androidx.cardview.widget.CardView>
+
         <!-- Padding at the end -->
         <View
             android:layout_width="match_parent"
