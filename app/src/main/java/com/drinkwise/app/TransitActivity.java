@@ -28,6 +28,7 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapView;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.PolylineOptions;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -184,7 +185,7 @@ public class TransitActivity extends AppCompatActivity implements OnMapReadyCall
                     double currentLat = location.getLatitude();
                     double currentLong = location.getLongitude();
 
-                    gMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(currentLat, currentLong), 15));
+                    gMap.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(currentLat, currentLong), 17));
 
 
                     Log.d(TAG, "Current Latitude: "+currentLat+ " Current Longitude: "+currentLong);
@@ -229,6 +230,8 @@ public class TransitActivity extends AppCompatActivity implements OnMapReadyCall
                         }
 
                         PolylineOptions polylineOptions = new PolylineOptions().addAll(path).color(Color.BLUE).width(10);
+                        gMap.addMarker(new MarkerOptions().position(new LatLng(currentLat, currentLong)).title("Start"));
+                        gMap.addMarker(new MarkerOptions().position(new LatLng(destinationLat, destinationLong)).title("Arrival"));
                         gMap.addPolyline(polylineOptions);
 
                     } catch (Exception e) {
