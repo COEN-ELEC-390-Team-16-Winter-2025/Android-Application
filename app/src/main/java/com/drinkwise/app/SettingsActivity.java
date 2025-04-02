@@ -1,5 +1,6 @@
 package com.drinkwise.app;
 
+import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
@@ -11,7 +12,6 @@ import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
-import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
@@ -25,9 +25,6 @@ import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.graphics.Insets;
-import androidx.core.view.ViewCompat;
-import androidx.core.view.WindowInsetsCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -36,16 +33,13 @@ import com.google.firebase.auth.AuthCredential;
 import com.google.firebase.auth.EmailAuthProvider;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
-import com.drinkwise.app.ui.notifications.ReminderManager;
-
-import org.w3c.dom.Text;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 public class SettingsActivity extends AppCompatActivity {
 
@@ -81,15 +75,16 @@ public class SettingsActivity extends AppCompatActivity {
     protected Button save_emergency_contact, save_profile_information, save_physical_information, save_password;
     protected RecyclerView settings_recycler_view;
     protected SettingsAdapter settingsAdapter;
+    @SuppressLint("UseSwitchCompatOrMaterialCode")
     protected Switch notifications_switch, alerts_switch, reminders_switch, quick_help_switch;
 
     //Database related variables
     private FirebaseFirestore db;
     private String userId;
-    private FirebaseAuth auth;
     private FirebaseUser user;
     private ArrayList<EmergencyContact> emergency_contacts = new ArrayList<>();
 
+    @SuppressLint({"SetTextI18n", "IntentReset"})
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -123,7 +118,7 @@ public class SettingsActivity extends AppCompatActivity {
 
         setupUI(); //Initializes UI components
 
-        //Fetches users information from firestore, edit the corresponding textviews and edit texts
+        //Fetches users information from firestore, edit the corresponding textview and edit texts
         fetchUserInformation((userName, userHeight, userWeight, isMetric, birthday) -> {
 
             username_textview.setText(userName);
@@ -153,7 +148,7 @@ public class SettingsActivity extends AppCompatActivity {
         setupRecyclerView();
 
         profile_picture.setOnClickListener(v -> {
-            Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+            @SuppressLint("IntentReset") Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
             intent.setType("image/*");
             launchGallery.launch(intent);
         });
@@ -233,7 +228,6 @@ public class SettingsActivity extends AppCompatActivity {
 
             if(!newPass.equals(confirmPass)){
                 Toast.makeText(this, "Passwords do not match!", Toast.LENGTH_SHORT).show();
-                return;
             }
             else{
                 reauthenticateUserAndChangePass(currentPass, newPass);
@@ -403,9 +397,18 @@ public class SettingsActivity extends AppCompatActivity {
                 .addOnSuccessListener(documentSnapshot -> {
                     if (documentSnapshot.exists()) {
                         userName = documentSnapshot.getString("name");
-                        userHeight = documentSnapshot.getLong("height");
-                        userWeight = documentSnapshot.getLong("weight");
-                        isMetric = documentSnapshot.getBoolean("isMetric");
+                        userName = documentSnapshot.getString("name");
+
+                        Long heightVal = documentSnapshot.getLong("height");
+                        userHeight = (heightVal != null) ? heightVal : 0;  // Default to 0 if null
+
+                        Long weightVal = documentSnapshot.getLong("weight");
+                        userWeight = (weightVal != null) ? weightVal : 0;  // Default to 0 if null
+
+                        Boolean metricVal = documentSnapshot.getBoolean("isMetric");
+                        isMetric = (metricVal != null) ? metricVal : false;  // Default to false if null
+
+                        birthday = documentSnapshot.getString("birthday");
                         birthday = documentSnapshot.getString("birthday");
 
                         Log.d(TAG, "Username: "+userName + " userHeight: "+userHeight+" userWeight: "+userWeight+" isMetric: "+ isMetric+ " birthday: "+birthday);
@@ -417,9 +420,7 @@ public class SettingsActivity extends AppCompatActivity {
                     }
 
                 })
-                .addOnFailureListener(e -> {
-                    Log.d(TAG, "Error fetching data");
-                });
+                .addOnFailureListener(e -> Log.d(TAG, "Error fetching data"));
     }
 
 
@@ -491,10 +492,10 @@ public class SettingsActivity extends AppCompatActivity {
                     }
 
                     if(value != null && value.exists()){
-                        notifications = value.getBoolean("Notifications");
-                        alerts = value.getBoolean("Alerts");
-                        reminders = value.getBoolean("Reminders");
-                        quickHelp = value.getBoolean("Quick_help");
+                        notifications = Boolean.TRUE.equals(value.getBoolean("Notifications"));
+                        alerts = Boolean.TRUE.equals(value.getBoolean("Alerts"));
+                        reminders = Boolean.TRUE.equals(value.getBoolean("Reminders"));
+                        quickHelp = Boolean.TRUE.equals(value.getBoolean("Quick_help"));
 
                         Log.d(TAG, "Notifications: "+notifications + " Alerts: "+alerts+" Reminders: "+reminders+" Quick Help: "+quickHelp);
 
@@ -513,12 +514,12 @@ public class SettingsActivity extends AppCompatActivity {
 
     public void reauthenticateUserAndChangePass(String currentP, String newP){
 
-        auth = FirebaseAuth.getInstance();
+        FirebaseAuth auth = FirebaseAuth.getInstance();
         user = auth.getCurrentUser();
 
-        String email = user.getEmail();
+        String email = Objects.requireNonNull(user).getEmail();
 
-        AuthCredential credentials = EmailAuthProvider.getCredential(email, currentP);
+        AuthCredential credentials = EmailAuthProvider.getCredential(Objects.requireNonNull(email), currentP);
 
         user.reauthenticate(credentials)
                 .addOnCompleteListener(task -> {
@@ -670,6 +671,7 @@ public class SettingsActivity extends AppCompatActivity {
         quick_help_switch = findViewById(R.id.quick_help_switch);
     }
 
+    @SuppressLint("NotifyDataSetChanged")
     public void setupRecyclerView() {
         fetchEmergencyContacts(emergency_contacts -> {
             Log.d(TAG, "Data Fetched Successfully");
@@ -717,7 +719,7 @@ public class SettingsActivity extends AppCompatActivity {
             actionBar.setDisplayShowCustomEnabled(true);
             actionBar.setDisplayShowTitleEnabled(false);
             LayoutInflater inflater = LayoutInflater.from(this);
-            View customView = inflater.inflate(R.layout.custom_actionbar_title, null);
+            @SuppressLint("InflateParams") View customView = inflater.inflate(R.layout.custom_actionbar_title, null);
 
             TextView actionBarTitle = customView.findViewById(R.id.action_bar_title);
             actionBarTitle.setText(title);
@@ -725,9 +727,7 @@ public class SettingsActivity extends AppCompatActivity {
             ImageButton infoButton = customView.findViewById(R.id.info_button);
             if (showInfoButton) {
                 infoButton.setVisibility(View.VISIBLE);
-                infoButton.setOnClickListener(v -> {
-                    startActivity(new Intent(SettingsActivity.this, InfoActivity.class));
-                });
+                infoButton.setOnClickListener(v -> startActivity(new Intent(SettingsActivity.this, InfoActivity.class)));
             } else {
                 infoButton.setVisibility(View.GONE);
             }

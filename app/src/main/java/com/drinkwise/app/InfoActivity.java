@@ -1,5 +1,6 @@
 package com.drinkwise.app;
 
+import android.annotation.SuppressLint;
 import android.os.Bundle;
 import android.view.MenuItem;
 import android.view.View;
@@ -12,9 +13,8 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.drinkwise.app.R;
-
 public class InfoActivity extends AppCompatActivity {
+    @SuppressLint("SetTextI18n")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -41,11 +41,7 @@ public class InfoActivity extends AppCompatActivity {
 
             // For the Support Resources section
             TextView supportResourcesText = findViewById(R.id.support_resources_text);
-            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N) {
-                supportResourcesText.setText(Html.fromHtml(getString(R.string.support_resources), Html.FROM_HTML_MODE_LEGACY));
-            } else {
-                supportResourcesText.setText(Html.fromHtml(getString(R.string.support_resources)));
-            }
+            supportResourcesText.setText(Html.fromHtml(getString(R.string.support_resources), Html.FROM_HTML_MODE_LEGACY));
 
 // To make links clickable
             supportResourcesText.setMovementMethod(LinkMovementMethod.getInstance());
