@@ -1,5 +1,6 @@
 package com.drinkwise.app;
 
+import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
@@ -8,22 +9,36 @@ import android.widget.Button;
 import androidx.activity.EdgeToEdge;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
+import android.Manifest;
+import android.content.pm.PackageManager;
 
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
+import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapView;
 import com.google.android.gms.maps.OnMapReadyCallback;
+import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.PolylineOptions;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.core.View;
+import com.google.maps.android.PolyUtil;
 
 import org.json.JSONArray;
+import org.json.JSONObject;
+
+import java.util.ArrayList;
 
 public class TransitActivity extends AppCompatActivity implements OnMapReadyCallback {
 
@@ -48,13 +63,22 @@ public class TransitActivity extends AppCompatActivity implements OnMapReadyCall
 
         setupUI();
 
+        Bundle mapViewBundle = null;
+        mapView.onCreate(mapViewBundle);
+        mapView.getMapAsync(this);
+
         fetchHomeAddress(((address_line1, city1, province1, postal_code1, country1) -> {
             Log.d(TAG, "Address line: "+address_line+" City: "+city+" Province: "+province+" Postal Code"+postal_code+" Country: "+country);
         }));
 
+        walk.setOnClickListener(v -> {
+            walk.setVisibility(MapView.GONE);
+            transit.setVisibility(MapView.GONE);
+            ride.setVisibility(MapView.GONE);
+            mapView.setVisibility(MapView.VISIBLE);
+            AddressToGeo(address_line, city, province, postal_code, country);
 
-
-
+        });
 
     }
 
@@ -98,12 +122,6 @@ public class TransitActivity extends AppCompatActivity implements OnMapReadyCall
                         callback.onCallback(address_line, city, province, postal_code, country);
                     }
                 });
-
-        walk.setOnClickListener(v -> {
-            mapView.setVisibility(MapView.VISIBLE);
-            AddressToGeo(address_line, city, province, postal_code, country);
-
-        });
     }
 
 
@@ -123,23 +141,14 @@ public class TransitActivity extends AppCompatActivity implements OnMapReadyCall
         JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, url, null, response -> {
             Log.d("Response", response.toString());
             try{
-                //TODO: remove later
-                String status = response.getString("status");
-                if (!status.equals("OK")) {
-                    Log.e(TAG, "Geocoding API error: " + status);
-                    return;
-                }
 
                 JSONArray result = response.getJSONArray("results");
 
-                //TODO: REMOVE LATER
-                if (result.length() == 0) {
-                    Log.e(TAG, "No results found for the given address");
-                    return;
-                }
 
                 double homeLat = result.getJSONObject(0).getJSONObject("geometry").getJSONObject("location").getDouble("lat");
                 double homeLong = result.getJSONObject(0).getJSONObject("geometry").getJSONObject("location").getDouble("lng");
+
+                fetchCurrentLocation(homeLat, homeLong);
 
                 Log.d(TAG, "Home Latitude: "+homeLat+" Home Longitude: "+homeLong);
             } catch (Exception e) {
@@ -154,7 +163,82 @@ public class TransitActivity extends AppCompatActivity implements OnMapReadyCall
 
         requestQueue.add(jsonObjectRequest);
     }
+    public void fetchCurrentLocation(double destinationLat, double destinationLong){
+        FusedLocationProviderClient fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
 
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
+                ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+
+            // Request location permission
+            ActivityCompat.requestPermissions(this,
+                    new String[]{Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION},
+                    1001); // Request code can be any integer
+
+            Log.d("Location", "Location permission not granted, requesting permission.");
+            return;
+        }
+
+        fusedLocationProviderClient.getLastLocation()
+                .addOnSuccessListener(location -> {
+
+                    double currentLat = location.getLatitude();
+                    double currentLong = location.getLongitude();
+
+                    gMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(currentLat, currentLong), 15));
+
+
+                    Log.d(TAG, "Current Latitude: "+currentLat+ " Current Longitude: "+currentLong);
+
+                    fetchWalkableRoute(currentLat, currentLong, destinationLat, destinationLong);
+
+                });
+    }
+    public void fetchWalkableRoute(double currentLat, double currentLong, double destinationLat, double destinationLong){
+        String url = "https://maps.googleapis.com/maps/api/directions/json?origin="+
+                currentLat+","+currentLong+
+                "&destination="+destinationLat+","+destinationLong+
+                "&mode=walking"+"&key="+API_KEY;
+
+        RequestQueue requestQueue = Volley.newRequestQueue(this);
+
+        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, url, null,
+                response -> {
+                    try {
+                        JSONArray routes = response.getJSONArray("routes");
+                        if (routes.length() == 0) {
+                            Log.e("Directions", "No walking route found.");
+                            return;
+                        }
+
+                        JSONObject route = routes.getJSONObject(0);
+
+                        JSONArray legs = route.getJSONArray("legs");
+                        JSONObject leg = legs.getJSONObject(0);
+
+                        String distance = leg.getJSONObject("distance").getString("text");
+                        String duration = leg.getJSONObject("duration").getString("text");
+
+                        Log.d(TAG, "Distance: "+distance+" Duration:"+duration);
+
+                        JSONArray steps = leg.getJSONArray("steps");
+                        ArrayList<LatLng> path = new ArrayList<>();
+                        for(int i = 0; i<steps.length(); i++){
+                            String polyline = steps.getJSONObject(i).getJSONObject("polyline").getString("points");
+                            path.addAll(PolyUtil.decode(polyline));
+
+                        }
+
+                        PolylineOptions polylineOptions = new PolylineOptions().addAll(path).color(Color.BLUE).width(10);
+                        gMap.addPolyline(polylineOptions);
+
+                    } catch (Exception e) {
+                        Log.e("Directions", "Error parsing route", e);
+                    }
+                },
+                error -> Log.e("Directions", "Request failed: " + error));
+
+        requestQueue.add(jsonObjectRequest);
+    }
     public void setupUI(){
 
         walk = findViewById(R.id.walk);
@@ -162,10 +246,6 @@ public class TransitActivity extends AppCompatActivity implements OnMapReadyCall
         ride = findViewById(R.id.ride);
         mapView = findViewById(R.id.Map);
 
-        Bundle mapViewBundle = null;
-
-        mapView.onCreate(mapViewBundle);
-        mapView.getMapAsync(this);
     }
 
     public interface HomeAddressCallback{
