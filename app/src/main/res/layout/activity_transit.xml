@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    tools:context=".TransitActivity">
+
+    <Button
+        android:id="@+id/walk"
+        android:layout_width="300dp"
+        android:layout_height="100dp"
+        android:text="WALK 🚶‍♂️"
+        android:textSize="40dp"
+        android:layout_gravity="center"
+        android:layout_marginTop="100dp"
+        />
+
+    <Button
+        android:id="@+id/transit"
+        android:layout_width="300dp"
+        android:layout_height="100dp"
+        android:text="TRANSIT 🚌"
+        android:textSize="40dp"
+        android:layout_gravity="center"
+        android:layout_marginTop="100dp"/>
+
+    <Button
+        android:id="@+id/ride"
+        android:layout_width="300dp"
+        android:layout_height="100dp"
+        android:text="RIDE 🚖"
+        android:textSize="40dp"
+        android:layout_gravity="center"
+        android:layout_marginTop="100dp"/>
+
+
+</LinearLayout>

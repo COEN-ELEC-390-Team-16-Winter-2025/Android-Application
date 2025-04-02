@@ -36,6 +36,7 @@ import com.drinkwise.app.R;
 import com.drinkwise.app.Recommendation;
 import com.drinkwise.app.ScanningActivity;
 import com.drinkwise.app.SettingsActivity;
+import com.drinkwise.app.TransitActivity;
 import com.drinkwise.app.ui.home.drinklog.BACCalculator;
 import com.drinkwise.app.ui.home.drinklog.DrinkLogItem;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
@@ -109,6 +110,9 @@ public class DashboardFragment extends Fragment {
     private double bacValue = 0;
     ArrayList<EmergencyContact> emergencyContacts = new ArrayList<>();
     BottomSheetDialog bottomSheetDialog;
+
+    //Get Home Related Variables
+    Button getHomeButton;
 
 
     // Preferences Related variables
@@ -185,6 +189,8 @@ public class DashboardFragment extends Fragment {
         seeListButton = view.findViewById(R.id.seeListButton);
         refreshButton = view.findViewById(R.id.refreshButton);
         quickHelpButton = view.findViewById(R.id.quickHelpButton);
+        getHomeButton = view.findViewById(R.id.get_home);
+
 
         // Initialize ImageViews
         beerImage = view.findViewById(R.id.beerImage);
@@ -325,6 +331,11 @@ public class DashboardFragment extends Fragment {
             else{
                 call911();
             }
+        });
+
+        getHomeButton.setOnClickListener(v -> {
+            Intent intent = new Intent(getContext(), TransitActivity.class);
+            startActivity(intent);
         });
 
         addBeerButton.setOnClickListener(v -> {

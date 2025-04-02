@@ -518,7 +518,6 @@ public class SettingsActivity extends AppCompatActivity {
                         callback.onCallback(address_line, city, province, postal_code, country);
                     }
                 });
-
     }
 
 
