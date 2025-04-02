@@ -25,62 +25,24 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
     private FirebaseFirestore db = FirebaseFirestore.getInstance();
 
     @Override
-     public void onMessageReceived(@NonNull RemoteMessage remoteMessage) {
+    public void onMessageReceived(@NonNull RemoteMessage remoteMessage) {
         super.onMessageReceived(remoteMessage);
-         Log.d("FCMService", "onMessageReceived triggered");
+        Log.d("FCMService", "onMessageReceived triggered");
 
-
-        FirebaseFirestore db = FirebaseFirestore.getInstance();
-
-        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
-        if (user == null) {
-            Log.e("FCMService", "User is not authenticated");
-            return;
+        if (remoteMessage.getData().size() > 0) {
+            String title = remoteMessage.getData().get("title");
+            String message = remoteMessage.getData().get("body");
+            sendNotification(title, message);
         }
-        String userId = user.getUid();  // Use the current user's UID
-
-        // Fetch latest recommendation for the user from Firestore
-        db.collection("users")
-                .document(userId)
-                .collection("Recommendations")
-                .orderBy("Timestamp", Query.Direction.DESCENDING)
-                .limit(45)
-                .get()
-                .addOnSuccessListener(queryDocumentSnapshots -> {
-                    Log.d("FCMService", "Query success, documents: " + queryDocumentSnapshots.size());
-
-                    if (!queryDocumentSnapshots.isEmpty()) {
-                        DocumentSnapshot document = queryDocumentSnapshots.getDocuments().get(0);
-
-                        int drinkCount = document.getLong("DrinkCount").intValue();
-                        String message = document.getString("Message");
-                        boolean resolved = document.getBoolean("Resolved");
-
-                        Log.d("FCMService", "Fetched recommendation: " + message);
-
-
-
-                        // Send notification only if the recommendation is not resolved
-                        if (!resolved) {
-                            sendNotification("New Recommendation", message);
-                            // Optionally, you can update the 'Resolved' field to mark the recommendation as shown
-                            document.getReference().update("Resolved", true);
-                        }
-                    } else {
-                        Log.d("FCMService", "No recommendations found.");
-                    }
-                })
-                .addOnFailureListener(e -> Log.e("FCMService", "Error fetching recommendations", e));
     }
 
     private void sendNotification(String title, String messageBody) {
         Log.d("FCMService", "Sending notification with title: " + title + " and message: " + messageBody);
 
-        // Create the notification channel if necessary (for devices >= Android Oreo)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             String channelId = "default_channel";
             CharSequence channelName = "Default Channel";
-            int importance = NotificationManager.IMPORTANCE_DEFAULT;
+            int importance = NotificationManager.IMPORTANCE_HIGH;
             NotificationChannel channel = new NotificationChannel(channelId, channelName, importance);
             NotificationManager notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
             if (notificationManager != null) {
@@ -88,23 +50,20 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
             }
         }
 
-        // Create the notification with the specified icon
         NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(this, "default_channel")
-                .setSmallIcon(R.drawable.ic_notifications_black_24dp)  // Set your notification icon here
+                .setSmallIcon(R.drawable.ic_notifications_black_24dp)
                 .setContentTitle(title)
                 .setContentText(messageBody)
-                .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+                .setPriority(NotificationCompat.PRIORITY_HIGH)
                 .setAutoCancel(true);
 
-        // Log the notification details before sending it
-        Log.d("FCMService", "Notification built, now sending.");
-
-        // Notify the user
         NotificationManager notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
         if (notificationManager != null) {
             notificationManager.notify(0, notificationBuilder.build());
         }
     }
+
+
 
 
 
@@ -114,5 +73,23 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
         super.onNewToken(token);
         Log.d("FCMService", "New token: " + token);
 
+        // Get the current authenticated user
+        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+
+        // If the user is logged in
+        if (user != null) {
+            // Save the token to Firestore under the user's document
+            String userId = user.getUid();
+            db.collection("users")
+                    .document(userId)
+                    .update("fcmToken", token)
+                    .addOnSuccessListener(aVoid -> {
+                        Log.d("FCMService", "FCM token saved successfully for user: " + userId);
+                    })
+                    .addOnFailureListener(e -> {
+                        Log.w("FCMService", "Error saving FCM token", e);
+                    });
+        }
     }
+
 }
