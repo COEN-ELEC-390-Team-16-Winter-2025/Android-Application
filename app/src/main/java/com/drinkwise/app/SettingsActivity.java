@@ -64,21 +64,25 @@ public class SettingsActivity extends AppCompatActivity {
     private String contact_relationship;
 
     //Change password related variables
-    String currentPass, newPass, confirmPass;
+    private String currentPass, newPass, confirmPass;
+
+    //Change home address related variables
+    private String address_line, city, province, postal_code, country;
 
     //Preferences related variables
     private boolean notifications, alerts, reminders, quickHelp;
 
     //UI Components
-    protected TextView username_textview,  edit_profile_information, edit_physical_information, add_emergency_contact, edit_password;
+    protected TextView username_textview,  edit_profile_information, edit_physical_information, add_emergency_contact, edit_password, edit_home_address;
     protected ImageView profile_picture, emergency_contact_profile_picture;
     private ActivityResultLauncher<Intent> launchGallery;
     protected EditText name_edit_text, height_edit_text, weight_edit_text, birthday_edit_text,
     emergency_contact_name, emergency_contact_phone_no, emergency_contact_email, emergency_contact_relationship,
-    current_password, new_password, confirm_password;
+    current_password, new_password, confirm_password, address_line_edit_text, city_edit_text, province_edit_text, postal_code_edit_text,
+    country_edit_text;
     LinearLayout emergency_contact_layout;
 
-    protected Button save_emergency_contact, save_profile_information, save_physical_information, save_password;
+    protected Button save_emergency_contact, save_profile_information, save_physical_information, save_password, save_home_address;
     protected RecyclerView settings_recycler_view;
     protected SettingsAdapter settingsAdapter;
     protected Switch notifications_switch, alerts_switch, reminders_switch, quick_help_switch;
@@ -141,6 +145,15 @@ public class SettingsActivity extends AppCompatActivity {
             birthday_edit_text.setText(birthday);
 
         });
+
+        //Fetches the users home address and fills the corresponding fields
+        fetchHomeAddress(((address_line1, city1, province1, postal_code1, country1) -> {
+            address_line_edit_text.setText(address_line);
+            city_edit_text.setText(city);
+            province_edit_text.setText(province);
+            postal_code_edit_text.setText(postal_code);
+            country_edit_text.setText(country);
+        }));
 
         //Fetches the users preferences and edit the switches accordingly
         fetchPreferences((notifications, alerts, reminders, quickHelp) -> {
@@ -238,6 +251,49 @@ public class SettingsActivity extends AppCompatActivity {
             else{
                 reauthenticateUserAndChangePass(currentPass, newPass);
             }
+        });
+
+        //Displays the save home address button and enables the home address edit text fields upon clicking on edit
+        edit_home_address.setOnClickListener(v -> {
+            if(save_home_address.getVisibility() == View.GONE){
+                save_home_address.setVisibility(View.VISIBLE);
+                address_line_edit_text.setEnabled(true);
+                city_edit_text.setEnabled(true);
+                province_edit_text.setEnabled(true);
+                postal_code_edit_text.setEnabled(true);
+                country_edit_text.setEnabled(true);
+            }
+            else{
+                save_home_address.setVisibility(View.GONE);
+                address_line_edit_text.setEnabled(false);
+                city_edit_text.setEnabled(false);
+                province_edit_text.setEnabled(false);
+                postal_code_edit_text.setEnabled(false);
+                country_edit_text.setEnabled(false);
+            }
+        });
+
+        save_home_address.setOnClickListener(v -> {
+
+            address_line = address_line_edit_text.getText().toString();
+            city = city_edit_text.getText().toString();
+            province = province_edit_text.getText().toString();
+            postal_code = postal_code_edit_text.getText().toString();
+            country = country_edit_text.getText().toString();
+
+            store_home_address(address_line, city, province, postal_code, country);
+
+            address_line_edit_text.setText(address_line);
+            address_line_edit_text.setEnabled(false);
+            city_edit_text.setText(country);
+            city_edit_text.setEnabled(false);
+            province_edit_text.setText(province);
+            province_edit_text.setEnabled(false);
+            postal_code_edit_text.setText(postal_code);
+            postal_code_edit_text.setEnabled(false);
+            country_edit_text.setText(country);
+            country_edit_text.setEnabled(false);
+
         });
 
         //Toggles visibility of add_emergency_contact_layout
@@ -422,6 +478,49 @@ public class SettingsActivity extends AppCompatActivity {
                 });
     }
 
+    public void fetchHomeAddress(HomeAddressCallback callback){
+        db = FirebaseFirestore.getInstance();
+
+        FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
+
+        if (currentUser != null) {
+            userId = currentUser.getUid();
+        } else {
+            Log.e(TAG, "No logged-in user found.");
+        }
+
+        db.collection("users")
+                .document(userId)
+                .collection("profile")
+                .document("Home_Address")
+                .addSnapshotListener((value, error) -> {
+                    if(error != null){
+                        Log.d(TAG, "Error fetching data" + error);
+                    }
+
+                    if(value != null && value.exists()){
+                        address_line = value.getString("Address_line");
+                        city = value.getString("City");
+                        province = value.getString("Province");
+                        postal_code = value.getString("Postal_code");
+                        country = value.getString("Country");
+
+                        callback.onCallback(address_line, city, province, postal_code, country);
+
+                    }
+                    else {
+                        address_line = "";
+                        city = "";
+                        province = "";
+                        postal_code = "";
+                        country = "";
+
+                        callback.onCallback(address_line, city, province, postal_code, country);
+                    }
+                });
+
+    }
+
 
     public void fetchEmergencyContacts(EmergencyContactsCallback callback){
 
@@ -547,6 +646,35 @@ public class SettingsActivity extends AppCompatActivity {
 
     }
 
+    public void store_home_address(String address_line, String city, String province, String postal_code, String country){
+
+        Map<String, Object> home_address = new HashMap<>();
+        home_address.put("Address_line", address_line);
+        home_address.put("City", city);
+        home_address.put("Province", province);
+        home_address.put("Postal_code", postal_code);
+        home_address.put("Country", country);
+
+        FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
+
+        if (currentUser != null) {
+            userId = currentUser.getUid();
+        } else {
+            Log.e(TAG, "No logged-in user found.");
+        }
+
+        db.collection("users")
+                .document(userId)
+                .collection("profile")
+                .document("Home_Address")
+                .set(home_address)
+                .addOnSuccessListener(aVoid ->
+                        Toast.makeText(this, "Home address saved!", Toast.LENGTH_SHORT).show())
+                .addOnFailureListener(e ->
+                        Log.d("Firestore", "Failed to add an emergency contact" + e));
+
+    }
+
     //This function stores an emergency contact specified in firestore database
     public void store_emergency_contact(String name, String phone_no, String email, String relationship){
 
@@ -555,6 +683,7 @@ public class SettingsActivity extends AppCompatActivity {
         emergency_contact.put("Phone_no", phone_no);
         emergency_contact.put("Email", email);
         emergency_contact.put("Relationship", relationship);
+
         FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
 
         if (currentUser != null) {
@@ -662,6 +791,16 @@ public class SettingsActivity extends AppCompatActivity {
         confirm_password = findViewById(R.id.confirm_password);
         save_password = findViewById(R.id.save_password);
 
+        //Change home address related UI components
+        edit_home_address = findViewById(R.id.edit_home_address);
+        address_line_edit_text = findViewById(R.id.address_line);
+        city_edit_text = findViewById(R.id.city);
+        province_edit_text = findViewById(R.id.province);
+        postal_code_edit_text = findViewById(R.id.postal_code);
+        country_edit_text = findViewById(R.id.country);
+        save_home_address = findViewById(R.id.save_home_address);
+
+
 
         //Preferences UI components
         notifications_switch = findViewById(R.id.notifications_switch);
@@ -704,6 +843,10 @@ public class SettingsActivity extends AppCompatActivity {
     //Interface used for the callback for fetching of emergency contacts. Fetching is asynchronous so need to wait for the data to be fetched before proceeding
     public interface EmergencyContactsCallback {
         void onCallback(ArrayList<EmergencyContact> contacts);
+    }
+
+    public interface HomeAddressCallback{
+        void onCallback(String address_line, String city, String province, String postal_code, String country);
     }
 
     public interface PreferencesCallback {
