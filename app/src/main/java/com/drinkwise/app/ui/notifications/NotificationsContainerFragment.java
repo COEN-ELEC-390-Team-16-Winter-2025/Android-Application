@@ -1,58 +1,36 @@
 package com.drinkwise.app.ui.notifications;
 
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
-import androidx.lifecycle.ViewModelProvider;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
 import androidx.viewpager.widget.ViewPager;
-
 import com.drinkwise.app.R;
-import com.drinkwise.app.databinding.FragmentNotificationsBinding;
 import com.google.android.material.tabs.TabLayout;
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.QueryDocumentSnapshot;
-import com.google.firebase.firestore.QuerySnapshot;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-
-public class NotificationsFragment extends Fragment {
-
-    //private RecyclerView recyclerView;
-    //private NotifAdapter notifAdapter;
+public class NotificationsContainerFragment extends Fragment {
 
     private TabLayout tabLayout;
     private ViewPager viewPager;
 
-    public View onCreateView(@NonNull LayoutInflater inflater,
-                             ViewGroup container, Bundle savedInstanceState) {
-
+    @Override
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View root = inflater.inflate(R.layout.fragment_notifications, container, false);
-
         tabLayout = root.findViewById(R.id.tabLayout);
         viewPager = root.findViewById(R.id.viewPager);
-
         setupViewPager(viewPager);
         tabLayout.setupWithViewPager(viewPager);
-
         return root;
     }
 
     private void setupViewPager(ViewPager viewPager) {
         NotificationsPagerAdapter adapter = new NotificationsPagerAdapter(getChildFragmentManager());
-
-        //add the reminders and recommendations fragment
         adapter.addFragment(new RemindersFragment(), "Reminders");
         adapter.addFragment(new RecommendationsFragment(), "Recommendations");
         viewPager.setAdapter(adapter);
     }
+
 
 }

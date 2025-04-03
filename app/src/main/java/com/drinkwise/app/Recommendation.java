@@ -54,10 +54,10 @@ public class Recommendation {
             this.message = "Feeling confused? Dizzy? Want to vomit? Consider getting assistance and some rest";
         } else if (drinkCount > 10 ) {
             this.message = "You're still awake? Inconceivable.";
-        } else {
-            this.message = "Default";
         }
-
+/* else {
+            this.message = "Default";
+        }*/
         // The following commented code is for binge-drinking checks (not active)
         // 2 drinks in 1 hour
         // if(drinkCount >= 2 && interval < 3600000) { ... }

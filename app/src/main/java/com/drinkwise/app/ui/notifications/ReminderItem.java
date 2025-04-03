@@ -5,7 +5,7 @@ import com.google.firebase.Timestamp;
 // ReminderItem represents a single reminder with its details.
 // It includes the type of reminder, a message, the timestamp it was created,
 // the interval (in minutes) for follow-up reminders, the current status, and an escalation level.
-public class ReminderItem {
+public class ReminderItem implements NotificationItem {
 
     // The type/category of the reminder (example : "BAC Recheck", "Late Night Check")
     private String reminderType;
@@ -31,6 +31,17 @@ public class ReminderItem {
         this.reminderType = reminderType;
     }
 
+    @Override
+    public long getTimestampMillis() {
+        return timestamp != null ? timestamp.toDate().getTime() : 0;
+    }
+
+    @Override
+    public int getType() {
+        return 0;
+    }
+
+    @Override
     public String getMessage() {
         return message;
     }
