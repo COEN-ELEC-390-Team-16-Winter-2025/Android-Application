@@ -842,6 +842,7 @@ public class DashboardFragment extends Fragment {
         recommendationMap.put("Message", recommendation.getMessage());
         recommendationMap.put("Timestamp", Timestamp.now());
         recommendationMap.put("Resolved", recommendation.isResolved());
+        recommendationMap.put("sessionId", currentSessionId);
 
         db.collection("users")
                 .document(userId)
