@@ -1,8 +1,10 @@
 package com.drinkwise.app;
 
+import android.content.Intent;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
+import android.provider.Telephony;
 import android.util.Log;
 import android.widget.Button;
 
@@ -47,6 +49,7 @@ public class TransitActivity extends AppCompatActivity implements OnMapReadyCall
 
     private static final String TAG = "TransitActivity";
     private static final String API_KEY = "AIzaSyDNqAmUya8Zkt3YO9kts3a9D-dAgY67sAI";
+    private static final String uberClientID = "3ilDPXY3GKbN3JLLzEIjUVt7h4L1z_ZX";
 
     //UI Components
     protected Button walk, transit, ride;
@@ -90,6 +93,13 @@ public class TransitActivity extends AppCompatActivity implements OnMapReadyCall
             ride.setVisibility(MapView.GONE);
             mapView.setVisibility(MapView.VISIBLE);
             AddressToGeo(address_line, city, province, postal_code, country, "transit");
+        });
+
+        ride.setOnClickListener(v -> {
+            walk.setVisibility(MapView.GONE);
+            transit.setVisibility(MapView.GONE);
+            ride.setVisibility(MapView.GONE);
+            AddressToGeo(address_line, city, province, postal_code, country, "ride");
         });
 
     }
@@ -202,6 +212,8 @@ public class TransitActivity extends AppCompatActivity implements OnMapReadyCall
                         case "walking": fetchWalkableRoute(currentLat, currentLong, destinationLat, destinationLong);
                         break;
                         case "transit": fetchTransitRoute(currentLat, currentLong, destinationLat, destinationLong);
+                        break;
+                        case "ride": openUberApp(currentLat, currentLong, destinationLat, destinationLong);
                     }
 
 
@@ -332,8 +344,21 @@ public class TransitActivity extends AppCompatActivity implements OnMapReadyCall
                 error -> Log.e("Directions", "Error fetching route" + error));
 
         requestQueue.add(jsonObjectRequest);
+    }
 
+    public void openUberApp(double currentLat, double currentLong, double destinationLat, double destinationLong){
 
+        String uberUrl = "https://m.uber.com/ul/?action=setPickup" +
+                "&client_id=" + uberClientID +
+                "&pickup[latitude]=" + currentLat +
+                "&pickup[longitude]=" + currentLong +
+                "&dropoff[latitude]=" + destinationLat +
+                "&dropoff[longitude]=" + destinationLong;
+
+        Intent intent = new Intent(Intent.ACTION_VIEW);
+        intent.setData(Uri.parse(uberUrl));
+
+        startActivity(intent);
     }
     public void setupUI(){
 
