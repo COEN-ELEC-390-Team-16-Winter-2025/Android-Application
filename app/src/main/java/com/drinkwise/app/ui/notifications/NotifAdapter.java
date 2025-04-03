@@ -124,7 +124,11 @@ public class NotifAdapter extends RecyclerView.Adapter<NotifAdapter.NotifViewHol
         public void bind(NotificationItem rec) {
             recommendationMessageTextView.setText(rec.getMessage());
             SimpleDateFormat sdf = new SimpleDateFormat("dd MMM yyyy, hh:mm a", Locale.getDefault());
-            recommendationTimestampTextView.setText(sdf.format(rec.getTimestamp().toDate()));
+            if (rec.getTimestamp() != null) {
+                recommendationTimestampTextView.setText(sdf.format(rec.getTimestamp().toDate()));
+            } else {
+                recommendationTimestampTextView.setText("No timestamp");
+            }
         }
     }
 

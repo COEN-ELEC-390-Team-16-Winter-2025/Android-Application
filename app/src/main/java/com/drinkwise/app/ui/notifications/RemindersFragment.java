@@ -69,6 +69,7 @@ public class RemindersFragment extends Fragment {
 
                         // Log the fetched reminders
                         Log.d("NotificationsFragment", "Fetched " + reminderList.size() + " reminders");
+                        notifAdapter.updateData(reminderList);
 
                         // Set up the adapter with the reminder data
                         notifAdapter = new NotifAdapter(getContext(), reminderList);
@@ -78,7 +79,6 @@ public class RemindersFragment extends Fragment {
                     }
                 });
     }
-
 
 
 }

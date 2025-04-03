@@ -694,7 +694,7 @@ public class DashboardFragment extends Fragment {
                             long milliseconds = timestamp.toDate().getTime() - lastTimestamp.toDate().getTime();
                             interval[0] = (int) (milliseconds / 1000);
                             Log.d(TAG, "Time interval since last drink: " + interval[0] + " seconds");
-                            if (interval[0] > 0) {
+                            if (interval[0] > 7200) {
                                 Log.d(TAG, "Interval > 2 hours, prompting new session.");
                                 askUserToStartNewSession(userId);
                                 return;
@@ -733,7 +733,7 @@ public class DashboardFragment extends Fragment {
                                         .whereEqualTo("sessionId", sessionId)
                                         .get()
                                         .addOnSuccessListener(drinkSnapshots -> {
-                                            drinkCount = drinkSnapshots.size() ;
+                                            drinkCount = drinkSnapshots.size() +1 ;
                                             Log.d(TAG, "Total drink count for session: " + drinkCount);
 
                                             Map<String, Object> drinkEntry = new HashMap<>();

@@ -25,7 +25,7 @@ import java.util.List;
 public class RecommendationsFragment extends Fragment {
 
     private RecyclerView recyclerView;
-    private NotifAdapter NotfiAdapter;
+    private NotifAdapter notifAdapter;
     private List<NotificationItem> recommendationList = new ArrayList<>();
     private FirebaseFirestore db = FirebaseFirestore.getInstance();
     private static final String TAG = "RecommendationsFragment";
@@ -37,8 +37,8 @@ public class RecommendationsFragment extends Fragment {
         recyclerView = root.findViewById(R.id.recyclerViewRecommendation);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
 
-        NotfiAdapter = new NotifAdapter(getContext(), recommendationList);
-        recyclerView.setAdapter(NotfiAdapter);
+        notifAdapter = new NotifAdapter(getContext(), recommendationList);
+        recyclerView.setAdapter(notifAdapter);
         loadRecommendations();
         return root;
     }
@@ -64,6 +64,8 @@ public class RecommendationsFragment extends Fragment {
                             recommendationList.add(rec);
                         }
                         Log.d(TAG, "Fetched " + recommendationList.size() + "recommendations");
+                        notifAdapter.updateData(recommendationList);
+                        recyclerView.setAdapter(notifAdapter);
                     } else {
                         Log.e(TAG, "Error fetching recommendations: ", task.getException());
                     }

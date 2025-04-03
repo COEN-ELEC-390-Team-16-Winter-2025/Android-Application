@@ -6,6 +6,5 @@ public interface NotificationItem {
     long getTimestampMillis();    //used for sorting
     int getType();
     String getMessage();
-
     Timestamp getTimestamp();
 }
