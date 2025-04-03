@@ -28,6 +28,8 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapView;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.LatLngBounds;
+import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.PolylineOptions;
 import com.google.firebase.auth.FirebaseAuth;
@@ -49,8 +51,10 @@ public class TransitActivity extends AppCompatActivity implements OnMapReadyCall
     //UI Components
     protected Button walk, transit, ride;
     protected MapView mapView;
+
     //Home Address related variables
     private String address_line, city, province, postal_code, country;
+    private boolean isWalking, isTakingTransit, isTakingRide;
 
     //Google Map Related Variables
     private GoogleMap gMap;
@@ -77,8 +81,15 @@ public class TransitActivity extends AppCompatActivity implements OnMapReadyCall
             transit.setVisibility(MapView.GONE);
             ride.setVisibility(MapView.GONE);
             mapView.setVisibility(MapView.VISIBLE);
-            AddressToGeo(address_line, city, province, postal_code, country);
+            AddressToGeo(address_line, city, province, postal_code, country, "walking");
+        });
 
+        transit.setOnClickListener(v -> {
+            walk.setVisibility(MapView.GONE);
+            transit.setVisibility(MapView.GONE);
+            ride.setVisibility(MapView.GONE);
+            mapView.setVisibility(MapView.VISIBLE);
+            AddressToGeo(address_line, city, province, postal_code, country, "transit");
         });
 
     }
@@ -132,7 +143,7 @@ public class TransitActivity extends AppCompatActivity implements OnMapReadyCall
         gMap = googleMap;
     }
 
-    public void AddressToGeo(String address_line, String city, String province, String postal_code, String country){
+    public void AddressToGeo(String address_line, String city, String province, String postal_code, String country, String mode){
         String address = address_line+", "+city+", "+province+", "+postal_code+", "+country;
 
         String url = "https://maps.googleapis.com/maps/api/geocode/json?address="
@@ -140,7 +151,6 @@ public class TransitActivity extends AppCompatActivity implements OnMapReadyCall
 
         RequestQueue requestQueue = Volley.newRequestQueue(this);
         JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, url, null, response -> {
-            Log.d("Response", response.toString());
             try{
 
                 JSONArray result = response.getJSONArray("results");
@@ -149,7 +159,7 @@ public class TransitActivity extends AppCompatActivity implements OnMapReadyCall
                 double homeLat = result.getJSONObject(0).getJSONObject("geometry").getJSONObject("location").getDouble("lat");
                 double homeLong = result.getJSONObject(0).getJSONObject("geometry").getJSONObject("location").getDouble("lng");
 
-                fetchCurrentLocation(homeLat, homeLong);
+                fetchCurrentLocation(homeLat, homeLong, mode);
 
                 Log.d(TAG, "Home Latitude: "+homeLat+" Home Longitude: "+homeLong);
             } catch (Exception e) {
@@ -164,7 +174,7 @@ public class TransitActivity extends AppCompatActivity implements OnMapReadyCall
 
         requestQueue.add(jsonObjectRequest);
     }
-    public void fetchCurrentLocation(double destinationLat, double destinationLong){
+    public void fetchCurrentLocation(double destinationLat, double destinationLong, String mode){
         FusedLocationProviderClient fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
 
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
@@ -173,9 +183,7 @@ public class TransitActivity extends AppCompatActivity implements OnMapReadyCall
             // Request location permission
             ActivityCompat.requestPermissions(this,
                     new String[]{Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION},
-                    1001); // Request code can be any integer
-
-            Log.d("Location", "Location permission not granted, requesting permission.");
+                    1001);
             return;
         }
 
@@ -190,7 +198,12 @@ public class TransitActivity extends AppCompatActivity implements OnMapReadyCall
 
                     Log.d(TAG, "Current Latitude: "+currentLat+ " Current Longitude: "+currentLong);
 
-                    fetchWalkableRoute(currentLat, currentLong, destinationLat, destinationLong);
+                    switch(mode){
+                        case "walking": fetchWalkableRoute(currentLat, currentLong, destinationLat, destinationLong);
+                        break;
+                        case "transit": fetchTransitRoute(currentLat, currentLong, destinationLat, destinationLong);
+                    }
+
 
                 });
     }
@@ -241,6 +254,86 @@ public class TransitActivity extends AppCompatActivity implements OnMapReadyCall
                 error -> Log.e("Directions", "Request failed: " + error));
 
         requestQueue.add(jsonObjectRequest);
+    }
+
+    public void fetchTransitRoute(double currentLat, double currentLong, double destinationLat, double destinationLong){
+        String url = "https://maps.googleapis.com/maps/api/directions/json?origin="+
+                currentLat+","+currentLong+
+                "&destination="+destinationLat+","+destinationLong+
+                "&mode=transit"+
+                "&transit_mode=bus|subway|tram"+
+                "&transit_routing_preference=less_walking"+"&key="+API_KEY;
+
+        RequestQueue requestQueue = Volley.newRequestQueue(this);
+
+        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, url, null,
+                response -> {
+                    try {
+                        JSONArray routes = response.getJSONArray("routes");
+                        if (routes.length() == 0) {
+                            Log.e("Directions", "No walking route found.");
+                            return;
+                        }
+
+                        JSONObject route = routes.getJSONObject(0);
+
+                        JSONArray legs = route.getJSONArray("legs");
+                        JSONObject leg = legs.getJSONObject(0);
+
+                        String distance = leg.getJSONObject("distance").getString("text");
+                        String duration = leg.getJSONObject("duration").getString("text");
+
+                        Log.d(TAG, "Distance: "+distance+" Duration:"+duration);
+
+                        JSONArray steps = leg.getJSONArray("steps");
+                        ArrayList<LatLng> path = new ArrayList<>();
+                        for(int i = 0; i<steps.length(); i++){
+
+                            JSONObject step = steps.getJSONObject(i);
+                            if(step.has("transit_details")){
+                                JSONObject transitDetails = step.getJSONObject("transit_details");
+
+                                String vehicleType = transitDetails.getJSONObject("line").getJSONObject("vehicle").getString("type");
+                                String lineName = transitDetails.getJSONObject("line").getString("name");
+                                String shortName = transitDetails.getJSONObject("line").optString("short_name", "N/A");
+                                String departureStop = transitDetails.getJSONObject("departure_stop").getString("name");
+                                String arrivalStop = transitDetails.getJSONObject("arrival_stop").getString("name");
+                                int numberOfStops = transitDetails.getInt("num_stops");
+
+                                Log.d(TAG, "Vehicle: " + vehicleType + " Line: " + lineName + " (" + shortName + ")");
+                                Log.d(TAG, "From: " + departureStop + " To: " + arrivalStop);
+                                Log.d(TAG, "Number of Stops: " + numberOfStops);
+
+                                LatLng departure = new LatLng(transitDetails.getJSONObject("departure_stop").getJSONObject("location").getDouble("lat"),
+                                        transitDetails.getJSONObject("departure_stop").getJSONObject("location").getDouble("lng"));
+
+
+                                Marker marker = gMap.addMarker(new MarkerOptions()
+                                        .position(departure)
+                                        .title("Departure: " + departureStop)
+                                        .snippet(vehicleType + " - " +shortName+ " - "+lineName+" - "+"Number of stops: " + numberOfStops)
+                                );
+
+                            }
+                            String polyline = steps.getJSONObject(i).getJSONObject("polyline").getString("points");
+                            path.addAll(PolyUtil.decode(polyline));
+
+                        }
+
+                        PolylineOptions polylineOptions = new PolylineOptions().addAll(path).color(Color.BLUE).width(10);
+                        gMap.addMarker(new MarkerOptions().position(new LatLng(currentLat, currentLong)).title("Start"));
+                        gMap.addMarker(new MarkerOptions().position(new LatLng(destinationLat, destinationLong)).title("Arrival"));
+                        gMap.addPolyline(polylineOptions);
+
+                    } catch (Exception e) {
+                        Log.e("Directions", "Error fetching route", e);
+                    }
+                },
+                error -> Log.e("Directions", "Error fetching route" + error));
+
+        requestQueue.add(jsonObjectRequest);
+
+
     }
     public void setupUI(){
 
