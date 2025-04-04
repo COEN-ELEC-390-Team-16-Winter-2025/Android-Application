@@ -39,37 +39,73 @@ public class RecommendationsFragment extends Fragment {
 
         notifAdapter = new NotifAdapter(getContext(), recommendationList);
         recyclerView.setAdapter(notifAdapter);
-        loadRecommendations();
+
+        boolean showRecommendations = true;
+        if (getArguments() != null) {
+            showRecommendations = getArguments().getBoolean("showRecommendations", true);
+        }
+
+        if (showRecommendations) {
+            loadRecommendations();
+        } else {
+            recommendationList.clear();
+            notifAdapter.updateData(recommendationList);
+        }
+
         return root;
     }
 
     private void loadRecommendations() {
-        String userId = FirebaseAuth.getInstance().getCurrentUser() != null?
+        String userId = FirebaseAuth.getInstance().getCurrentUser() != null ?
                 FirebaseAuth.getInstance().getCurrentUser().getUid() : null;
-        if(userId == null) {
+        if (userId == null) {
             Log.e(TAG, "No user logged in");
             return;
         }
+
+        //Fetch the preferences
         db.collection("users")
                 .document(userId)
-                .collection("Recommendations")
-                .orderBy("Timestamp", Query.Direction.DESCENDING)
-                .get()
-                .addOnCompleteListener(task -> {
-                    if(task.isSuccessful()) {
-                        QuerySnapshot querySnapshot = task.getResult();
-                        recommendationList.clear();
-                        for (QueryDocumentSnapshot document : querySnapshot) {
-                            RecommendationItem rec = document.toObject(RecommendationItem.class);
-                            recommendationList.add(rec);
-                        }
-                        Log.d(TAG, "Fetched " + recommendationList.size() + "recommendations");
-                        notifAdapter.updateData(recommendationList);
-                        recyclerView.setAdapter(notifAdapter);
-                    } else {
-                        Log.e(TAG, "Error fetching recommendations: ", task.getException());
+                .collection("profile")
+                .document("Preferences")
+                .addSnapshotListener((documentSnapshot, e) -> {
+                    if (e != null) {
+                        Log.e(TAG, "Error fetching preferences: ", e);
+                        return;
                     }
+                    boolean recommendationsEnabled = false;
+                    if (documentSnapshot != null && documentSnapshot.exists()) {
+                        Boolean recommendationPref = documentSnapshot.getBoolean("Recommendations");
+                        recommendationsEnabled = (recommendationPref != null) ? recommendationPref : false;
+                    }
+                    if (!recommendationsEnabled) {
+                        recommendationList.clear();
+                        notifAdapter.updateData(recommendationList);
+                        Log.d(TAG, "Recommendations are disabled");
+                    } else {
+
+                        //Fetch the the recommendations
+                        db.collection("users")
+                                .document(userId)
+                                .collection("Recommendations")
+                                .orderBy("Timestamp", Query.Direction.DESCENDING)
+                                .addSnapshotListener((querySnapshot, queryError) -> {
+                                    if (queryError != null) {
+                                        Log.e(TAG, "Error fetching recommendations: ", queryError);
+                                        return;
+                                    }
+                                    if (querySnapshot != null) {
+                                        recommendationList.clear();
+                                        for (QueryDocumentSnapshot document : querySnapshot) {
+                                            RecommendationItem rec = document.toObject(RecommendationItem.class);
+                                            recommendationList.add(rec);
+                                        }
+                                        Log.d(TAG, "Fetched " + recommendationList.size() + "recommendations");
+                                        notifAdapter.updateData(recommendationList);
+                                    }
+                                });
+                    }
+
                 });
     }
-
 }

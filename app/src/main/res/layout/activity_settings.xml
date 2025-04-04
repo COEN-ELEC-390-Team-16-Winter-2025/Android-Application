@@ -795,13 +795,13 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Notifications"
+                        android:text="Recommendations"
                         android:textSize="16sp"
                         android:textColor="#333333"
                         android:layout_weight="1"/>
 
                     <Switch
-                        android:id="@+id/notifications_switch"
+                        android:id="@+id/recommendations_switch"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:thumbTint="@color/switch_thumb_color"

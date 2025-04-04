@@ -117,7 +117,7 @@ public class DashboardFragment extends Fragment {
 
 
     // Preferences Related variables
-    private boolean notifications, alerts, reminders, quickHelp;
+    private boolean recommendations, alerts, reminders, quickHelp;
 
     // Total calories
     private static int totalCalories = 0;
@@ -205,7 +205,7 @@ public class DashboardFragment extends Fragment {
         // Initialize TextView for displaying drink info
         drinkInfo = view.findViewById(R.id.drinkInfo);
 
-        fetchPreferences((notifications, alerts, reminders, quickHelp) -> displayQuickHelp(quickHelp));
+        fetchPreferences((recommendations, alerts, reminders, quickHelp) -> displayQuickHelp(quickHelp));
 
         // Set click listeners for drink images
         beerImage.setOnClickListener(v -> displayDrinkInfo("Beer", 355, 0.03, 150));
@@ -1309,19 +1309,19 @@ public class DashboardFragment extends Fragment {
                     }
 
                     if (value != null && value.exists()) {
-                        notifications = value.getBoolean("Notifications");
-                        alerts = value.getBoolean("Alerts");
-                        reminders = value.getBoolean("Reminders");
-                        quickHelp = value.getBoolean("Quick_help");
-                        Log.d(TAG, "Fetched Preferences - Notifications: " + notifications + ", Alerts: " + alerts +
+                        recommendations = Boolean.TRUE.equals(value.getBoolean("Recommendations"));
+                        alerts = Boolean.TRUE.equals(value.getBoolean("Alerts"));
+                        reminders = Boolean.TRUE.equals(value.getBoolean("Reminders"));
+                        quickHelp = Boolean.TRUE.equals(value.getBoolean("Quick_help"));
+                        Log.d(TAG, "Fetched Preferences - Recommendations: " + recommendations + ", Alerts: " + alerts +
                                 ", Reminders: " + reminders + ", Quick Help: " + quickHelp);
-                        callback.onCallback(notifications, alerts, reminders, quickHelp);
+                        callback.onCallback(recommendations, alerts, reminders, quickHelp);
                     } else {
-                        notifications = false;
+                        recommendations = false;
                         alerts = false;
                         reminders = false;
                         quickHelp = false;
-                        callback.onCallback(notifications, alerts, reminders, quickHelp);
+                        callback.onCallback(recommendations, alerts, reminders, quickHelp);
                     }
                 });
     }
@@ -1458,7 +1458,7 @@ public class DashboardFragment extends Fragment {
     }
 
     public interface PreferencesCallback {
-        void onCallback(boolean notifications, boolean alerts, boolean reminders, boolean quickHelp);
+        void onCallback(boolean recommendations, boolean alerts, boolean reminders, boolean quickHelp);
     }
 
     public interface EmergencyContactsCallback {

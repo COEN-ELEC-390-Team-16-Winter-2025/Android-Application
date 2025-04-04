@@ -31,7 +31,9 @@ public class NotificationsFragment extends Fragment {
 
     private TabLayout tabLayout;
     private ViewPager viewPager;
+    private FirebaseFirestore db = FirebaseFirestore.getInstance();
 
+    @Override
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
 
@@ -40,18 +42,65 @@ public class NotificationsFragment extends Fragment {
         tabLayout = root.findViewById(R.id.tabLayout);
         viewPager = root.findViewById(R.id.viewPager);
 
-        setupViewPager(viewPager);
-        tabLayout.setupWithViewPager(viewPager);
+        //Get preferences from firestore and then set up the ViewPager
+        String userId = FirebaseAuth.getInstance().getCurrentUser() != null
+                ? FirebaseAuth.getInstance().getCurrentUser().getUid() : null;
+        if(userId != null) {
+            db.collection("users")
+                    .document(userId)
+                    .collection("profile")
+                    .document("Preferences")
+                    .get()
+                    .addOnSuccessListener(documentSnapshot -> {
+                        boolean showRecommendations = documentSnapshot.getBoolean("Recommendations") != null ?
+                                documentSnapshot.getBoolean("Recommendations") : true;
+                        boolean showReminders = documentSnapshot.getBoolean("Reminders") != null ?
+                                documentSnapshot.getBoolean("Reminders") : true;
+                       // boolean showAlerts = documentSnapshot.getBoolean("Alerts") != null ?
+                          //      documentSnapshot.getBoolean("Alerts") : true;
 
+                        //setupViewPager(viewPager, showReminders, showRecommendations, showAlerts);
+                        setupViewPager(viewPager, showReminders, showRecommendations);
+                        tabLayout.setupWithViewPager(viewPager);
+                    })
+                    .addOnFailureListener(e -> {
+                        Log.e("NotificationsFragment", "Error fetching preferences: ", e);
+                        setupViewPager(viewPager, true, true);
+                        tabLayout.setupWithViewPager(viewPager);
+                    });
+        } else {
+            setupViewPager(viewPager, true, true);
+            tabLayout.setupWithViewPager(viewPager);
+        }
         return root;
     }
 
-    private void setupViewPager(ViewPager viewPager) {
+    //private void setupViewPager(ViewPager viewPager, boolean showReminders, boolean showRecommendations, boolean showAlerts)
+    private void setupViewPager(ViewPager viewPager, boolean showReminders, boolean showRecommendations) {
         NotificationsPagerAdapter adapter = new NotificationsPagerAdapter(getChildFragmentManager());
+
+        RemindersFragment remindersFragment =  new RemindersFragment();
+        Bundle remArgs = new Bundle();
+        remArgs.putBoolean("showReminders", showReminders);
+        remindersFragment.setArguments(remArgs);
+
+        RecommendationsFragment recommendationsFragment =  new RecommendationsFragment();
+        Bundle recArgs = new Bundle();
+        recArgs.putBoolean("showReminders", showRecommendations);
+        recommendationsFragment.setArguments(recArgs);
+
+        //AlertFragment remindersFragment =  new RemindersFragment();
+        //Bundle alertArgs = new Bundle();
+        //alertArgs.putBoolean("showAlerts", showAlerts);
+        //AlertFragment.setArguments(AlertArgs);
+
+
 
         //add the reminders and recommendations fragment
         adapter.addFragment(new RemindersFragment(), "Reminders");
         adapter.addFragment(new RecommendationsFragment(), "Recommendations");
+       // adapter.addFragment(new AlertFragment(), "Alerts");
+
         viewPager.setAdapter(adapter);
     }
 

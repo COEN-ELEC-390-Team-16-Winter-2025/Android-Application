@@ -40,45 +40,64 @@ public class RemindersFragment extends Fragment {
         notifAdapter = new NotifAdapter(getContext(), reminderList);
         recyclerView.setAdapter(notifAdapter);
 
+        loadReminders();
+        return root;
+    }
+
+    private void loadReminders() {
         String userId = FirebaseAuth.getInstance().getCurrentUser() != null
                 ? FirebaseAuth.getInstance().getCurrentUser().getUid()
                 : null;
 
-        if (userId != null) {
-            loadReminders(userId);
-        } else {
+        if (userId == null) {
             Log.e("RemindersFragment", "No user logged in");
+            return;
         }
-
-        return root;
-    }
-
-    private void loadReminders(String userId) {
+        //Fetch the preferences
         db.collection("users")
-                .document(Objects.requireNonNull(userId))  // Point to the specific user document
-                .collection("reminders")  // Fetch from the "reminders" subcollection of that user
-                .get()
-                .addOnCompleteListener(task -> {
-                    if (task.isSuccessful()) {
-                        QuerySnapshot querySnapshot = task.getResult();
-                        for (QueryDocumentSnapshot document : querySnapshot) {
-                            // Convert the document to a ReminderItem object
-                            ReminderItem reminderItem = document.toObject(ReminderItem.class);
-                            reminderList.add(reminderItem);
-                        }
-
-                        // Log the fetched reminders
-                        Log.d("NotificationsFragment", "Fetched " + reminderList.size() + " reminders");
+                .document(userId)
+                .collection("profile")
+                .document("Preferences")
+                .addSnapshotListener((documentSnapshot, e) -> {
+                    if (e != null) {
+                        Log.e("RemindersFragment", "Error fetching preferences: ", e);
+                        return;
+                    }
+                    boolean remindersEnabled = false;
+                    if (documentSnapshot != null && documentSnapshot.exists()) {
+                        Boolean reminderPref = documentSnapshot.getBoolean("Reminders");
+                        remindersEnabled = (reminderPref != null) ? reminderPref : false;
+                    }
+                    if (!remindersEnabled) {
+                        reminderList.clear();
                         notifAdapter.updateData(reminderList);
-
-                        // Set up the adapter with the reminder data
-                        notifAdapter = new NotifAdapter(getContext(), reminderList);
-                        recyclerView.setAdapter(notifAdapter);
+                        Log.d("RemindersFragment", "Reminders are disabled");
                     } else {
-                        Log.e("NotificationsFragment", "Error fetching reminders: ", task.getException());
+
+                        //Fetch the reminders
+                        db.collection("users")
+                                .document(Objects.requireNonNull(userId))  // Point to the specific user document
+                                .collection("reminders")  // Fetch from the "reminders" subcollection of that user
+                                .addSnapshotListener((querySnapshot, queryError) -> {
+
+                                    if (queryError != null) {
+                                        Log.e("RemindersFragment", "Error fetching reminders: ", queryError);
+                                        return;
+                                    }
+                                    if (querySnapshot != null) {
+                                        reminderList.clear();
+                                        for (QueryDocumentSnapshot document : querySnapshot) {
+                                            // Convert the document to a ReminderItem object
+                                            ReminderItem reminderItem = document.toObject(ReminderItem.class);
+                                            reminderList.add(reminderItem);
+                                        }
+                                        // Log the fetched reminders
+                                        Log.d("RemindersFragment", "Fetched " + reminderList.size() + " reminders");
+                                        notifAdapter.updateData(reminderList);
+                                    }
+
+                                });
                     }
                 });
     }
-
-
 }
