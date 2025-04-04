@@ -1,6 +1,7 @@
 package com.drinkwise.app;
 
 import android.annotation.SuppressLint;
+import android.app.AlertDialog;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothGatt;
@@ -15,20 +16,9 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
-import android.util.TypedValue;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
-import android.widget.Button;
-import android.widget.TextView;
-import android.app.AlertDialog;
-import android.media.Ringtone;
-import android.media.RingtoneManager;
-import android.net.Uri;
-
-
-import androidx.core.content.ContextCompat;
-
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
@@ -50,7 +40,6 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.Query;
-import com.google.firebase.firestore.FieldPath;
 
 
 import android.view.View;
@@ -124,7 +113,7 @@ public class ScanningActivity extends AppCompatActivity {
         if (currentUser != null) {
             userId = currentUser.getUid();
             fetchUserData();
-            startFirestoreSafetyListener();
+//            startSafetyMonitor();
         } else {
             Log.e(TAG, "No logged-in user found.");
         }
@@ -447,128 +436,54 @@ public class ScanningActivity extends AppCompatActivity {
                 documentReference.set(alertMap);
                 Log.d("Firestore", "Alert entry saved successfully");
             }
+
+            Log.d("Alert",alert.getMessage());
+
         }).addOnFailureListener(e -> {
             Log.e("Firestore", "Error: "+e);
         });
     }
 
-    private void showAlertDialog(String title, String message) {
-        Toast.makeText(this, "ALERT: " + title + "\n" + message, Toast.LENGTH_LONG).show();
-        AlertDialog.Builder builder = new AlertDialog.Builder(ScanningActivity.this, R.style.RedBorderAlertDialog);
-        builder.setTitle(title);
-        builder.setMessage(message);
-        builder.setCancelable(false);
-        builder.setPositiveButton("OK", (dialog, which) -> dialog.dismiss());
-
-        AlertDialog dialog = builder.create();
-        playNotificationSound();
-        dialog.show();
-
-        // Style the buttons
-        int redColor = ContextCompat.getColor(this, android.R.color.holo_red_dark);
-        Button positiveButton = dialog.getButton(AlertDialog.BUTTON_POSITIVE);
-        if (positiveButton != null) {
-            positiveButton.setTextColor(redColor);
-            positiveButton.setTextSize(TypedValue.COMPLEX_UNIT_SP, 18);
-        }
-
-        // Style title and message
-        TextView titleView = dialog.findViewById(android.R.id.title);
-        TextView messageView = dialog.findViewById(android.R.id.message);
-
-        if (titleView != null) {
-            titleView.setTextSize(TypedValue.COMPLEX_UNIT_SP, 20);
-            titleView.setTextColor(redColor);
-        }
-
-        if (messageView != null) {
-            messageView.setTextSize(TypedValue.COMPLEX_UNIT_SP, 18);
-        }
-    }
-
-    private void playNotificationSound() {
-        try {
-            Uri notification = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
-            Ringtone r = RingtoneManager.getRingtone(getApplicationContext(), notification);
-            if (r != null) {
-                r.play();
-            }
-        } catch (Exception e) {
-            // silently fail
-        }
-    }
-
-    private void startFirestoreSafetyListener() {
-        db.collection("users")
-                .document(userId)
-                .collection("BacEntry")
-                .orderBy("Date", Query.Direction.DESCENDING)
-                //When Time is comment out the popup shows when there is a status changed
-                //However it doesn't get the latest time within the date
-                .orderBy("Time", Query.Direction.DESCENDING)
-                //When Time is not comment out the popup does not shows when there is a status changed
-
-                .limit(1)
-                .addSnapshotListener((snapshots, e) -> {
-                    if (e != null) {
-                        Log.e(TAG, "Firestore listener error: ", e);
-                        return;
-                    }
-
-                    if (snapshots == null || snapshots.isEmpty()) {
-                        Log.d(TAG, "Firestore listener triggered but no documents found.");
-                        return;
-                    }
-                    Log.d(TAG, "Document: " + snapshots.getDocuments().get(0).getData());
-
-                    DocumentSnapshot doc = snapshots.getDocuments().get(0);
-                    Log.d(TAG, "Snapshot received: " + doc.getData()); // 👈 Print the full document
-                    Double bac = doc.getDouble("bacValue");
-                    String currentStatus = doc.getString("Status");
-                    Log.d(TAG, "Extracted fields -> BAC: " + bac + ", Status: " + currentStatus);
 
 
-                    if (bac == null || currentStatus == null) {
-                        Log.w(TAG, "Missing required fields in Firestore document!");
-                        Log.w(TAG, "bacValue: " + bac + ", Status: " + currentStatus );
-                        return;
-                    }
 
-
-                    // Detect status change
-                    if (lastStatus != null && !lastStatus.equals(currentStatus)) {
-                        long timeInPreviousState = (System.currentTimeMillis() - lastStatusTime) / 1000;
-                        String title = "Safety Level Changed";
-                        String message = "Status changed from " + lastStatus + " to " + currentStatus +
-                                " after " + timeInPreviousState + "s.";
-                        showAlertDialog(title, message);
-
-                        // use date/time strings
-                        Alert alert = new Alert(bac, Timestamp.now());
-                        storeAlert(alert);
-                    }
-
-                    // Repeated Danger detection
-                    if ("Danger".equals(currentStatus)) {
-                        dangerCount++;
-                        if (dangerCount >= 3) {
-                            String title = "⚠️ Repeated Danger Status";
-                            String message = "You've had 3 or more consecutive 'Danger' readings.";
-                            showAlertDialog(title, message);
-
-                            Alert alert = new Alert(bac, Timestamp.now());
-                            storeAlert(alert);
-                        }
-                    } else {
-                        dangerCount = 0;
-                    }
-
-                    lastStatus = currentStatus;
-                    lastStatusTime = System.currentTimeMillis();
-                });
-    }
-
-
+//    private void startSafetyMonitor() {
+//        db.collection("users")
+//                .document(userId)
+//                .collection("BacEntry")
+//                .orderBy("Timestamp", Query.Direction.DESCENDING)
+//                .limit(1)
+//                .addSnapshotListener((snapshots, e) -> {
+//                    if (e != null || snapshots == null || snapshots.isEmpty()) return;
+//
+//                    DocumentSnapshot doc = snapshots.getDocuments().get(0);
+//                    String currentStatus = doc.getString("Status");
+//
+//                    long now = System.currentTimeMillis();
+//
+//                    if (lastStatus != null && !lastStatus.equals(currentStatus)) {
+//                        long duration = (now - lastStatusTime) / 1000;
+//                        Log.d("SafetyMonitor", "Status changed: " + lastStatus + " → " + currentStatus +
+//                                " after " + duration + "s");
+//
+//                        // 🔔 ALERT: You can do something here!
+//                        // E.g., show a toast, vibrate, or store an alert
+//                    }
+//
+//                    // Check for Danger duration
+//                    if ("Danger".equals(currentStatus)) {
+//                        dangerCount++;
+//                        if (dangerCount >= 3) {
+//                            Log.w("SafetyMonitor", "⚠️ 3 consecutive Danger readings!");
+//                        }
+//                    } else {
+//                        dangerCount = 0;
+//                    }
+//
+//                    lastStatus = currentStatus;
+//                    lastStatusTime = now;
+//                });
+//    }
 
 
 
