@@ -31,12 +31,11 @@ import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 
-import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
@@ -46,11 +45,9 @@ import android.widget.RadioButton;
 public class BacHistoryFragment extends Fragment {
 
     private static final String TAG = "BacHistoryFragment"; // Logging tag
-    private RecyclerView recyclerView;
     private BACEntryAdapter adapter;
     private List<BACEntry> bacEntries = new ArrayList<>(); // Initialize list to avoid null pointers
     private EditText searchBar;
-    private Button sortButton, filterButton;
 
     // Define sorting options
     public enum SortOption {
@@ -68,10 +65,10 @@ public class BacHistoryFragment extends Fragment {
         View view = inflater.inflate(R.layout.fragment_bac_history, container, false);
 
         try {
-            recyclerView = view.findViewById(R.id.bacHistoryRecyclerView);
+            RecyclerView recyclerView = view.findViewById(R.id.bacHistoryRecyclerView);
             searchBar = view.findViewById(R.id.searchBar);
-            sortButton = view.findViewById(R.id.sortButton);
-            filterButton = view.findViewById(R.id.filterButton);
+            Button sortButton = view.findViewById(R.id.sortButton);
+            Button filterButton = view.findViewById(R.id.filterButton);
 
             recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
             adapter = new BACEntryAdapter();
@@ -115,22 +112,22 @@ public class BacHistoryFragment extends Fragment {
         Log.d(TAG, "Sorting entries by: " + sortOption.name());
         switch (sortOption) {
             case TIME_NEWEST_FIRST:
-                Collections.sort(entries, (e1, e2) -> e2.getTimestamp().compareTo(e1.getTimestamp()));
+                entries.sort((e1, e2) -> e2.getTimestamp().compareTo(e1.getTimestamp()));
                 break;
             case TIME_OLDEST_FIRST:
-                Collections.sort(entries, (e1, e2) -> e1.getTimestamp().compareTo(e2.getTimestamp()));
+                entries.sort(Comparator.comparing(BACEntry::getTimestamp));
                 break;
             case BAC_HIGHEST_FIRST:
-                Collections.sort(entries, (e1, e2) -> Double.compare(e2.getBac(), e1.getBac()));
+                entries.sort((e1, e2) -> Double.compare(e2.getBac(), e1.getBac()));
                 break;
             case BAC_LOWEST_FIRST:
-                Collections.sort(entries, (e1, e2) -> Double.compare(e1.getBac(), e2.getBac()));
+                entries.sort(Comparator.comparingDouble(BACEntry::getBac));
                 break;
         }
         return entries;
     }
 
-    public class BACFilter {
+    public static class BACFilter {
         private String timePeriod;
         private Date startDate;
         private Date endDate;
@@ -221,7 +218,7 @@ public class BacHistoryFragment extends Fragment {
                                     if (date != null) {
                                         Timestamp timestamp = new Timestamp(date);
 
-                                        Log.d(TAG, "Parsed date: " + date.toString());
+                                        Log.d(TAG, "Parsed date: " + date);
 
                                         BACEntry entry = new BACEntry(bacValue, timestamp);
                                         entry.setStatus(status != null ? status : "Unknown");
@@ -293,9 +290,7 @@ public class BacHistoryFragment extends Fragment {
         final Calendar startDate = Calendar.getInstance();
         final Calendar endDate = Calendar.getInstance();
 
-        timePeriodGroup.setOnCheckedChangeListener((group, checkedId) -> {
-            customDateLayout.setVisibility(checkedId == R.id.customRadio ? View.VISIBLE : View.GONE);
-        });
+        timePeriodGroup.setOnCheckedChangeListener((group, checkedId) -> customDateLayout.setVisibility(checkedId == R.id.customRadio ? View.VISIBLE : View.GONE));
 
         // Start Date picker
         startDateButton.setOnClickListener(v -> {

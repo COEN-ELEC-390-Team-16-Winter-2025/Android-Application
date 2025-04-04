@@ -15,28 +15,13 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
-import android.util.TypedValue;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
-import android.widget.Button;
-import android.widget.TextView;
-import android.app.AlertDialog;
-import android.media.Ringtone;
-import android.media.RingtoneManager;
-import android.net.Uri;
-
-
-import androidx.core.content.ContextCompat;
-
 
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.Toolbar;
 
-import java.sql.Time;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -52,10 +37,9 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.Query;
 
 
-import android.view.View;
 import android.widget.ProgressBar;
 import android.widget.TextView;
-import android.widget.Toast;
+
 import androidx.appcompat.app.ActionBar;
 
 
@@ -70,10 +54,8 @@ public class ScanningActivity extends AppCompatActivity {
 
     private BluetoothAdapter bluetoothAdapter;
     private Handler handler;
-    private ListView bacListView;
     private TextView loadingTextView;
     private ProgressBar progressBar;
-    private TextView instructionTextView;
 
     private boolean MODE_LATEST_BAC;
     String[] loading = {".", "..", "..."};
@@ -85,9 +67,8 @@ public class ScanningActivity extends AppCompatActivity {
     private ArrayAdapter<String> bacListAdapter;
     private ScanningAdapter adapter;
     private final List<String> bacList = new ArrayList<>();
-    private ArrayList<BACEntry> bacEntries = new ArrayList<BACEntry>();
+    private ArrayList<BACEntry> bacEntries = new ArrayList<>();
     private BluetoothGatt mBluetoothGatt;
-    private BluetoothDevice mBluetoothDevice;
 
     private FirebaseFirestore db;
     private int userHeight = 170;  // Default height (cm)
@@ -99,6 +80,7 @@ public class ScanningActivity extends AppCompatActivity {
     private int dangerCount = 0;
 
 
+    @SuppressLint("SetTextI18n")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -123,16 +105,16 @@ public class ScanningActivity extends AppCompatActivity {
         if (currentUser != null) {
             userId = currentUser.getUid();
             fetchUserData();
-            startFirestoreSafetyListener();
+            startSafetyMonitor();
         } else {
             Log.e(TAG, "No logged-in user found.");
         }
 
 
-        bacListView = findViewById(R.id.bacListView);
+        ListView bacListView = findViewById(R.id.bacListView);
         loadingTextView = findViewById(R.id.loadingTextView);
         progressBar = findViewById(R.id.progressBar);
-        instructionTextView = findViewById(R.id.instructionTextView);
+        TextView instructionTextView = findViewById(R.id.instructionTextView);
 
         handler = new Handler(Looper.getMainLooper());
 
@@ -170,8 +152,7 @@ public class ScanningActivity extends AppCompatActivity {
     private void connectToBluno() {
         BluetoothDevice device = getPairedBlunoDevice();
         if (device != null) {
-            mBluetoothDevice = device;
-            mBluetoothGatt = mBluetoothDevice.connectGatt(this, false, mGattCallback);
+            mBluetoothGatt = device.connectGatt(this, false, mGattCallback);
         } else {
             Log.e(TAG, "No paired Bluno device found.");
         }
@@ -232,6 +213,7 @@ public class ScanningActivity extends AppCompatActivity {
 
         private final StringBuilder receivedDataBuffer = new StringBuilder();
 
+        @SuppressLint("SetTextI18n")
         @Override
         public void onCharacteristicChanged(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic) {
             String receivedChunk = characteristic.getStringValue(0); // Get incoming chunk
@@ -257,7 +239,7 @@ public class ScanningActivity extends AppCompatActivity {
                         count++;
                     }
 
-                    String finalMessage = completeMessage + " | Adjusted BAC: " + String.format("%.3f", adjustedBAC);
+                    @SuppressLint("DefaultLocale") String finalMessage = completeMessage + " | Adjusted BAC: " + String.format("%.3f", adjustedBAC);
 
                     // Update UI on main thread
                     handler.post(() -> {
@@ -351,9 +333,7 @@ public class ScanningActivity extends AppCompatActivity {
                         Log.d(TAG, "User document does not exist. Using defaults.");
                     }
                 })
-                .addOnFailureListener(e -> {
-                    Log.e(TAG, "Error fetching user data. Using defaults.", e);
-                });
+                .addOnFailureListener(e -> Log.e(TAG, "Error fetching user data. Using defaults.", e));
     }
 
 
@@ -371,8 +351,8 @@ public class ScanningActivity extends AppCompatActivity {
             String[] parts = message.split("\\s+");
             double BAC_value_mean = 0;
             if (parts.length > 1) {
-                for(int i=0; i<parts.length; i++){
-                    BAC_value_mean += Double.parseDouble(parts[i].trim());
+                for (String part : parts) {
+                    BAC_value_mean += Double.parseDouble(part.trim());
                 }
                 return BAC_value_mean/parts.length;
             }
@@ -416,9 +396,7 @@ public class ScanningActivity extends AppCompatActivity {
                documentReference.set(bac);
                Log.d("Firestore", "Bac entry updated successfully");
            }
-       }).addOnFailureListener(e -> {
-           Log.e("Firestore", "Error: "+e);
-       });
+       }).addOnFailureListener(e -> Log.e("Firestore", "Error: "+e));
     }
 
     //Stores an alert object in firestore database when called. Updates if field already exists or sets if not
@@ -446,110 +424,49 @@ public class ScanningActivity extends AppCompatActivity {
                 documentReference.set(alertMap);
                 Log.d("Firestore", "Alert entry saved successfully");
             }
-        }).addOnFailureListener(e -> {
-            Log.e("Firestore", "Error: "+e);
-        });
+        }).addOnFailureListener(e -> Log.e("Firestore", "Error: "+e));
     }
 
-    private void showAlertDialog(String title, String message) {
-        Toast.makeText(this, "ALERT: " + title + "\n" + message, Toast.LENGTH_LONG).show();
-        AlertDialog.Builder builder = new AlertDialog.Builder(ScanningActivity.this, R.style.RedBorderAlertDialog);
-        builder.setTitle(title);
-        builder.setMessage(message);
-        builder.setCancelable(false);
-        builder.setPositiveButton("OK", (dialog, which) -> dialog.dismiss());
 
-        AlertDialog dialog = builder.create();
-        playNotificationSound();
-        dialog.show();
 
-        // Style the buttons
-        int redColor = ContextCompat.getColor(this, android.R.color.holo_red_dark);
-        Button positiveButton = dialog.getButton(AlertDialog.BUTTON_POSITIVE);
-        if (positiveButton != null) {
-            positiveButton.setTextColor(redColor);
-            positiveButton.setTextSize(TypedValue.COMPLEX_UNIT_SP, 18);
-        }
 
-        // Style title and message
-        TextView titleView = dialog.findViewById(android.R.id.title);
-        TextView messageView = dialog.findViewById(android.R.id.message);
-
-        if (titleView != null) {
-            titleView.setTextSize(TypedValue.COMPLEX_UNIT_SP, 20);
-            titleView.setTextColor(redColor);
-        }
-
-        if (messageView != null) {
-            messageView.setTextSize(TypedValue.COMPLEX_UNIT_SP, 18);
-        }
-    }
-
-    private void playNotificationSound() {
-        try {
-            Uri notification = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
-            Ringtone r = RingtoneManager.getRingtone(getApplicationContext(), notification);
-            if (r != null) {
-                r.play();
-            }
-        } catch (Exception e) {
-            // silently fail
-        }
-    }
-    private void startFirestoreSafetyListener() {
+    private void startSafetyMonitor() {
         db.collection("users")
                 .document(userId)
                 .collection("BacEntry")
-                .orderBy("Date")
+                .orderBy("Timestamp", Query.Direction.DESCENDING)
                 .limit(1)
                 .addSnapshotListener((snapshots, e) -> {
                     if (e != null || snapshots == null || snapshots.isEmpty()) return;
 
                     DocumentSnapshot doc = snapshots.getDocuments().get(0);
-                    Double bac = doc.getDouble("bacValue");
                     String currentStatus = doc.getString("Status");
 
-                    if (bac == null || currentStatus == null) {
-                        Log.w(TAG, "Missing required fields in Firestore document!");
-                        Log.w(TAG, "bacValue: " + bac + ", Status: " + currentStatus );
-                        return;
-                    }
+                    long now = System.currentTimeMillis();
 
-
-                    // Detect status change
                     if (lastStatus != null && !lastStatus.equals(currentStatus)) {
-                        long timeInPreviousState = (System.currentTimeMillis() - lastStatusTime) / 1000;
-                        String title = "Safety Level Changed";
-                        String message = "Status changed from " + lastStatus + " to " + currentStatus +
-                                " after " + timeInPreviousState + "s.";
-                        showAlertDialog(title, message);
+                        long duration = (now - lastStatusTime) / 1000;
+                        Log.d("SafetyMonitor", "Status changed: " + lastStatus + " → " + currentStatus +
+                                " after " + duration + "s");
 
-                        // use date/time strings
-                        Alert alert = new Alert(bac, Timestamp.now());
-                        storeAlert(alert);
+                        // 🔔 ALERT: You can do something here!
+                        // E.g., show a toast, vibrate, or store an alert
                     }
 
-                    // Repeated Danger detection
+                    // Check for Danger duration
                     if ("Danger".equals(currentStatus)) {
                         dangerCount++;
                         if (dangerCount >= 3) {
-                            String title = "⚠️ Repeated Danger Status";
-                            String message = "You've had 3 or more consecutive 'Danger' readings.";
-                            showAlertDialog(title, message);
-
-                            Alert alert = new Alert(bac, Timestamp.now());
-                            storeAlert(alert);
+                            Log.w("SafetyMonitor", "⚠️ 3 consecutive Danger readings!");
                         }
                     } else {
                         dangerCount = 0;
                     }
 
                     lastStatus = currentStatus;
-                    lastStatusTime = System.currentTimeMillis();
+                    lastStatusTime = now;
                 });
     }
-
-
 
 
 

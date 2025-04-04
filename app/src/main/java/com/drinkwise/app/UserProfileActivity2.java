@@ -26,7 +26,7 @@ public class UserProfileActivity2 extends AppCompatActivity {
 
     private EditText NameTextView;
     private TextView BirthdayTextView, NameErrorTextView, BirthdayErrorTextView;
-    private Button SaveButton, NextButton;
+    private Button SaveButton;
     private FirebaseFirestore db;
     private FirebaseAuth auth;
     private String selectedDate;
@@ -41,7 +41,7 @@ public class UserProfileActivity2 extends AppCompatActivity {
         BirthdayTextView = findViewById(R.id.editTextWeight);
         NameErrorTextView = findViewById(R.id.NameErrorTextView);
         BirthdayErrorTextView = findViewById(R.id.BirthdayErrorTextView);
-        NextButton = findViewById(R.id.NextButton);
+        Button nextButton = findViewById(R.id.NextButton);
 
         //Initialize Firebase references
         auth = FirebaseAuth.getInstance();
@@ -51,7 +51,7 @@ public class UserProfileActivity2 extends AppCompatActivity {
         BirthdayTextView.setOnClickListener(v -> showDatePicker());
 
         //Navigate to the dashboard
-        NextButton.setOnClickListener(v -> {
+        nextButton.setOnClickListener(v -> {
             if(validInputs()){
                 saveToFirebase();
                 SharedPreferences sharedPreferences = getSharedPreferences("AppPrefs", MODE_PRIVATE);
@@ -75,7 +75,7 @@ public class UserProfileActivity2 extends AppCompatActivity {
         int month = calendar.get(Calendar.MONTH);
         int day = calendar.get(Calendar.DAY_OF_MONTH);
 
-        DatePickerDialog datePicker = new DatePickerDialog(this,  R.style.DatePickerDialogTheme, (view, selectedYear, selectedMonth, selectedDay) -> {
+        @SuppressLint("SetTextI18n") DatePickerDialog datePicker = new DatePickerDialog(this,  R.style.DatePickerDialogTheme, (view, selectedYear, selectedMonth, selectedDay) -> {
 
             Calendar selectedCalendar = Calendar.getInstance();
             selectedCalendar.set(selectedYear, selectedMonth, selectedDay);
@@ -108,6 +108,7 @@ public class UserProfileActivity2 extends AppCompatActivity {
         datePicker.show();
     }
 
+    @SuppressLint("SetTextI18n")
     private boolean validInputs() {
         boolean isValid = true;
 
@@ -143,6 +144,7 @@ public class UserProfileActivity2 extends AppCompatActivity {
         //Getting usr from firebase
         FirebaseUser user = auth.getCurrentUser();
 
+        assert user != null;
         String userID = user.getUid();
         Map<String, Object> userData =  new HashMap<>();
         userData.put("name", name);
@@ -153,11 +155,7 @@ public class UserProfileActivity2 extends AppCompatActivity {
                 .collection("profile")
                 .document("stats");
 
-        DocRef.update(userData).addOnSuccessListener(aVoid -> {
-            Toast.makeText(UserProfileActivity2.this, "Profile saved!", Toast.LENGTH_SHORT).show();
-        }).addOnFailureListener(e -> {
-            Toast.makeText(UserProfileActivity2.this, "Failed to save profile!",Toast.LENGTH_SHORT).show();
-        });
+        DocRef.update(userData).addOnSuccessListener(aVoid -> Toast.makeText(UserProfileActivity2.this, "Profile saved!", Toast.LENGTH_SHORT).show()).addOnFailureListener(e -> Toast.makeText(UserProfileActivity2.this, "Failed to save profile!",Toast.LENGTH_SHORT).show());
     }
 
 }
