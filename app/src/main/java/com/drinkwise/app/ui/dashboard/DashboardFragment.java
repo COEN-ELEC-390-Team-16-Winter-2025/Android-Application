@@ -1156,6 +1156,9 @@ public class DashboardFragment extends Fragment {
 
         Log.d(TAG, "Deleting logs: " + drinkLogToUndo.toString());
         FirebaseFirestore db = FirebaseFirestore.getInstance();
+        final int totalDeletions = drinkLogToUndo.size();
+        final int[] deletionsCompleted = {0};
+
         for (String logId : drinkLogToUndo) {
             db.collection("users")
                     .document(getCurrentUserId())
@@ -1214,7 +1217,11 @@ public class DashboardFragment extends Fragment {
                                     .delete()
                                     .addOnSuccessListener(aVoid -> {
                                         Log.d(TAG, "Log " + logId + " successfully deleted");
-                                        saveDashboardData();
+                                        deletionsCompleted[0]++;
+                                        if(deletionsCompleted[0] == totalDeletions) {
+                                            saveDashboardData();
+                                            loadDashboardData();
+                                        }
                                     })
                                     .addOnFailureListener(e -> Log.e(TAG, "Error deleting log " + logId, e));
                         }
