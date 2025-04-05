@@ -288,7 +288,6 @@ public class DashboardFragment extends Fragment {
         updateSakeCount();
         updateCustomCount();
         updateTotalCalories();
-
         minusButtonState();
     }
 
@@ -369,8 +368,6 @@ public class DashboardFragment extends Fragment {
             logDrinkToFirestore("Beer", 150, 0.03);
             //check for rapid logging and errors
             checkDrinkLogAndBAC();
-
-            startSafetyMonitor(); //for testing
             minusButtonState();
 
         });
@@ -662,7 +659,7 @@ public class DashboardFragment extends Fragment {
     }
     @SuppressLint({"DefaultLocale", "SetTextI18n"})
     private void updateBacLevel(double bacValue) {
-        startSafetyMonitor();
+            startSafetyMonitor();
 
         if (getContext() == null) return;
 
@@ -1250,32 +1247,6 @@ public class DashboardFragment extends Fragment {
                             .getTimestamp("Timestamp");
 
 
-//                    String currentStatus = doc.getString("Status");
-//
-//                    long now = System.currentTimeMillis();
-//
-//                    if (lastStatus != null && !lastStatus.equals(currentStatus)) {
-//                        long duration = (now - lastStatusTime) / 1000;
-//                        Log.d("SafetyMonitor", "Status changed: " + lastStatus + " → " + currentStatus +
-//                                " after " + duration + "s");
-//
-//                        // 🔔 ALERT: You can do something here!
-//                        // E.g., show a toast, vibrate, or store an alert
-//                    }
-//
-//                    // Check for Danger duration
-//                    if ("Danger".equals(currentStatus)) {
-//                        dangerCount++;
-//                        if (dangerCount >= 3) {
-//                            Log.w("SafetyMonitor", "⚠️ 3 consecutive Danger readings!");
-//                        }
-//                    } else {
-//                        dangerCount = 0;
-//                    }
-//
-//                    lastStatus = currentStatus;
-//                    lastStatusTime = now;
-
                 });
     }
 
@@ -1291,7 +1262,7 @@ public class DashboardFragment extends Fragment {
 
 
 
-}
+
     private final Map<String, Long> alertCooldowns = new HashMap<>();
     private static final long ALERT_COOLDOWN_PERIOD = 5 * 60 * 1000;
     private boolean bacCheckEnabled = false;
