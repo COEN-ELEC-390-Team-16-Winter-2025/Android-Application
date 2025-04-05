@@ -22,9 +22,11 @@ import android.view.ViewGroup;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -51,6 +53,7 @@ import com.google.firebase.Timestamp;
 import com.google.firebase.firestore.Query;
 
 import java.text.SimpleDateFormat;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
@@ -76,12 +79,15 @@ public class DashboardFragment extends Fragment {
     private TextView cocktailCount;
     private TextView shotCount;
     private TextView sakeCount;
+    private TextView customCount;
     private Button addBeerButton;
     private Button addWineButton;
     private Button addChampagneButton;
     private Button addCocktailButton;
     private Button addShotButton;
     private Button addSakeButton;
+    private Button addCustomButton;
+
 
     private Button minusBeerButton;
     private Button minusWineButton;
@@ -89,7 +95,7 @@ public class DashboardFragment extends Fragment {
     private Button minusCocktailButton;
     private Button minusShotButton;
     private Button minusSakeButton;
-
+    private Button minusCustomButton;
 
     // Drinks info
     private ImageView beerImage, wineImage, champagneImage, cocktailImage, shotImage, sakeImage;
@@ -107,6 +113,7 @@ public class DashboardFragment extends Fragment {
     private static int cocktailCounter = 0;
     private static int shotCounter = 0;
     private static int sakeCounter = 0;
+    private static int customCounter = 0;
 
     // Quick Help Related variables
     private static int quickHelpCounter = 0;
@@ -131,6 +138,8 @@ public class DashboardFragment extends Fragment {
     // Firestore database
     private FirebaseFirestore db;
 
+    private SharedPreferences prefs;
+
     //Drinking session
     private String currentSessionId;
 
@@ -146,6 +155,7 @@ public class DashboardFragment extends Fragment {
         drinkCalories.put("Cocktail", 200);
         drinkCalories.put("Shot", 95);
         drinkCalories.put("Sake", 230);
+        prefs = requireContext().getSharedPreferences("DashboardPrefs", Context.MODE_PRIVATE);
     }
 
     @Nullable
@@ -155,7 +165,9 @@ public class DashboardFragment extends Fragment {
         View rootView = inflater.inflate(R.layout.fragment_dashboard, container, false);
         quickHelpButton = rootView.findViewById(R.id.quickHelpButton);
         return rootView;
+
     }
+
 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
@@ -173,6 +185,7 @@ public class DashboardFragment extends Fragment {
         cocktailCount = view.findViewById(R.id.cocktailCount);
         shotCount = view.findViewById(R.id.shotCount);
         sakeCount = view.findViewById(R.id.sakeCount);
+        customCount = view.findViewById(R.id.customCount);
 
         addBeerButton = view.findViewById(R.id.addBeerButton);
         addWineButton = view.findViewById(R.id.addWineButton);
@@ -180,6 +193,7 @@ public class DashboardFragment extends Fragment {
         addCocktailButton = view.findViewById(R.id.addCocktailButton);
         addShotButton = view.findViewById(R.id.addShotButton);
         addSakeButton = view.findViewById(R.id.addSakeButton);
+        addCustomButton = view.findViewById(R.id.addCustomButton);
 
         minusBeerButton = view.findViewById(R.id.minusBeerButton);
         minusWineButton = view.findViewById(R.id.minusWineButton);
@@ -187,6 +201,7 @@ public class DashboardFragment extends Fragment {
         minusCocktailButton = view.findViewById(R.id.minusCocktailButton);
         minusShotButton = view.findViewById(R.id.minusShotButton);
         minusSakeButton = view.findViewById(R.id.minusSakeButton);
+        minusCustomButton = view.findViewById(R.id.minusCustomButton);
 
         // Initialize action buttons
         seeListButton = view.findViewById(R.id.seeListButton);
@@ -196,13 +211,13 @@ public class DashboardFragment extends Fragment {
 
 
         // Initialize ImageViews
-        //Drinks info
         ImageView beerImage = view.findViewById(R.id.beerImage);
         ImageView wineImage = view.findViewById(R.id.wineImage);
         ImageView champagneImage = view.findViewById(R.id.champagneImage);
         ImageView cocktailImage = view.findViewById(R.id.cocktailImage);
         ImageView shotImage = view.findViewById(R.id.shotImage);
         ImageView sakeImage = view.findViewById(R.id.sakeImage);
+        ImageView customImage = view.findViewById(R.id.customImage);
 
         // Initialize TextView for displaying drink info
         drinkInfo = view.findViewById(R.id.drinkInfo);
@@ -216,6 +231,7 @@ public class DashboardFragment extends Fragment {
         cocktailImage.setOnClickListener(v -> displayDrinkInfo("Cocktail", 200, 0.07, 200));
         shotImage.setOnClickListener(v -> displayDrinkInfo("Shot", 45, 0.04, 95));
         sakeImage.setOnClickListener(v -> displayDrinkInfo("Sake", 180, 0.06, 230));
+        customImage.setOnClickListener(v -> displayDrinkInfo("Custom Drink", 0,0,0));
 
         //Initialize total calories TextView
         caloriesTextView = view.findViewById(R.id.caloriesTextView);
@@ -270,6 +286,7 @@ public class DashboardFragment extends Fragment {
         updateCocktailCount();
         updateShotCount();
         updateSakeCount();
+        updateCustomCount();
         updateTotalCalories();
 
         minusButtonState();
@@ -291,6 +308,7 @@ public class DashboardFragment extends Fragment {
         cocktailCounter = 0;
         shotCounter = 0;
         sakeCounter = 0;
+        customCounter = 0;
         totalCalories = 0;
         updateBeerCount();
         updateWineCount();
@@ -298,6 +316,7 @@ public class DashboardFragment extends Fragment {
         updateCocktailCount();
         updateShotCount();
         updateSakeCount();
+        updateCustomCount();
         updateTotalCalories();
         showDefaultBacValue();
 
@@ -311,6 +330,7 @@ public class DashboardFragment extends Fragment {
         minusCocktailButton.setEnabled(cocktailCounter>0);
         minusShotButton.setEnabled(shotCounter>0);
         minusSakeButton.setEnabled(sakeCounter>0);
+        minusCustomButton.setEnabled(customCounter>0);
     }
     private void setupButtonListeners() {
         seeListButton.setOnClickListener(v -> {
@@ -410,6 +430,61 @@ public class DashboardFragment extends Fragment {
             minusButtonState();
         });
 
+        //custom drink add
+        addCustomButton.setOnClickListener(v -> {
+            showAddCustomDrinkDialog();
+            minusButtonState();
+        });
+
+        minusCustomButton.setOnClickListener(v -> {
+            FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+            if (customCounter > 0 && user != null) {
+                String userID = user.getUid();
+
+                db.collection("users")
+                        .document(userID)
+                        .collection("manual_drink_logs")
+                        .orderBy("timestamp", Query.Direction.DESCENDING)
+                        .limit(20)
+                        .get()
+                        .addOnSuccessListener(queryDocumentSnapshots -> {
+                            for (DocumentSnapshot doc : queryDocumentSnapshots) {
+                                String drinkType = doc.getString("drinkType");
+                                if (drinkType != null && !isPredefinedDrink(drinkType)) {
+                                    // Found the latest custom drink
+                                    Long calories = doc.getLong("calories");
+
+                                    doc.getReference().delete()
+                                            .addOnSuccessListener(aVoid -> {
+                                                Log.d(TAG, "Custom drink deleted: " + doc.getId());
+
+
+                                                customCounter--;
+                                                updateCustomCount();
+
+                                                if (calories != null) {
+                                                    totalCalories -= calories.intValue();
+                                                    caloriesTextView.setText("Total Calories: " + totalCalories + " kcal");
+                                                }
+
+                                                saveDashboardData();
+                                                minusButtonState();
+                                            })
+                                            .addOnFailureListener(e -> {
+                                                Log.e(TAG, "Failed to delete custom drink: ", e);
+                                            });
+
+                                    return;
+                                }
+                            }
+
+                            Log.d(TAG, "No custom drinks found to delete.");
+                        })
+                        .addOnFailureListener(e -> Log.e(TAG, "Error querying custom drinks: ", e));
+            }
+        });
+
+
         minusBeerButton.setOnClickListener(v -> {
             if (beerCounter > 0) {
                 beerCounter--;
@@ -472,7 +547,6 @@ public class DashboardFragment extends Fragment {
                 updateTotalCalories();
                 removeDrinkFromFirestore("Sake");
                 //updateBACFromManualLogs();
-                minusButtonState();
             }
         });
 
@@ -518,6 +592,7 @@ public class DashboardFragment extends Fragment {
     private void saveDashboardData() {
         SharedPreferences prefs = requireContext().getSharedPreferences("DashboardPrefs", Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = prefs.edit();
+
         editor.putString("currentSessionId", currentSessionId);
         editor.putInt("beerCounter", beerCounter);
         editor.putInt("wineCounter", wineCounter);
@@ -525,6 +600,7 @@ public class DashboardFragment extends Fragment {
         editor.putInt("cocktailCounter", cocktailCounter);
         editor.putInt("shotCounter", shotCounter);
         editor.putInt("sakeCounter", sakeCounter);
+        editor.putInt("customCounter", customCounter);
         editor.putInt("totalCalories", totalCalories);
         editor.putFloat("bacValue", (float) bacValue);
         editor.apply();
@@ -540,6 +616,7 @@ public class DashboardFragment extends Fragment {
         cocktailCounter = prefs.getInt("cocktailCounter", 0);
         shotCounter = prefs.getInt("shotCounter", 0);
         sakeCounter = prefs.getInt("sakeCounter", 0);
+        customCounter = prefs.getInt("customCounter", 0);
         totalCalories = prefs.getInt("totalCalories", 0);
         bacValue = prefs.getFloat("bacValue", 0);
 
@@ -550,6 +627,7 @@ public class DashboardFragment extends Fragment {
         updateCocktailCount();
         updateShotCount();
         updateSakeCount();
+        updateCustomCount();
         updateTotalCalories();
         updateBacLevel(bacValue);
     }
@@ -579,6 +657,9 @@ public class DashboardFragment extends Fragment {
         sakeCount.setText(String.valueOf(sakeCounter));
     }
 
+    private void updateCustomCount() {
+        customCount.setText(String.valueOf(customCounter));
+    }
     @SuppressLint({"DefaultLocale", "SetTextI18n"})
     private void updateBacLevel(double bacValue) {
         startSafetyMonitor();
@@ -653,13 +734,19 @@ public class DashboardFragment extends Fragment {
                 (shotCounter * shotCalories) +
                 (sakeCounter * sakeCalories);
 
+        totalCalories = Math.max(totalCalories, prefs.getInt("totalCalories", 0));
+
         // Update UI
         caloriesTextView.setText("Total Calories: " + totalCalories + " kcal");
     }
 
-    // Helper method: returns 0 if value is null, otherwise returns the int value
+
     private int getSafeInt(Integer value) {
         return (value != null) ? value : 0;
+    }
+
+    private boolean isPredefinedDrink(String drinkType) {
+        return Arrays.asList("Beer", "Wine", "Champagne", "Cocktail", "Shot", "Sake").contains(drinkType);
     }
 
     int drinkCount;
@@ -681,7 +768,7 @@ public class DashboardFragment extends Fragment {
         }
         Log.d(TAG, "Current session id: "+currentSessionId);
 
-        //Query for last drink
+        //find last drink
         db.collection("users").document(userId)
                 .collection("manual_drink_logs")
                 .whereEqualTo("sessionId", currentSessionId)
@@ -709,7 +796,7 @@ public class DashboardFragment extends Fragment {
                         }
                     }
 
-                    //Fetch or create drinking session
+
                     db.collection("users").document(userId)
                             .collection("drinking_sessions")
                             .orderBy("startTimestamp", Query.Direction.DESCENDING)
@@ -772,7 +859,46 @@ public class DashboardFragment extends Fragment {
                 })
                 .addOnFailureListener(e -> Log.e(TAG, "Error fetching last drink log", e));
     }
+    private void showAddCustomDrinkDialog() {
+        LayoutInflater inflater = LayoutInflater.from(getContext());
+        View dialogView = inflater.inflate(R.layout.dialog_add_custom_drink, null);
 
+        EditText nameInput = dialogView.findViewById(R.id.editDrinkName);
+        EditText quantityInput = dialogView.findViewById(R.id.editDrinkQuantity);
+        EditText caloriesInput = dialogView.findViewById(R.id.editDrinkCalories);
+
+        new AlertDialog.Builder(requireContext())
+                .setTitle("Add Custom Drink")
+                .setView(dialogView)
+                .setPositiveButton("Add", (dialog, which) -> {
+                    String name = nameInput.getText().toString().trim();
+                    String quantity = quantityInput.getText().toString().trim();
+                    String caloriesStr = caloriesInput.getText().toString().trim();
+
+                    if (!name.isEmpty() && !caloriesStr.isEmpty()) {
+                        try {
+                            int calories = Integer.parseInt(caloriesStr);
+                            customCounter++;
+                            updateCustomCount();
+
+                            totalCalories += calories;
+                            caloriesTextView.setText("Total Calories: " + totalCalories + " kcal");
+
+                            // Save to Firestore
+                            logDrinkToFirestore(name, calories, 0);
+                            saveDashboardData();
+
+                            Toast.makeText(getContext(), "Added: " + name, Toast.LENGTH_SHORT).show();
+                        } catch (NumberFormatException e) {
+                            Toast.makeText(getContext(), "Invalid calorie input", Toast.LENGTH_SHORT).show();
+                        }
+                    } else {
+                        Toast.makeText(getContext(), "Please fill in all fields", Toast.LENGTH_SHORT).show();
+                    }
+                })
+                .setNegativeButton("Cancel", null)
+                .show();
+    }
     private void removeDrinkFromFirestore(String drinkType) {
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
         if(user != null){
@@ -786,11 +912,11 @@ public class DashboardFragment extends Fragment {
                     .get()
                     .addOnSuccessListener(queryDocumentSnapshots -> {
                         if(!queryDocumentSnapshots.isEmpty()) {
-                        DocumentSnapshot drinkEntry = queryDocumentSnapshots.getDocuments().get(0);   //need to check if empty before doing this
+                        DocumentSnapshot drinkEntry = queryDocumentSnapshots.getDocuments().get(0);
                         drinkEntry.getReference().delete()
                                 .addOnSuccessListener(result -> {
                                     Log.d(TAG, drinkType + " successfully deleted");
-                                    saveDashboardData();    //Local saving
+                                    saveDashboardData();
                                 })
                                 .addOnFailureListener(error -> {
                                     Log.d(TAG, "Error deleting entry: " + error);
