@@ -7,19 +7,22 @@
         android:id="@+id/editDrinkName"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="Drink Name" />
+        android:hint="Drink Name"
+        android:fontFamily="@font/asul"/>
 
     <EditText
         android:id="@+id/editDrinkQuantity"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:hint="Quantity (ml)"
-        android:inputType="numberDecimal" />
+        android:inputType="numberDecimal"
+        android:fontFamily="@font/asul"/>
 
     <EditText
         android:id="@+id/editDrinkCalories"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:hint="Calories"
-        android:inputType="number" />
+        android:inputType="number"
+        android:fontFamily="@font/asul"/>
 </LinearLayout>

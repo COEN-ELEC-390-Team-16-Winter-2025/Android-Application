@@ -211,7 +211,6 @@ public class DashboardFragment extends Fragment {
 
 
         // Initialize ImageViews
-        //Drinks info
         ImageView beerImage = view.findViewById(R.id.beerImage);
         ImageView wineImage = view.findViewById(R.id.wineImage);
         ImageView champagneImage = view.findViewById(R.id.champagneImage);
@@ -442,12 +441,11 @@ public class DashboardFragment extends Fragment {
             if (customCounter > 0 && user != null) {
                 String userID = user.getUid();
 
-                // Use "!= known drink types" via manual filtering instead of whereNotIn to avoid Firestore limits
                 db.collection("users")
                         .document(userID)
                         .collection("manual_drink_logs")
                         .orderBy("timestamp", Query.Direction.DESCENDING)
-                        .limit(20) // fetch recent 20 and filter manually
+                        .limit(20)
                         .get()
                         .addOnSuccessListener(queryDocumentSnapshots -> {
                             for (DocumentSnapshot doc : queryDocumentSnapshots) {
@@ -460,7 +458,7 @@ public class DashboardFragment extends Fragment {
                                             .addOnSuccessListener(aVoid -> {
                                                 Log.d(TAG, "Custom drink deleted: " + doc.getId());
 
-                                                // Only update state once confirmed
+
                                                 customCounter--;
                                                 updateCustomCount();
 
@@ -476,7 +474,7 @@ public class DashboardFragment extends Fragment {
                                                 Log.e(TAG, "Failed to delete custom drink: ", e);
                                             });
 
-                                    return; // Exit after deleting one
+                                    return;
                                 }
                             }
 
@@ -742,7 +740,7 @@ public class DashboardFragment extends Fragment {
         caloriesTextView.setText("Total Calories: " + totalCalories + " kcal");
     }
 
-    // Helper method: returns 0 if value is null, otherwise returns the int value
+
     private int getSafeInt(Integer value) {
         return (value != null) ? value : 0;
     }
@@ -770,7 +768,7 @@ public class DashboardFragment extends Fragment {
         }
         Log.d(TAG, "Current session id: "+currentSessionId);
 
-        //Query for last drink
+        //find last drink
         db.collection("users").document(userId)
                 .collection("manual_drink_logs")
                 .whereEqualTo("sessionId", currentSessionId)
@@ -798,7 +796,7 @@ public class DashboardFragment extends Fragment {
                         }
                     }
 
-                    //Fetch or create drinking session
+
                     db.collection("users").document(userId)
                             .collection("drinking_sessions")
                             .orderBy("startTimestamp", Query.Direction.DESCENDING)
@@ -887,7 +885,7 @@ public class DashboardFragment extends Fragment {
                             caloriesTextView.setText("Total Calories: " + totalCalories + " kcal");
 
                             // Save to Firestore
-                            logDrinkToFirestore(name, calories, 0); // BACContribution is 0 for custom
+                            logDrinkToFirestore(name, calories, 0);
                             saveDashboardData();
 
                             Toast.makeText(getContext(), "Added: " + name, Toast.LENGTH_SHORT).show();
@@ -914,11 +912,11 @@ public class DashboardFragment extends Fragment {
                     .get()
                     .addOnSuccessListener(queryDocumentSnapshots -> {
                         if(!queryDocumentSnapshots.isEmpty()) {
-                        DocumentSnapshot drinkEntry = queryDocumentSnapshots.getDocuments().get(0);   //need to check if empty before doing this
+                        DocumentSnapshot drinkEntry = queryDocumentSnapshots.getDocuments().get(0);
                         drinkEntry.getReference().delete()
                                 .addOnSuccessListener(result -> {
                                     Log.d(TAG, drinkType + " successfully deleted");
-                                    saveDashboardData();    //Local saving
+                                    saveDashboardData();
                                 })
                                 .addOnFailureListener(error -> {
                                     Log.d(TAG, "Error deleting entry: " + error);
