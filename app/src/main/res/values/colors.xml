@@ -92,6 +92,35 @@
 
     <color name="bac_default">#726B6B</color>
 
+    <color name="colorPrimary">#D96A04</color>  <!-- Indigo 500 -->
+    <color name="colorPrimaryDark">#803706</color>  <!-- Indigo 700 -->
+    <color name="colorAccent">#A44F4F</color>  <!-- Pink A200 -->
+
+    <color name="emergency_highlight">#FFF3E0</color>  <!-- Light orange background for emergency contact -->
+    <color name="emergency_text">#E65100</color>  <!-- Dark orange for emergency text -->
+    <color name="success_green">#4CAF50</color>  <!-- For success messages -->
+    <color name="error_red">#F44336</color>  <!-- For error messages -->
+    <color name="warning_orange">#FF9800</color>  <!-- For warnings -->
+    <color name="divider">#EEEEEE</color>  <!-- Very light gray for dividers -->
+    <color name="border_light">#E0E0E0</color>  <!-- For subtle borders -->
+
+    <color name="button_primary">@color/colorPrimary</color>  <!-- Primary buttons -->
+    <color name="button_primary_pressed">@color/colorPrimaryDark</color>  <!-- Pressed state -->
+    <color name="button_secondary">#E0E0E0</color>  <!-- Secondary buttons (light gray) -->
+    <color name="button_text">@color/text_on_primary</color>  <!-- Button text -->
+    <color name="text_primary">#212121</color>  <!-- Almost black for main text -->
+    <color name="text_secondary">#757575</color>  <!-- Gray for secondary text -->
+    <color name="text_hint">#BDBDBD</color>  <!-- Light gray for disabled text -->
+    <color name="text_on_primary">#FFFFFF</color>  <!-- White text on colored buttons -->
+    <color name="background">#FFFFFF</color>  <!-- Pure white -->
+    <color name="surface">#FFFFFF</color>  <!-- For cards/sections -->
+    <color name="section_header_bg">#F5F5F5</color>  <!-- Light gray for section headers -->
+
+
+        <color name="switch_thumb_color">#FF4722</color>  <!-- orange thumb -->
+        <color name="switch_track_color">#BDBDBD</color>  <!-- gray track -->
+
+
 </resources>
 
 

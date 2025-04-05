@@ -1,7 +1,7 @@
 package com.drinkwise.app;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
-import android.graphics.Color;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -12,15 +12,15 @@ import android.widget.TextView;
 import androidx.core.content.ContextCompat;
 
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
 
+// Adapter for displaying BACEntry objects in a ListView.
 public class ScanningAdapter extends BaseAdapter {
 
     private Context context;
     private ArrayList<BACEntry> bacEntries;
     private LayoutInflater inflater;
 
+    // Constructor initializes the adapter with context and list of BACEntry objects.
     public ScanningAdapter(Context context, ArrayList<BACEntry> bacEntries) {
         this.context = context;
         this.bacEntries = bacEntries;
@@ -46,7 +46,8 @@ public class ScanningAdapter extends BaseAdapter {
     }
 
 
-
+    // Called to create or reuse a view for each list item.
+    @SuppressLint({"ViewHolder", "InflateParams", "SetTextI18n", "DefaultLocale"})
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
         convertView = inflater.inflate(R.layout.bac_list_view, null);
@@ -108,12 +109,9 @@ public class ScanningAdapter extends BaseAdapter {
         // Sort the BAC entries by timestamp (most recent first)
         Log.d("ScanningAdapter", "Sorting BAC entries by timestamp.");
 
-        Collections.sort(bacEntries, new Comparator<BACEntry>() {
-            @Override
-            public int compare(BACEntry entry1, BACEntry entry2) {
-                // Compare timestamps in descending order (most recent first)
-                return entry2.getTimestamp().compareTo(entry1.getTimestamp()); // Swapped here
-            }
+        bacEntries.sort((entry1, entry2) -> {
+            // Compare timestamps in descending order (most recent first)
+            return entry2.getTimestamp().compareTo(entry1.getTimestamp()); // Swapped here
         });
 
         // Log the sorted list

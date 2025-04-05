@@ -1,19 +1,43 @@
 <!-- res/layout/custom_actionbar_title.xml -->
-<LinearLayout
+<RelativeLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:gravity="center"
-    android:orientation="horizontal">
+    android:layout_height="wrap_content"
+    android:background="@android:color/transparent">
 
     <TextView
         android:id="@+id/action_bar_title"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_centerInParent="true"
         android:text="YOUR TITLE"
         android:textColor="@color/van_dyke"
         android:fontFamily="@font/artifika"
         android:textAllCaps="true"
         android:textSize="22sp"
         android:textStyle="bold"/>
-</LinearLayout>
+
+    <!-- Info Icon on the Left -->
+    <ImageButton
+        android:id="@+id/info_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:src="@drawable/baseline_info_24"
+        android:contentDescription="Info"
+        android:layout_alignParentStart="true"
+        android:layout_centerVertical="true"
+        android:layout_marginStart="16dp"
+        android:background="@android:color/transparent"/>
+
+    <!-- Profile Icon on the Right -->
+    <ImageButton
+        android:id="@+id/profile_icon"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:src="@drawable/baseline_account_circle_24"
+        android:contentDescription="Profile"
+        android:layout_alignParentEnd="true"
+        android:layout_centerVertical="true"
+        android:layout_marginEnd="16dp"
+        android:background="@android:color/transparent"/>
+</RelativeLayout>

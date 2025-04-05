@@ -21,12 +21,8 @@ import android.widget.ArrayAdapter;
 import android.widget.ListView;
 
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.Toolbar;
 
-import java.sql.Time;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -42,10 +38,9 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.Query;
 
 
-import android.view.View;
 import android.widget.ProgressBar;
 import android.widget.TextView;
-import android.widget.Toast;
+
 import androidx.appcompat.app.ActionBar;
 
 
@@ -60,10 +55,8 @@ public class ScanningActivity extends AppCompatActivity {
 
     private BluetoothAdapter bluetoothAdapter;
     private Handler handler;
-    private ListView bacListView;
     private TextView loadingTextView;
     private ProgressBar progressBar;
-    private TextView instructionTextView;
 
     private boolean MODE_LATEST_BAC;
     String[] loading = {".", "..", "..."};
@@ -75,9 +68,8 @@ public class ScanningActivity extends AppCompatActivity {
     private ArrayAdapter<String> bacListAdapter;
     private ScanningAdapter adapter;
     private final List<String> bacList = new ArrayList<>();
-    private ArrayList<BACEntry> bacEntries = new ArrayList<BACEntry>();
+    private ArrayList<BACEntry> bacEntries = new ArrayList<>();
     private BluetoothGatt mBluetoothGatt;
-    private BluetoothDevice mBluetoothDevice;
 
     private FirebaseFirestore db;
     private int userHeight = 170;  // Default height (cm)
@@ -89,6 +81,7 @@ public class ScanningActivity extends AppCompatActivity {
     private int dangerCount = 0;
 
 
+    @SuppressLint("SetTextI18n")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -119,10 +112,10 @@ public class ScanningActivity extends AppCompatActivity {
         }
 
 
-        bacListView = findViewById(R.id.bacListView);
+        ListView bacListView = findViewById(R.id.bacListView);
         loadingTextView = findViewById(R.id.loadingTextView);
         progressBar = findViewById(R.id.progressBar);
-        instructionTextView = findViewById(R.id.instructionTextView);
+        TextView instructionTextView = findViewById(R.id.instructionTextView);
 
         handler = new Handler(Looper.getMainLooper());
 
@@ -160,8 +153,7 @@ public class ScanningActivity extends AppCompatActivity {
     private void connectToBluno() {
         BluetoothDevice device = getPairedBlunoDevice();
         if (device != null) {
-            mBluetoothDevice = device;
-            mBluetoothGatt = mBluetoothDevice.connectGatt(this, false, mGattCallback);
+            mBluetoothGatt = device.connectGatt(this, false, mGattCallback);
         } else {
             Log.e(TAG, "No paired Bluno device found.");
         }
@@ -222,6 +214,7 @@ public class ScanningActivity extends AppCompatActivity {
 
         private final StringBuilder receivedDataBuffer = new StringBuilder();
 
+        @SuppressLint("SetTextI18n")
         @Override
         public void onCharacteristicChanged(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic) {
             String receivedChunk = characteristic.getStringValue(0); // Get incoming chunk
@@ -247,7 +240,7 @@ public class ScanningActivity extends AppCompatActivity {
                         count++;
                     }
 
-                    String finalMessage = completeMessage + " | Adjusted BAC: " + String.format("%.3f", adjustedBAC);
+                    @SuppressLint("DefaultLocale") String finalMessage = completeMessage + " | Adjusted BAC: " + String.format("%.3f", adjustedBAC);
 
                     // Update UI on main thread
                     handler.post(() -> {
@@ -341,9 +334,7 @@ public class ScanningActivity extends AppCompatActivity {
                         Log.d(TAG, "User document does not exist. Using defaults.");
                     }
                 })
-                .addOnFailureListener(e -> {
-                    Log.e(TAG, "Error fetching user data. Using defaults.", e);
-                });
+                .addOnFailureListener(e -> Log.e(TAG, "Error fetching user data. Using defaults.", e));
     }
 
 
@@ -361,8 +352,8 @@ public class ScanningActivity extends AppCompatActivity {
             String[] parts = message.split("\\s+");
             double BAC_value_mean = 0;
             if (parts.length > 1) {
-                for(int i=0; i<parts.length; i++){
-                    BAC_value_mean += Double.parseDouble(parts[i].trim());
+                for (String part : parts) {
+                    BAC_value_mean += Double.parseDouble(part.trim());
                 }
                 return BAC_value_mean/parts.length;
             }
@@ -406,9 +397,7 @@ public class ScanningActivity extends AppCompatActivity {
                documentReference.set(bac);
                Log.d("Firestore", "Bac entry updated successfully");
            }
-       }).addOnFailureListener(e -> {
-           Log.e("Firestore", "Error: "+e);
-       });
+       }).addOnFailureListener(e -> Log.e("Firestore", "Error: "+e));
     }
 
     //Stores an alert object in firestore database when called. Updates if field already exists or sets if not
@@ -437,12 +426,14 @@ public class ScanningActivity extends AppCompatActivity {
                 Log.d("Firestore", "Alert entry saved successfully");
             }
 
+
             Log.d("Alert",alert.getMessage());
 
         }).addOnFailureListener(e -> {
             Log.e("Firestore", "Error: "+e);
         });
     }
+
 
 
 
