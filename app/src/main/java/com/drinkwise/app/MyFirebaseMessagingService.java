@@ -4,9 +4,13 @@ import android.annotation.SuppressLint;
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.content.Context;
 import android.graphics.Color;
+import android.media.AudioAttributes;
 import android.os.Build;
+import android.provider.Settings;
+import android.text.TextUtils;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
@@ -38,7 +42,14 @@ import android.content.Intent;
 public class MyFirebaseMessagingService extends FirebaseMessagingService {
     private static final String TAG = "FCM_DEBUG";
     private static final String CHANNEL_ID = "drinkwise_alerts_channel";
+    private static final String ALERTS_CHANNEL_ID = "drinkwise_critical_alerts";
+    private static final String REMINDERS_CHANNEL_ID = "drinkwise_reminders_channel";
     private ListenerRegistration recommendationListener;
+    private ListenerRegistration alertListener;
+    private ListenerRegistration reminderListener;
+
+    private String lastNotificationMessage;
+
     private FirebaseFirestore db;
 
 
@@ -46,24 +57,15 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
     public void onCreate() {
         super.onCreate();
         Log.d(TAG, "FCM Service created");
-        // Initialize components but don't make it foreground
         db = FirebaseFirestore.getInstance();
-        createNotificationChannel();
+        createNotificationChannels();
         setupRecommendationListener();
-//        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
-//
-//        // Add this to MainActivity.onCreate() after listener setup:
-//        db.collection("users").document(user.getUid()).collection("Recommendations")
-//                .get()
-//                .addOnSuccessListener(querySnapshot -> {
-//                    Log.d(TAG, "📂 Existing recommendations count: " + querySnapshot.size());
-//                    for (QueryDocumentSnapshot doc : querySnapshot) {
-//                        Log.d(TAG, "📄 Doc: " + doc.getId() + " - " + doc.getData());
-//                    }
-//                });
+        setupAlertListener();
+        setupReminderListener();
     }
 
-    // Add this new method
+
+
     public static void safeStart(Context context) {
         try {
             Intent intent = new Intent(context, MyFirebaseMessagingService.class);
@@ -74,194 +76,384 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
         }
     }
 
-
     @Override
     public void onDestroy() {
         if (recommendationListener != null) {
             recommendationListener.remove();
         }
+        if (alertListener != null) {
+            alertListener.remove();
+        }
+
+        if (reminderListener != null)
+            reminderListener.remove();
+
         super.onDestroy();
+    }
+
+    private void createNotificationChannels() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            // Regular notifications channel
+            NotificationChannel channel = new NotificationChannel(
+                    CHANNEL_ID,
+                    "DrinkWise Notifications",
+                    NotificationManager.IMPORTANCE_HIGH
+            );
+            channel.setDescription("General drink recommendations");
+            channel.enableVibration(true);
+            channel.setVibrationPattern(new long[]{100, 200, 300, 400, 500});
+            channel.setLockscreenVisibility(Notification.VISIBILITY_PUBLIC);
+
+            // alerts channel
+            NotificationChannel criticalChannel = new NotificationChannel(
+                    ALERTS_CHANNEL_ID,
+                    "DrinkWise Safety Alerts",
+                    NotificationManager.IMPORTANCE_HIGH
+            );
+            criticalChannel.setDescription("Critical safety alerts");
+            criticalChannel.enableLights(true);
+            criticalChannel.setLightColor(Color.RED);
+            criticalChannel.setVibrationPattern(new long[]{0, 500, 200, 500});
+            criticalChannel.setLockscreenVisibility(Notification.VISIBILITY_PUBLIC);
+
+            AudioAttributes audioAttributes = new AudioAttributes.Builder()
+                    .setUsage(AudioAttributes.USAGE_NOTIFICATION)
+                    .build();
+            criticalChannel.setSound(Settings.System.DEFAULT_NOTIFICATION_URI, audioAttributes);
+
+            // Add reminders channel
+            NotificationChannel remindersChannel = new NotificationChannel(
+                    REMINDERS_CHANNEL_ID,
+                    "DrinkWise Reminders",
+                    NotificationManager.IMPORTANCE_DEFAULT
+            );
+            remindersChannel.setDescription("Scheduled reminders");
+            remindersChannel.enableVibration(true);
+            remindersChannel.setVibrationPattern(new long[]{100, 200, 100});
+
+            NotificationManager manager = getSystemService(NotificationManager.class);
+            manager.createNotificationChannel(channel);
+            manager.createNotificationChannel(criticalChannel);
+            manager.createNotificationChannel(remindersChannel);
+
+            Log.d(TAG, "Created channels: " + CHANNEL_ID + ", " +
+                    ALERTS_CHANNEL_ID + ", and " + REMINDERS_CHANNEL_ID);
+        }
     }
 
     private void setupRecommendationListener() {
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
         if (user == null) {
-            Log.d(TAG, "❌ No authenticated user - skipping listener setup");
+            Log.d(TAG, "No authenticated user - skipping recommendation listener");
             return;
         }
-        Log.d(TAG, "✅ User authenticated: " + user.getUid());
 
-        String collectionPath = "users/" + user.getUid() + "/Recommendations";
-        Log.d(TAG, "🔍 Setting up listener on collection: " + collectionPath);
-
-//        recommendationListener = db.collection("users")
-//                .document(user.getUid())
-//                .collection("Recommendations")
-//                .whereEqualTo("Resolved", false)  // Only unresolved docs
-//                .orderBy("Timestamp", Query.Direction.DESCENDING)
-//                .limit(1)
-//                .addSnapshotListener((snapshots, error) -> {
-//                    Log.d(TAG, "📡 Snapshot received at " + System.currentTimeMillis());
-//
-//                    if (error != null) {
-//                        Log.e(TAG, "❗ Listener error", error);
-//                        return;
-//                    }
-//
-//                    if (snapshots == null) {
-//                        Log.d(TAG, "🔄 Snapshot is null (initial state)");
-//                        return;
-//                    }
-//
-//                    Log.d(TAG, "📊 Snapshot metadata: " +
-//                            "hasPendingWrites=" + snapshots.getMetadata().hasPendingWrites() +
-//                            ", fromCache=" + snapshots.getMetadata().isFromCache());
-//
-//                    Log.d(TAG, "📝 Document changes count: " + snapshots.getDocumentChanges().size());
-//                    Log.d(TAG, "📋 Full documents count: " + snapshots.size());
-//
-//                    for (DocumentChange dc : snapshots.getDocumentChanges()) {
-//                        Log.d(TAG, "🔄 Document change type: " + dc.getType() +
-//                                ", doc ID: " + dc.getDocument().getId());
-//
-//                        if (dc.getType() == DocumentChange.Type.ADDED) {
-//                            boolean resolved = dc.getDocument().getBoolean("Resolved");
-//                            Log.d(TAG, "📄 Document contents: " +
-//                                    "Resolved=" + resolved +
-//                                    ", Data=" + dc.getDocument().getData());
-//
-//                            if (!resolved) {
-//                                Log.d(TAG, "🎯 New unresolved recommendation detected");
-//                                handleNewRecommendation(dc.getDocument());
-//                            } else {
-//                                Log.d(TAG, "⏭ Recommendation already resolved, skipping");
-//                            }
-//                        }
-//                    }
-//                });
-
-        // Add this test code temporarily
-        db.collection("users")
+        recommendationListener = db.collection("users")
                 .document(user.getUid())
                 .collection("Recommendations")
-                .whereEqualTo("Resolved", false)  // Only unresolved recommendations
-                .orderBy("Timestamp", Query.Direction.DESCENDING)  // Newest first
-                .limit(1)
-                .get()
-                .addOnCompleteListener(task -> {
-                    if (task.isSuccessful()) {
-                        Log.d(TAG, "✅ Rules test passed - Found " + task.getResult().size() + " recommendations");
+                .whereEqualTo("Resolved", false)
+                .orderBy("Timestamp", Query.Direction.DESCENDING)
+                .addSnapshotListener((snapshots, error) -> {
+                    if (error != null) {
+                        Log.e(TAG, "Recommendation listener error", error);
+                        return;
+                    }
 
-                        if (!task.getResult().isEmpty()) {
-                            QueryDocumentSnapshot doc = (QueryDocumentSnapshot) task.getResult().getDocuments().get(0);
-                            Log.d(TAG, "📄 Recommendation: " + doc.getData());
-
-                            // 1. Mark as resolved immediately
-                            doc.getReference().update("Resolved", true)
-                                    .addOnSuccessListener(aVoid -> {
-                                        // 2. Only send notification after successful resolve
-                                        String message = doc.getString("Message");
-                                        Long drinkCount = doc.getLong("DrinkCount");
-
-                                        String notificationMsg = message != null ? message :
-                                                "You've had " + (drinkCount != null ? drinkCount : 0) + " drinks";
-
-                                        sendNotification("Drink Recommendation", notificationMsg);
-                                    })
-                                    .addOnFailureListener(e -> {
-                                        Log.e(TAG, "❌ Failed to mark as resolved", e);
-                                    });
+                    if (snapshots != null) {
+                        for (DocumentChange dc : snapshots.getDocumentChanges()) {
+                            if (dc.getType() == DocumentChange.Type.ADDED) {
+                                handleNewRecommendation(dc.getDocument());
+                            }
                         }
-                    } else {
-                        Log.e(TAG, "❌ Rules test failed", task.getException());
+                    }
+                });
+    }
 
-                        // Specific error handling
-                        if (task.getException() instanceof FirebaseFirestoreException) {
-                            FirebaseFirestoreException e = (FirebaseFirestoreException) task.getException();
-                            if (e.getCode() == FirebaseFirestoreException.Code.PERMISSION_DENIED) {
-                                Log.e(TAG, "🔐 Permission denied - Check Firestore security rules");
-                            } else if (e.getCode() == FirebaseFirestoreException.Code.FAILED_PRECONDITION) {
-                                Log.e(TAG, "⚠️ Index is building - Please wait or create the index manually");
-                                // You could add a retry mechanism here
+    private void handleNewRecommendation(DocumentSnapshot doc) {
+        doc.getReference().update("Resolved", true)
+                .addOnSuccessListener(aVoid -> {
+                    String message = doc.getString("Message");
+                    Long drinkCount = doc.getLong("DrinkCount");
+
+                    String notificationMsg = message != null ? message :
+                            "You've had " + (drinkCount != null ? drinkCount : 0) + " drinks";
+
+                    sendNotification("Drink Recommendation", notificationMsg);
+                })
+                .addOnFailureListener(e -> {
+                    Log.e(TAG, "Failed to mark recommendation as resolved", e);
+                });
+    }
+
+    private void setupAlertListener() {
+        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+        if (user == null) {
+            Log.d(TAG, "No authenticated user - skipping alert listener");
+            return;
+        }
+
+        alertListener = db.collection("users")
+                .document(user.getUid())
+                .collection("Alerts")
+                .whereEqualTo("Resolved", false)
+                .orderBy("Timestamp", Query.Direction.DESCENDING)
+                .addSnapshotListener((snapshots, error) -> {
+                    if (error != null) {
+                        Log.e(TAG, "Alert listener error", error);
+                        return;
+                    }
+
+                    Log.d(TAG, "ALERT SNAPSHOT RECEIVED. Changes: " +
+                            (snapshots != null ? snapshots.getDocumentChanges().size() : "null"));
+
+                    if (snapshots != null) {
+                        for (DocumentChange dc : snapshots.getDocumentChanges()) {
+                            Log.d(TAG, "CHANGE TYPE: " + dc.getType() +
+                                    " Doc: " + dc.getDocument().getData());
+
+                            if (dc.getType() == DocumentChange.Type.ADDED) {
+                                handleNewAlert(dc.getDocument());
                             }
                         }
                     }
                 });
 
-        Log.d(TAG, "👂 Listener successfully registered");
+        Log.d(TAG, "ALERT LISTENER INITIALIZED for user: " + user.getUid());
+
     }
-    private void handleNewRecommendation(DocumentSnapshot doc) {
+
+    private void handleNewAlert(DocumentSnapshot doc) {
+        Log.d(TAG, "NEW ALERT DETECTED: " + doc.getData());
+
+
+        doc.getReference().update("Resolved", true)
+                .addOnSuccessListener(aVoid -> {
+                    String message = doc.getString("Message");
+                    String safetyLevel = doc.getString("SafetyLevel");
+                    Double bacValue = doc.getDouble("bacValue");
+                    Long escalationLevel = doc.getLong("EscalationLevel");
+
+                    String notificationMsg = buildAlertMessage(message, safetyLevel, bacValue);
+                    sendAlertNotification("Safety Alert", notificationMsg, escalationLevel);
+                })
+                .addOnFailureListener(e -> {
+                    Log.e(TAG, "Failed to mark alert as resolved", e);
+                });
+    }
+
+    private void setupReminderListener() {
+        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+        if (user == null) {
+            Log.d(TAG, "No authenticated user - skipping reminder listener");
+            return;
+        }
+
+        reminderListener = db.collection("users")
+                .document(user.getUid())
+                .collection("reminders")
+                .whereEqualTo("status", "active")
+                .addSnapshotListener((snapshots, error) -> {
+                    if (error != null) {
+                        Log.e(TAG, "Reminder listener error", error);
+                        return;
+                    }
+
+                    Log.d(TAG, "REMINDER SNAPSHOT RECEIVED. Changes: " +
+                            (snapshots != null ? snapshots.getDocumentChanges().size() : "null"));
+
+                    if (snapshots != null) {
+                        for (DocumentChange dc : snapshots.getDocumentChanges()) {
+                            if (dc.getType() == DocumentChange.Type.ADDED) {
+                                handleNewReminder(dc.getDocument());
+                            }
+                        }
+                    }
+                });
+
+        Log.d(TAG, "REMINDER LISTENER INITIALIZED for user: " + user.getUid());
+    }
+
+    private void handleNewReminder(DocumentSnapshot doc) {
+        Log.d(TAG, "NEW REMINDER DETECTED: " + doc.getData());
+
+        String message = doc.getString("message");
+        String reminderType = doc.getString("reminderType");
+        String escalation = doc.getString("escalation");
+
+        // Mark as completed after showing
+        doc.getReference().update("status", "completed")
+                .addOnSuccessListener(aVoid -> {
+                    sendReminderNotification(
+                            reminderType != null ? reminderType : "Reminder",
+                            message != null ? message : "New reminder",
+                            escalation
+                    );
+                })
+                .addOnFailureListener(e -> {
+                    Log.e(TAG, "Failed to mark reminder as completed", e);
+                });
+    }
+
+    private void sendReminderNotification(String title, String message, String escalation) {
+        if (TextUtils.isEmpty(message)) return;
+
         try {
-            Log.d(TAG, "🛠 Processing new recommendation");
+            NotificationManager manager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+            if (manager == null) return;
 
-            String message = doc.getString("Message");
-            Long drinkCount = doc.getLong("DrinkCount");
-            Timestamp timestamp = doc.getTimestamp("Timestamp");
+            Intent intent = new Intent(this, MainActivity.class);
+            intent.putExtra("show_reminders", true);
+            PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, intent,
+                    PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
 
-            Log.d(TAG, "📦 Recommendation data: " +
-                    "Message=" + message +
-                    ", DrinkCount=" + drinkCount +
-                    ", Timestamp=" + (timestamp != null ? timestamp.toDate() : "null"));
+            // Customize based on escalation level
+            int color = Color.BLUE;
+            long[] vibrationPattern = {100, 200, 100};
 
-            String title = "Drink Recommendation";
-            String body = message != null ? message :
-                    String.format(Locale.getDefault(),
-                            "You've had %d drinks. Consider your next steps.",
-                            drinkCount != null ? drinkCount : 0);
+            if ("Urgent".equals(escalation)) {
+                color = Color.YELLOW;
+                vibrationPattern = new long[]{0, 500, 200, 500};
+            } else if ("Emergency".equals(escalation)) {
+                color = Color.RED;
+                vibrationPattern = new long[]{0, 1000, 300, 1000};
+            }
 
-            Log.d(TAG, "💬 Notification content prepared: " + title + " - " + body);
-            sendNotification(title, body);
+            NotificationCompat.Builder builder = new NotificationCompat.Builder(this, REMINDERS_CHANNEL_ID)
+                    .setSmallIcon(R.drawable.ic_notifications_black_24dp)
+                    .setContentTitle(title)
+                    .setContentText(message)
+                    .setColor(color)
+                    .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+                    .setCategory(NotificationCompat.CATEGORY_REMINDER)
+                    .setAutoCancel(true)
+                    .setContentIntent(pendingIntent)
+                    .setVibrate(vibrationPattern);
 
-            // Uncomment to mark as resolved after sending
-            // doc.getReference().update("Resolved", true)
-            //     .addOnSuccessListener(__ -> Log.d(TAG, "✔ Marked as resolved"))
-            //     .addOnFailureListener(e -> Log.e(TAG, "❌ Failed to mark resolved", e));
+            manager.notify("REMINDER_" + System.currentTimeMillis(),
+                    (int) System.currentTimeMillis(),
+                    builder.build());
+
+            Log.d(TAG, "Reminder notification sent: " + message);
 
         } catch (Exception e) {
-            Log.e(TAG, "❗ Error processing recommendation", e);
+            Log.e(TAG, "Reminder notification failed", e);
         }
+    }
+    private String buildAlertMessage(String message, String safetyLevel, Double bacValue) {
+        StringBuilder builder = new StringBuilder();
+        if (message != null) {
+            builder.append(message);
+        }
+        if (bacValue != null) {
+            builder.append("\nBAC: ").append(String.format(Locale.getDefault(), "%.3f", bacValue));
+        }
+        if (safetyLevel != null) {
+            builder.append("\nLevel: ").append(safetyLevel);
+        }
+        return builder.toString();
     }
 
     private void sendNotification(String title, String message) {
+        if (TextUtils.isEmpty(message) || message.equals(lastNotificationMessage)) {
+            return;
+        }
+        lastNotificationMessage = message;
+
         try {
             NotificationManager manager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
-            if (manager == null) {
-                Log.e(TAG, "❗ NotificationManager is null");
-                return;
-            }
+            if (manager == null) return;
 
-            // Create notification (ensure channel exists)
+            Intent intent = new Intent(this, MainActivity.class);
+            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+            PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, intent,
+                    PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
+
             NotificationCompat.Builder builder = new NotificationCompat.Builder(this, CHANNEL_ID)
                     .setSmallIcon(R.drawable.ic_notifications_black_24dp)
                     .setContentTitle(title)
                     .setContentText(message)
                     .setPriority(NotificationCompat.PRIORITY_HIGH)
-                    .setAutoCancel(true);
+                    .setAutoCancel(true)
+                    .setContentIntent(pendingIntent);
 
             manager.notify((int) System.currentTimeMillis(), builder.build());
-            Log.d(TAG, "🔔 Notification sent: " + message);
+            Log.d(TAG, "Notification sent: " + message);
 
         } catch (Exception e) {
-            Log.e(TAG, "❗ Notification failed", e);
+            Log.e(TAG, "Notification failed", e);
         }
     }
 
+
+    private void sendAlertNotification(String title, String message, Long escalationLevel) {
+        if (TextUtils.isEmpty(message)) return;
+
+        Log.d(TAG, "Attempting to send alert. Channel: " + ALERTS_CHANNEL_ID +
+                " Title: " + title + " Message: " + message);
+
+        try {
+            NotificationManager manager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+            if (manager == null) return;
+
+            Intent intent = new Intent(this, MainActivity.class);
+            intent.putExtra("show_alerts", true);
+            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+            PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, intent,
+                    PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
+
+            int color = Color.RED;
+            if (escalationLevel != null && escalationLevel <= 1) {
+                color = Color.YELLOW;
+            }
+
+            NotificationCompat.Builder builder = new NotificationCompat.Builder(this, ALERTS_CHANNEL_ID)
+                    .setSmallIcon(R.drawable.ic_notifications_black_24dp)
+                    .setContentTitle(title)
+                    .setContentText(message)
+                    .setColor(color)
+                    .setPriority(NotificationCompat.PRIORITY_MAX)
+                    .setCategory(NotificationCompat.CATEGORY_ALARM)
+                    .setAutoCancel(true)
+                    .setContentIntent(pendingIntent)
+                    .setVibrate(new long[]{0, 500, 200, 500});
+
+            if (escalationLevel != null && escalationLevel >= 2) {
+                builder.setFullScreenIntent(pendingIntent, true);
+            }
+
+            manager.notify("ALERT_" + System.currentTimeMillis(),
+                    (int) System.currentTimeMillis(),
+                    builder.build());
+
+            Log.d(TAG, "Alert notification sent: " + message);
+
+        } catch (Exception e) {
+            Log.e(TAG, "Alert notification failed", e);
+        }
+    }
+
+
     @Override
     public void onMessageReceived(@NonNull RemoteMessage remoteMessage) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            startForegroundService(new Intent(this, MyFirebaseMessagingService.class));
+        }
+
         Log.d(TAG, "Message received from: " + remoteMessage.getFrom());
 
-        // Handle data payload
         if (remoteMessage.getData().size() > 0) {
             Log.d(TAG, "Message data: " + remoteMessage.getData());
-            if (remoteMessage.getData().containsKey("type") &&
-                    "recommendation".equals(remoteMessage.getData().get("type"))) {
-                handleRemoteRecommendation(remoteMessage.getData());
+            if (remoteMessage.getData().containsKey("type")) {
+                String type = remoteMessage.getData().get("type");
+                if ("recommendation".equals(type)) {
+                    handleRemoteRecommendation(remoteMessage.getData());
+                } else if ("alert".equals(type)) {
+                    handleRemoteAlert(remoteMessage.getData());
+                }
             }
         }
 
-        // Handle notification payload
         if (remoteMessage.getNotification() != null) {
-            Log.d(TAG, "Message body: " + remoteMessage.getNotification().getBody());
             sendNotification(
                     remoteMessage.getNotification().getTitle(),
                     remoteMessage.getNotification().getBody()
@@ -286,59 +478,41 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
         );
     }
 
+    private void handleRemoteAlert(Map<String, String> data) {
+        String title = data.get("title");
+        String message = data.get("message");
+        String safetyLevel = data.get("safetyLevel");
+        String bacValue = data.get("bacValue");
+        String escalationLevel = data.get("escalationLevel");
+
+        Long escLevel = null;
+        try {
+            escLevel = Long.parseLong(escalationLevel);
+        } catch (NumberFormatException e) {
+            Log.e(TAG, "Invalid escalation level", e);
+        }
+
+        Double bac = null;
+        try {
+            bac = Double.parseDouble(bacValue);
+        } catch (NumberFormatException e) {
+            Log.e(TAG, "Invalid BAC value", e);
+        }
+
+        String notificationMsg = buildAlertMessage(message, safetyLevel, bac);
+        sendAlertNotification(
+                title != null ? title : "Safety Alert",
+                notificationMsg,
+                escLevel
+        );
+    }
+
+
     @Override
     public void onNewToken(@NonNull String token) {
         super.onNewToken(token);
         Log.d(TAG, "Refreshed token: " + token);
         sendTokenToServer(token);
-    }
-
-    private void handleDataMessage(Map<String, String> data) {
-        String type = data.get("type");
-        if ("recommendation".equals(type)) {
-            String title = data.get("title");
-            String message = data.get("message");
-            sendNotification(title != null ? title : "New Recommendation",
-                    message != null ? message : "You have a new drink recommendation");
-        }
-    }
-
-//    private void sendNotification(String title, String messageBody) {
-//        createNotificationChannel(); // Ensure channel exists
-//
-//        try {
-//            NotificationCompat.Builder builder = new NotificationCompat.Builder(this, CHANNEL_ID)
-//                    .setSmallIcon(R.drawable.ic_notifications_black_24dp) // Ensure this exists
-//                    .setContentTitle(title != null ? title : "New Message")
-//                    .setContentText(messageBody)
-//                    .setPriority(NotificationCompat.PRIORITY_HIGH)
-//                    .setAutoCancel(true);
-//
-//            NotificationManager manager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
-//            if (manager != null) {
-//                manager.notify((int) System.currentTimeMillis(), builder.build());
-//                Log.d(TAG, "Notification displayed");
-//            }
-//        } catch (Exception e) {
-//            Log.e(TAG, "Notification failed", e);
-//        }
-//    }
-
-    private void createNotificationChannel() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            NotificationChannel channel = new NotificationChannel(
-                    CHANNEL_ID,
-                    "DrinkWise Alerts",
-                    NotificationManager.IMPORTANCE_HIGH
-            );
-            channel.setDescription("Important drink recommendations");
-            channel.enableVibration(true);
-            channel.setVibrationPattern(new long[]{100, 200, 300, 400, 500});
-            channel.setLockscreenVisibility(Notification.VISIBILITY_PUBLIC);
-
-            NotificationManager manager = getSystemService(NotificationManager.class);
-            manager.createNotificationChannel(channel);
-        }
     }
 
     private void sendTokenToServer(String token) {
@@ -351,4 +525,5 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
                     .addOnFailureListener(e -> Log.w(TAG, "Token update failed", e));
         }
     }
+
 }
