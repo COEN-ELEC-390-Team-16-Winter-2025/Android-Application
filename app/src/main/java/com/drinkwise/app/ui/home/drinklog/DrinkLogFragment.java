@@ -32,18 +32,16 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
-import java.util.TimeZone;
+import java.util.Objects;
 
 public class DrinkLogFragment extends Fragment {
 
     private static final String TAG = "DrinkLogFragment";
 
-    private RecyclerView drinkLogRecyclerView;
     private EditText searchBar;
     private Button sortButton, filterButton;
 
@@ -59,7 +57,7 @@ public class DrinkLogFragment extends Fragment {
         Log.d(TAG, "onCreateView started");
         View view = inflater.inflate(R.layout.fragment_drink_log, container, false);
 
-        drinkLogRecyclerView = view.findViewById(R.id.drinkLogRecyclerView);
+        RecyclerView drinkLogRecyclerView = view.findViewById(R.id.drinkLogRecyclerView);
         searchBar = view.findViewById(R.id.searchBar);
         sortButton = view.findViewById(R.id.sortButton);
         filterButton = view.findViewById(R.id.filterButton);
@@ -171,35 +169,31 @@ public class DrinkLogFragment extends Fragment {
                     Log.d(TAG, "Sorting selected: " + sortOptions[which]);
 
                     // If no sorting is applied, reset to the original list
-                    if (which == -1) {
-                        filteredList.clear();
-                        filteredList.addAll(drinkLogList);
-                    }
 
                     switch (which) {
                         case 0:
-                            Collections.sort(filteredList, (a, b) -> b.getTime().compareTo(a.getTime()));
+                            filteredList.sort((a, b) -> b.getTime().compareTo(a.getTime()));
                             break;
                         case 1:
-                            Collections.sort(filteredList, (a, b) -> a.getTime().compareTo(b.getTime()));
+                            filteredList.sort(Comparator.comparing(DrinkLogItem::getTime));
                             break;
                         case 2:
-                            Collections.sort(filteredList, Comparator.comparing(DrinkLogItem::getDrinkType));
+                            filteredList.sort(Comparator.comparing(DrinkLogItem::getDrinkType));
                             break;
                         case 3:
-                            Collections.sort(filteredList, (a, b) -> b.getDrinkType().compareTo(a.getDrinkType()));
+                            filteredList.sort((a, b) -> b.getDrinkType().compareTo(a.getDrinkType()));
                             break;
                         case 4:
-                            Collections.sort(filteredList, (a, b) -> b.getCalories().compareTo(a.getCalories()));
+                            filteredList.sort((a, b) -> b.getCalories().compareTo(a.getCalories()));
                             break;
                         case 5:
-                            Collections.sort(filteredList, (a, b) -> a.getCalories().compareTo(b.getCalories()));
+                            filteredList.sort(Comparator.comparing(DrinkLogItem::getCalories));
                             break;
                         case 6:
-                            Collections.sort(filteredList, (a, b) -> Double.compare(b.getBacContribution(), a.getBacContribution()));
+                            filteredList.sort((a, b) -> Double.compare(b.getBacContribution(), a.getBacContribution()));
                             break;
                         case 7:
-                            Collections.sort(filteredList, (a, b) -> Double.compare(a.getBacContribution(), b.getBacContribution()));
+                            filteredList.sort(Comparator.comparingDouble(DrinkLogItem::getBacContribution));
                             break;
                     }
 
@@ -374,7 +368,7 @@ public class DrinkLogFragment extends Fragment {
             Calendar cal = Calendar.getInstance();
             Calendar today = Calendar.getInstance();
 
-            cal.setTime(date);
+            cal.setTime(Objects.requireNonNull(date));
 
             return cal.get(Calendar.YEAR) == today.get(Calendar.YEAR) &&
                     cal.get(Calendar.DAY_OF_YEAR) == today.get(Calendar.DAY_OF_YEAR);
@@ -391,6 +385,7 @@ public class DrinkLogFragment extends Fragment {
             Calendar cal = Calendar.getInstance();
             Calendar now = Calendar.getInstance();
 
+            assert date != null;
             cal.setTime(date);
 
             int weekOfYear = cal.get(Calendar.WEEK_OF_YEAR);
@@ -411,6 +406,7 @@ public class DrinkLogFragment extends Fragment {
             Calendar cal = Calendar.getInstance();
             Calendar now = Calendar.getInstance();
 
+            assert date != null;
             cal.setTime(date);
 
             int monthOfYear = cal.get(Calendar.MONTH);
@@ -431,6 +427,7 @@ public class DrinkLogFragment extends Fragment {
             Calendar cal = Calendar.getInstance();
             Calendar lastMonth = Calendar.getInstance();
 
+            assert date != null;
             cal.setTime(date);
 
             lastMonth.add(Calendar.MONTH, -1);
