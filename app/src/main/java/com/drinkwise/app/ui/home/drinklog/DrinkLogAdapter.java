@@ -98,8 +98,10 @@ public class DrinkLogAdapter extends RecyclerView.Adapter<DrinkLogAdapter.ViewHo
                 return R.drawable.ic_sake;
             case "shot":
                 return R.drawable.ic_shot;
-            default:
+            case "beer":
                 return R.drawable.ic_beer;
+            default:
+                return R.drawable.ic_custom;
         }
     }
 
