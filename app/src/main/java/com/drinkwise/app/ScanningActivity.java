@@ -113,7 +113,7 @@ public class ScanningActivity extends AppCompatActivity {
         if (currentUser != null) {
             userId = currentUser.getUid();
             fetchUserData();
-//            startSafetyMonitor();
+            startFirestoreSafetyListener();
         } else {
             Log.e(TAG, "No logged-in user found.");
         }
