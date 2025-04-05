@@ -1,6 +1,7 @@
 package com.drinkwise.app;
 
 import android.annotation.SuppressLint;
+import android.app.AlertDialog;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothGatt;
@@ -105,7 +106,7 @@ public class ScanningActivity extends AppCompatActivity {
         if (currentUser != null) {
             userId = currentUser.getUid();
             fetchUserData();
-            startSafetyMonitor();
+//            startSafetyMonitor();
         } else {
             Log.e(TAG, "No logged-in user found.");
         }
@@ -424,49 +425,56 @@ public class ScanningActivity extends AppCompatActivity {
                 documentReference.set(alertMap);
                 Log.d("Firestore", "Alert entry saved successfully");
             }
-        }).addOnFailureListener(e -> Log.e("Firestore", "Error: "+e));
+
+
+            Log.d("Alert",alert.getMessage());
+
+        }).addOnFailureListener(e -> {
+            Log.e("Firestore", "Error: "+e);
+        });
     }
 
 
 
 
-    private void startSafetyMonitor() {
-        db.collection("users")
-                .document(userId)
-                .collection("BacEntry")
-                .orderBy("Timestamp", Query.Direction.DESCENDING)
-                .limit(1)
-                .addSnapshotListener((snapshots, e) -> {
-                    if (e != null || snapshots == null || snapshots.isEmpty()) return;
 
-                    DocumentSnapshot doc = snapshots.getDocuments().get(0);
-                    String currentStatus = doc.getString("Status");
-
-                    long now = System.currentTimeMillis();
-
-                    if (lastStatus != null && !lastStatus.equals(currentStatus)) {
-                        long duration = (now - lastStatusTime) / 1000;
-                        Log.d("SafetyMonitor", "Status changed: " + lastStatus + " → " + currentStatus +
-                                " after " + duration + "s");
-
-                        // 🔔 ALERT: You can do something here!
-                        // E.g., show a toast, vibrate, or store an alert
-                    }
-
-                    // Check for Danger duration
-                    if ("Danger".equals(currentStatus)) {
-                        dangerCount++;
-                        if (dangerCount >= 3) {
-                            Log.w("SafetyMonitor", "⚠️ 3 consecutive Danger readings!");
-                        }
-                    } else {
-                        dangerCount = 0;
-                    }
-
-                    lastStatus = currentStatus;
-                    lastStatusTime = now;
-                });
-    }
+//    private void startSafetyMonitor() {
+//        db.collection("users")
+//                .document(userId)
+//                .collection("BacEntry")
+//                .orderBy("Timestamp", Query.Direction.DESCENDING)
+//                .limit(1)
+//                .addSnapshotListener((snapshots, e) -> {
+//                    if (e != null || snapshots == null || snapshots.isEmpty()) return;
+//
+//                    DocumentSnapshot doc = snapshots.getDocuments().get(0);
+//                    String currentStatus = doc.getString("Status");
+//
+//                    long now = System.currentTimeMillis();
+//
+//                    if (lastStatus != null && !lastStatus.equals(currentStatus)) {
+//                        long duration = (now - lastStatusTime) / 1000;
+//                        Log.d("SafetyMonitor", "Status changed: " + lastStatus + " → " + currentStatus +
+//                                " after " + duration + "s");
+//
+//                        // 🔔 ALERT: You can do something here!
+//                        // E.g., show a toast, vibrate, or store an alert
+//                    }
+//
+//                    // Check for Danger duration
+//                    if ("Danger".equals(currentStatus)) {
+//                        dangerCount++;
+//                        if (dangerCount >= 3) {
+//                            Log.w("SafetyMonitor", "⚠️ 3 consecutive Danger readings!");
+//                        }
+//                    } else {
+//                        dangerCount = 0;
+//                    }
+//
+//                    lastStatus = currentStatus;
+//                    lastStatusTime = now;
+//                });
+//    }
 
 
 

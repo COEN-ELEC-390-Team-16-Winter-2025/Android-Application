@@ -1,6 +1,8 @@
 package com.drinkwise.app.ui.dashboard;
 
+
 import android.annotation.SuppressLint;
+
 import android.app.AlertDialog;
 import android.content.Intent;
 import android.content.Context;
@@ -347,7 +349,10 @@ public class DashboardFragment extends Fragment {
             logDrinkToFirestore("Beer", 150, 0.03);
             //check for rapid logging and errors
             checkDrinkLogAndBAC();
+
+            startSafetyMonitor(); //for testing
             minusButtonState();
+
         });
 
         addWineButton.setOnClickListener(v -> {
@@ -576,6 +581,8 @@ public class DashboardFragment extends Fragment {
 
     @SuppressLint({"DefaultLocale", "SetTextI18n"})
     private void updateBacLevel(double bacValue) {
+        startSafetyMonitor();
+
         if (getContext() == null) return;
 
         bacLevel.setText(String.format("%.2f%%", bacValue));
@@ -863,6 +870,7 @@ public class DashboardFragment extends Fragment {
         Log.d(TAG, "Current user ID: " + userId);
         return userId;
     }
+    String userId = getCurrentUserId();
 
     private static int rapidLoggingCount = 0; // Tracks repeated alerts in a session
     //for undo functionality
@@ -871,7 +879,9 @@ public class DashboardFragment extends Fragment {
     private void checkDrinkLogAndBAC() {
         Log.d(TAG, "checkDrinkLogAndBAC: Starting BAC history check");
         FirebaseFirestore db = FirebaseFirestore.getInstance();
+
         String userId = getCurrentUserId();
+
         if (userId == null) {
             Log.e(TAG, "No user is signed in");
             return;
@@ -1051,6 +1061,111 @@ public class DashboardFragment extends Fragment {
         return calendar.getTimeInMillis();
     }
 
+
+    private Timestamp lastCheckedTimestamp = Timestamp.now();  // Tracks last checked time
+
+    private void startSafetyMonitor() {
+        Log.d("Alerts", "Starting safety monitor...");
+
+        db.collection("users")
+                .document(userId)
+                .collection("Alerts")
+                .orderBy("Timestamp", Query.Direction.DESCENDING)
+                .addSnapshotListener((snapshots, e) -> {
+                    if (e != null || snapshots == null || snapshots.isEmpty()) return;
+
+                    if (e != null) {
+                        Log.e("Alerts", "Error fetching alerts: ", e);
+                        return;
+                    }
+
+                    if (snapshots == null || snapshots.isEmpty()) {
+                        Log.d("Alerts", "No alerts found.");
+                        return;
+                    }
+
+                    Log.d("Alerts", "Received " + snapshots.size() + " alert(s).");
+
+                    for (DocumentSnapshot doc : snapshots.getDocuments()) {
+                        Log.d("Alerts", "Processing alert: " + doc.getId());
+
+                        Timestamp alertTimestamp = doc.getTimestamp("Timestamp");
+                        String safetyLevel = doc.getString("SafetyLevel");
+                        String message = doc.getString("Message");
+
+
+                        if (alertTimestamp != null) {
+                            Log.d("Alerts", "Alert timestamp: " + alertTimestamp.toDate());
+
+                            // Check if alert is new
+                            if (alertTimestamp.compareTo(lastCheckedTimestamp) > 0) {
+                                Log.d("Alerts", "New alert detected!");
+
+                                if (safetyLevel != null && message != null) {
+                                    Log.d("Alerts", "Safety Level: " + safetyLevel);
+                                    Log.d("Alerts", "Message: " + message);
+                                    showAlertDialog(safetyLevel, message);
+                                } else {
+                                    Log.w("Alerts", "Alert missing SafetyLevel or Message!");
+                                }
+                            } else {
+                                Log.d("Alerts", "Skipping old alert.");
+                            }
+                        } else {
+                            Log.w("Alerts", "Alert has no timestamp!");
+                        }
+                    }
+
+
+
+                    // Update lastCheckedTimestamp to the latest alert timestamp
+                            lastCheckedTimestamp = snapshots.getDocuments()
+                            .get(snapshots.size() - 1)  // Get last document in the list
+                            .getTimestamp("Timestamp");
+
+
+//                    String currentStatus = doc.getString("Status");
+//
+//                    long now = System.currentTimeMillis();
+//
+//                    if (lastStatus != null && !lastStatus.equals(currentStatus)) {
+//                        long duration = (now - lastStatusTime) / 1000;
+//                        Log.d("SafetyMonitor", "Status changed: " + lastStatus + " → " + currentStatus +
+//                                " after " + duration + "s");
+//
+//                        // 🔔 ALERT: You can do something here!
+//                        // E.g., show a toast, vibrate, or store an alert
+//                    }
+//
+//                    // Check for Danger duration
+//                    if ("Danger".equals(currentStatus)) {
+//                        dangerCount++;
+//                        if (dangerCount >= 3) {
+//                            Log.w("SafetyMonitor", "⚠️ 3 consecutive Danger readings!");
+//                        }
+//                    } else {
+//                        dangerCount = 0;
+//                    }
+//
+//                    lastStatus = currentStatus;
+//                    lastStatusTime = now;
+
+                });
+    }
+
+    private void showAlertDialog(String title, String message) {
+        if (!isAdded()) return;  // Ensure fragment is attached to avoid crashes
+
+        new AlertDialog.Builder(requireContext())
+                .setTitle(title)  // SafetyLevel as title
+                .setMessage(message)  // Message as content
+                .setPositiveButton("OK", (dialog, which) -> dialog.dismiss())  // OK button
+                .show();
+    }
+
+
+
+}
     private final Map<String, Long> alertCooldowns = new HashMap<>();
     private static final long ALERT_COOLDOWN_PERIOD = 5 * 60 * 1000;
     private boolean bacCheckEnabled = false;
