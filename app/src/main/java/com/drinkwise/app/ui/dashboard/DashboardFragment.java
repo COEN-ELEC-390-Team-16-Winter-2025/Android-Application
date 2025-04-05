@@ -32,6 +32,7 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.Timestamp;
 import com.google.firebase.firestore.Query;
@@ -622,36 +623,42 @@ public class DashboardFragment extends Fragment {
     //Store the recommendation to firestore
     public void storeRecommendation(Recommendation recommendation) {
         db = FirebaseFirestore.getInstance();
-
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
         if (user == null) {
             Log.e("RecTesting", "User is not authenticated");
             return;
         }
-        String userId = user.getUid();  // Use the current user's UID
 
-        // Create the map with the Recommendation data
+        Timestamp timestamp = Timestamp.now();
+        Date date = timestamp.toDate();
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault());
+        String timestampId = dateFormat.format(date);
+
+        // Create recommendation data
         Map<String, Object> recommendationMap = new HashMap<>();
         recommendationMap.put("DrinkCount", recommendation.getDrinkCount());
         recommendationMap.put("Message", recommendation.getMessage());
-        recommendationMap.put("Timestamp", Timestamp.now());
+        recommendationMap.put("Timestamp", timestamp); // Store as proper Timestamp
         recommendationMap.put("Resolved", recommendation.isResolved());
 
-        // Log the information for debugging
-        Log.d("RecTesting", "Drink Count: " + recommendation.getDrinkCount());
-        Log.d("RecTesting", "Recommendation Message: " + recommendation.getMessage());
-
-        // Add a new document to the 'Recommendations' collection for the user
-        db.collection("users")
-                .document(userId)
+        // Store with explicit timestamp ID
+        DocumentReference docRef = db.collection("users")
+                .document(user.getUid())
                 .collection("Recommendations")
-                .add(recommendationMap)  // Adds a new document with a generated ID
-                .addOnSuccessListener(documentReference -> {
-                    Log.d("RecTesting", "Recommendation saved successfully with ID: " + documentReference.getId());
-                })
-                .addOnFailureListener(e -> {
-                    Log.e("RecTesting", "Error saving recommendation: " + e);
-                });
+                .document(timestampId);
+
+        // Check if document exists before setting/updating
+        docRef.get().addOnSuccessListener(documentSnapshot -> {
+            if (documentSnapshot.exists()) {
+                docRef.update(recommendationMap);
+                Log.d("RecTesting", "Recommendation updated at " + timestampId);
+            } else {
+                docRef.set(recommendationMap);
+                Log.d("RecTesting", "New recommendation saved at " + timestampId);
+            }
+        }).addOnFailureListener(e -> {
+            Log.e("RecTesting", "Error checking document: " + e.getMessage());
+        });
     }
 
 
