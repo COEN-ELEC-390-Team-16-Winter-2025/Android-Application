@@ -159,320 +159,340 @@ public class DashboardFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        // Initialize BAC section views
-        bacLevel = view.findViewById(R.id.bacLevel);
-        bacProgressBar = view.findViewById(R.id.bacProgressBar);
-        bacStatus = view.findViewById(R.id.bacStatus);
+        try {
 
-        // Initialize alcohol counter views
-        beerCount = view.findViewById(R.id.beerCount);
-        wineCount = view.findViewById(R.id.wineCount);
-        champagneCount = view.findViewById(R.id.champagneCount);
-        cocktailCount = view.findViewById(R.id.cocktailCount);
-        shotCount = view.findViewById(R.id.shotCount);
-        sakeCount = view.findViewById(R.id.sakeCount);
+            // Initialize BAC section views
+            bacLevel = view.findViewById(R.id.bacLevel);
+            bacProgressBar = view.findViewById(R.id.bacProgressBar);
+            bacStatus = view.findViewById(R.id.bacStatus);
 
-        addBeerButton = view.findViewById(R.id.addBeerButton);
-        addWineButton = view.findViewById(R.id.addWineButton);
-        addChampagneButton = view.findViewById(R.id.addChampagneButton);
-        addCocktailButton = view.findViewById(R.id.addCocktailButton);
-        addShotButton = view.findViewById(R.id.addShotButton);
-        addSakeButton = view.findViewById(R.id.addSakeButton);
+            // Initialize alcohol counter views
+            beerCount = view.findViewById(R.id.beerCount);
+            wineCount = view.findViewById(R.id.wineCount);
+            champagneCount = view.findViewById(R.id.champagneCount);
+            cocktailCount = view.findViewById(R.id.cocktailCount);
+            shotCount = view.findViewById(R.id.shotCount);
+            sakeCount = view.findViewById(R.id.sakeCount);
 
-        minusBeerButton = view.findViewById(R.id.minusBeerButton);
-        minusWineButton = view.findViewById(R.id.minusWineButton);
-        minusChampagneButton = view.findViewById(R.id.minusChampagneButton);
-        minusCocktailButton = view.findViewById(R.id.minusCocktailButton);
-        minusShotButton = view.findViewById(R.id.minusShotButton);
-        minusSakeButton = view.findViewById(R.id.minusSakeButton);
+            addBeerButton = view.findViewById(R.id.addBeerButton);
+            addWineButton = view.findViewById(R.id.addWineButton);
+            addChampagneButton = view.findViewById(R.id.addChampagneButton);
+            addCocktailButton = view.findViewById(R.id.addCocktailButton);
+            addShotButton = view.findViewById(R.id.addShotButton);
+            addSakeButton = view.findViewById(R.id.addSakeButton);
 
-        // Initialize action buttons
-        seeListButton = view.findViewById(R.id.seeListButton);
-        refreshButton = view.findViewById(R.id.refreshButton);
-        quickHelpButton = view.findViewById(R.id.quickHelpButton);
-        getHomeButton = view.findViewById(R.id.get_home);
+            minusBeerButton = view.findViewById(R.id.minusBeerButton);
+            minusWineButton = view.findViewById(R.id.minusWineButton);
+            minusChampagneButton = view.findViewById(R.id.minusChampagneButton);
+            minusCocktailButton = view.findViewById(R.id.minusCocktailButton);
+            minusShotButton = view.findViewById(R.id.minusShotButton);
+            minusSakeButton = view.findViewById(R.id.minusSakeButton);
 
-
-        // Initialize ImageViews
-        //Drinks info
-        ImageView beerImage = view.findViewById(R.id.beerImage);
-        ImageView wineImage = view.findViewById(R.id.wineImage);
-        ImageView champagneImage = view.findViewById(R.id.champagneImage);
-        ImageView cocktailImage = view.findViewById(R.id.cocktailImage);
-        ImageView shotImage = view.findViewById(R.id.shotImage);
-        ImageView sakeImage = view.findViewById(R.id.sakeImage);
-
-        // Initialize TextView for displaying drink info
-        drinkInfo = view.findViewById(R.id.drinkInfo);
-
-        fetchPreferences((recommendations, alerts, reminders, quickHelp) -> displayQuickHelp(quickHelp));
-
-        // Set click listeners for drink images
-        beerImage.setOnClickListener(v -> displayDrinkInfo("Beer", 355, 0.03, 150));
-        wineImage.setOnClickListener(v -> displayDrinkInfo("Wine", 150, 0.05, 125));
-        champagneImage.setOnClickListener(v -> displayDrinkInfo("Champagne", 125, 0.04, 90));
-        cocktailImage.setOnClickListener(v -> displayDrinkInfo("Cocktail", 200, 0.07, 200));
-        shotImage.setOnClickListener(v -> displayDrinkInfo("Shot", 45, 0.04, 95));
-        sakeImage.setOnClickListener(v -> displayDrinkInfo("Sake", 180, 0.06, 230));
-
-        //Initialize total calories TextView
-        caloriesTextView = view.findViewById(R.id.caloriesTextView);
-
-        // Initialize firestore
-        db = FirebaseFirestore.getInstance();
-
-        // Define calorie values per drink
-        drinkCalories.put("Beer", 150);
-        drinkCalories.put("Wine", 125);
-        drinkCalories.put("Champagne", 90);
-        drinkCalories.put("Cocktail", 200);
-        drinkCalories.put("Shot", 95);
-        drinkCalories.put("Sake", 230);
-
-        setupButtonListeners();
+            // Initialize action buttons
+            seeListButton = view.findViewById(R.id.seeListButton);
+            refreshButton = view.findViewById(R.id.refreshButton);
+            quickHelpButton = view.findViewById(R.id.quickHelpButton);
+            getHomeButton = view.findViewById(R.id.get_home);
 
 
-        //Load dashboard data
-        loadDashboardData();
+            // Initialize ImageViews
+            //Drinks info
+            ImageView beerImage = view.findViewById(R.id.beerImage);
+            ImageView wineImage = view.findViewById(R.id.wineImage);
+            ImageView champagneImage = view.findViewById(R.id.champagneImage);
+            ImageView cocktailImage = view.findViewById(R.id.cocktailImage);
+            ImageView shotImage = view.findViewById(R.id.shotImage);
+            ImageView sakeImage = view.findViewById(R.id.sakeImage);
 
-        // Show default values if no sessionId
-        if(currentSessionId ==null) {
-            showDefaultBacValue();
-        }
+            // Initialize TextView for displaying drink info
+            drinkInfo = view.findViewById(R.id.drinkInfo);
 
-        // Handle arguments passed to the fragment (latest BAC)
-        if (getArguments() != null) {
-            String latestBacEntry = getArguments().getString("latest_bac_entry");
-            if (latestBacEntry != null) {
-                try {
-                    bacValue = Double.parseDouble(latestBacEntry);
-                    updateBacLevel(bacValue);
-                } catch (NumberFormatException e) {
-                    Log.e(TAG, "Invalid BAC entry from arguments: " + latestBacEntry, e);
+            fetchPreferences((recommendations, alerts, reminders, quickHelp) -> displayQuickHelp(quickHelp));
+
+            // Set click listeners for drink images
+            beerImage.setOnClickListener(v -> displayDrinkInfo("Beer", 355, 0.03, 150));
+            wineImage.setOnClickListener(v -> displayDrinkInfo("Wine", 150, 0.05, 125));
+            champagneImage.setOnClickListener(v -> displayDrinkInfo("Champagne", 125, 0.04, 90));
+            cocktailImage.setOnClickListener(v -> displayDrinkInfo("Cocktail", 200, 0.07, 200));
+            shotImage.setOnClickListener(v -> displayDrinkInfo("Shot", 45, 0.04, 95));
+            sakeImage.setOnClickListener(v -> displayDrinkInfo("Sake", 180, 0.06, 230));
+
+            //Initialize total calories TextView
+            caloriesTextView = view.findViewById(R.id.caloriesTextView);
+
+            // Initialize firestore
+            db = FirebaseFirestore.getInstance();
+
+            // Define calorie values per drink
+            drinkCalories.put("Beer", 150);
+            drinkCalories.put("Wine", 125);
+            drinkCalories.put("Champagne", 90);
+            drinkCalories.put("Cocktail", 200);
+            drinkCalories.put("Shot", 95);
+            drinkCalories.put("Sake", 230);
+
+            setupButtonListeners();
+
+
+            //Load dashboard data
+            loadDashboardData();
+
+            // Show default values if no sessionId
+            if (currentSessionId == null) {
+                showDefaultBacValue();
+            }
+
+            // Handle arguments passed to the fragment (latest BAC)
+            if (getArguments() != null) {
+                String latestBacEntry = getArguments().getString("latest_bac_entry");
+                if (latestBacEntry != null) {
+                    try {
+                        bacValue = Double.parseDouble(latestBacEntry);
+                        updateBacLevel(bacValue);
+                    } catch (NumberFormatException e) {
+                        Log.e(TAG, "Invalid BAC entry from arguments: " + latestBacEntry, e);
+                        showDefaultBacValue();
+                    }
+                } else {
                     showDefaultBacValue();
+                    checkDrinkLogAndBAC();
                 }
             } else {
                 showDefaultBacValue();
+                //check for rapid logging and errors
                 checkDrinkLogAndBAC();
             }
-        } else {
-            showDefaultBacValue();
-            //check for rapid logging and errors
-            checkDrinkLogAndBAC();
+
+            // Initialize counters
+            updateBeerCount();
+            updateWineCount();
+            updateChampagneCount();
+            updateCocktailCount();
+            updateShotCount();
+            updateSakeCount();
+            updateTotalCalories();
+
+            minusButtonState();
+        } catch (Exception e) {
+            Log.e(TAG, "Exception in onViewCreated", e);
         }
-
-        // Initialize counters
-        updateBeerCount();
-        updateWineCount();
-        updateChampagneCount();
-        updateCocktailCount();
-        updateShotCount();
-        updateSakeCount();
-        updateTotalCalories();
-
-        minusButtonState();
     }
 
     @SuppressLint("SetTextI18n")
     private void showDefaultBacValue() {
-        bacLevel.setText("No Reading");
-        bacProgressBar.setProgress(0);
-        bacStatus.setText("MEASURE BAC to update!");
-        bacStatus.setTextColor(ContextCompat.getColor(requireContext(), R.color.bac_default));
+        try {
+            bacLevel.setText("No Reading");
+            bacProgressBar.setProgress(0);
+            bacStatus.setText("MEASURE BAC to update!");
+            bacStatus.setTextColor(ContextCompat.getColor(requireContext(), R.color.bac_default));
+        } catch (Exception e) {
+            Log.e(TAG, "Error showing default BAC value", e);
+        }
     }
 
     //Clear the counters and UI
     private void resetDashboard() {
-        beerCounter = 0;
-        wineCounter = 0;
-        champagneCounter = 0;
-        cocktailCounter = 0;
-        shotCounter = 0;
-        sakeCounter = 0;
-        totalCalories = 0;
-        updateBeerCount();
-        updateWineCount();
-        updateChampagneCount();
-        updateCocktailCount();
-        updateShotCount();
-        updateSakeCount();
-        updateTotalCalories();
-        showDefaultBacValue();
+        try {
+            beerCounter = 0;
+            wineCounter = 0;
+            champagneCounter = 0;
+            cocktailCounter = 0;
+            shotCounter = 0;
+            sakeCounter = 0;
+            totalCalories = 0;
+            updateBeerCount();
+            updateWineCount();
+            updateChampagneCount();
+            updateCocktailCount();
+            updateShotCount();
+            updateSakeCount();
+            updateTotalCalories();
+            showDefaultBacValue();
 
-        saveDashboardData(); //Save the changes
+            saveDashboardData(); //Save the changes
+        } catch (Exception e) {
+            Log.e(TAG, "Error resetting dashboard", e);
+        }
     }
 
     private void minusButtonState(){
-        minusBeerButton.setEnabled(beerCounter>0);
-        minusWineButton.setEnabled(wineCounter>0);
-        minusChampagneButton.setEnabled(champagneCounter>0);
-        minusCocktailButton.setEnabled(cocktailCounter>0);
-        minusShotButton.setEnabled(shotCounter>0);
-        minusSakeButton.setEnabled(sakeCounter>0);
+        try {
+
+            minusBeerButton.setEnabled(beerCounter > 0);
+            minusWineButton.setEnabled(wineCounter > 0);
+            minusChampagneButton.setEnabled(champagneCounter > 0);
+            minusCocktailButton.setEnabled(cocktailCounter > 0);
+            minusShotButton.setEnabled(shotCounter > 0);
+            minusSakeButton.setEnabled(sakeCounter > 0);
+        } catch (Exception e) {
+            Log.e(TAG, "Error in minus button state");
+        }
     }
     private void setupButtonListeners() {
-        seeListButton.setOnClickListener(v -> {
-            Intent intent = new Intent(getActivity(), ScanningActivity.class);
-            startActivity(intent);
-        });
+        try {
+            seeListButton.setOnClickListener(v -> {
+                Intent intent = new Intent(getActivity(), ScanningActivity.class);
+                startActivity(intent);
+            });
 
-        refreshButton.setOnClickListener(v -> {
-            bacCheckEnabled = true;
-            Intent intent = new Intent(getActivity(), ScanningActivity.class);
-            intent.putExtra("mode", "refreshBAC");
-            startActivity(intent);
-        });
+            refreshButton.setOnClickListener(v -> {
+                bacCheckEnabled = true;
+                Intent intent = new Intent(getActivity(), ScanningActivity.class);
+                intent.putExtra("mode", "refreshBAC");
+                startActivity(intent);
+            });
 
-        quickHelpButton.setOnClickListener(v -> {
-            quickHelpCounter++;
+            quickHelpButton.setOnClickListener(v -> {
+                quickHelpCounter++;
 
-            if(quickHelpCounter < 7){
-                showEmergencyContactFromQuickHelp();
-            }
-            else{
-                call911();
-            }
-        });
+                if (quickHelpCounter < 7) {
+                    showEmergencyContactFromQuickHelp();
+                } else {
+                    call911();
+                }
+            });
 
-        getHomeButton.setOnClickListener(v -> {
-            Intent intent = new Intent(getContext(), TransitActivity.class);
-            startActivity(intent);
-        });
+            getHomeButton.setOnClickListener(v -> {
+                Intent intent = new Intent(getContext(), TransitActivity.class);
+                startActivity(intent);
+            });
 
-        addBeerButton.setOnClickListener(v -> {
-            beerCounter++;
-            updateBeerCount();
-            updateTotalCalories();
-            //updateBACFromManualLogs();
-            logDrinkToFirestore("Beer", 150, 0.03);
-            //check for rapid logging and errors
-            checkDrinkLogAndBAC();
-            minusButtonState();
-        });
-
-        addWineButton.setOnClickListener(v -> {
-            wineCounter++;
-            updateWineCount();
-            updateTotalCalories();
-            //updateBACFromManualLogs();
-            logDrinkToFirestore("Wine", 125, 0.05);
-            //check for rapid logging and errors
-            checkDrinkLogAndBAC();
-            minusButtonState();
-        });
-
-        addChampagneButton.setOnClickListener(v -> {
-            champagneCounter++;
-            updateChampagneCount();
-            updateTotalCalories();
-            //updateBACFromManualLogs();
-            logDrinkToFirestore("Champagne", 90, 0.04);
-            //check for rapid logging and errors
-            checkDrinkLogAndBAC();
-            minusButtonState();
-        });
-
-        addCocktailButton.setOnClickListener(v -> {
-            cocktailCounter++;
-            updateCocktailCount();
-            updateTotalCalories();
-            //updateBACFromManualLogs();
-            logDrinkToFirestore("Cocktail", 200, 0.07);
-            //check for rapid logging and errors
-            checkDrinkLogAndBAC();
-            minusButtonState();
-        });
-
-        addShotButton.setOnClickListener(v -> {
-            shotCounter++;
-            updateShotCount();
-            updateTotalCalories();
-            //updateBACFromManualLogs();
-            logDrinkToFirestore("Shot", 95, 0.04);
-            //check for rapid logging and errors
-            checkDrinkLogAndBAC();
-            minusButtonState();
-        });
-
-        addSakeButton.setOnClickListener(v -> {
-            sakeCounter++;
-            updateSakeCount();
-            updateTotalCalories();
-            //updateBACFromManualLogs();
-            logDrinkToFirestore("Sake", 230, 0.06);
-            //check for rapid logging and errors
-            checkDrinkLogAndBAC();
-            minusButtonState();
-        });
-
-        minusBeerButton.setOnClickListener(v -> {
-            if (beerCounter > 0) {
-                beerCounter--;
+            addBeerButton.setOnClickListener(v -> {
+                beerCounter++;
                 updateBeerCount();
                 updateTotalCalories();
-                removeDrinkFromFirestore("Beer");
                 //updateBACFromManualLogs();
+                logDrinkToFirestore("Beer", 150, 0.03);
+                //check for rapid logging and errors
+                checkDrinkLogAndBAC();
                 minusButtonState();
-            }
-        });
+            });
 
-        minusWineButton.setOnClickListener(v -> {
-            if (wineCounter > 0) {
-                wineCounter--;
+            addWineButton.setOnClickListener(v -> {
+                wineCounter++;
                 updateWineCount();
                 updateTotalCalories();
-                removeDrinkFromFirestore("Wine");
                 //updateBACFromManualLogs();
+                logDrinkToFirestore("Wine", 125, 0.05);
+                //check for rapid logging and errors
+                checkDrinkLogAndBAC();
                 minusButtonState();
-            }
-        });
+            });
 
-        minusChampagneButton.setOnClickListener(v -> {
-            if (champagneCounter > 0) {
-                champagneCounter--;
+            addChampagneButton.setOnClickListener(v -> {
+                champagneCounter++;
                 updateChampagneCount();
                 updateTotalCalories();
-                removeDrinkFromFirestore("Champagne");
                 //updateBACFromManualLogs();
+                logDrinkToFirestore("Champagne", 90, 0.04);
+                //check for rapid logging and errors
+                checkDrinkLogAndBAC();
                 minusButtonState();
-            }
-        });
+            });
 
-        minusCocktailButton.setOnClickListener(v -> {
-            if (cocktailCounter > 0) {
-                cocktailCounter--;
+            addCocktailButton.setOnClickListener(v -> {
+                cocktailCounter++;
                 updateCocktailCount();
                 updateTotalCalories();
-                removeDrinkFromFirestore("Cocktail");
                 //updateBACFromManualLogs();
+                logDrinkToFirestore("Cocktail", 200, 0.07);
+                //check for rapid logging and errors
+                checkDrinkLogAndBAC();
                 minusButtonState();
-            }
-        });
+            });
 
-        minusShotButton.setOnClickListener(v -> {
-            if (shotCounter > 0) {
-                shotCounter--;
+            addShotButton.setOnClickListener(v -> {
+                shotCounter++;
                 updateShotCount();
                 updateTotalCalories();
-                removeDrinkFromFirestore("Shot");
                 //updateBACFromManualLogs();
+                logDrinkToFirestore("Shot", 95, 0.04);
+                //check for rapid logging and errors
+                checkDrinkLogAndBAC();
                 minusButtonState();
-            }
-        });
+            });
 
-        minusSakeButton.setOnClickListener(v -> {
-            if (sakeCounter > 0) {
-                sakeCounter--;
+            addSakeButton.setOnClickListener(v -> {
+                sakeCounter++;
                 updateSakeCount();
                 updateTotalCalories();
-                removeDrinkFromFirestore("Sake");
                 //updateBACFromManualLogs();
+                logDrinkToFirestore("Sake", 230, 0.06);
+                //check for rapid logging and errors
+                checkDrinkLogAndBAC();
                 minusButtonState();
-            }
-        });
+            });
 
+            minusBeerButton.setOnClickListener(v -> {
+                if (beerCounter > 0) {
+                    beerCounter--;
+                    updateBeerCount();
+                    updateTotalCalories();
+                    removeDrinkFromFirestore("Beer");
+                    //updateBACFromManualLogs();
+                    minusButtonState();
+                }
+            });
+
+            minusWineButton.setOnClickListener(v -> {
+                if (wineCounter > 0) {
+                    wineCounter--;
+                    updateWineCount();
+                    updateTotalCalories();
+                    removeDrinkFromFirestore("Wine");
+                    //updateBACFromManualLogs();
+                    minusButtonState();
+                }
+            });
+
+            minusChampagneButton.setOnClickListener(v -> {
+                if (champagneCounter > 0) {
+                    champagneCounter--;
+                    updateChampagneCount();
+                    updateTotalCalories();
+                    removeDrinkFromFirestore("Champagne");
+                    //updateBACFromManualLogs();
+                    minusButtonState();
+                }
+            });
+
+            minusCocktailButton.setOnClickListener(v -> {
+                if (cocktailCounter > 0) {
+                    cocktailCounter--;
+                    updateCocktailCount();
+                    updateTotalCalories();
+                    removeDrinkFromFirestore("Cocktail");
+                    //updateBACFromManualLogs();
+                    minusButtonState();
+                }
+            });
+
+            minusShotButton.setOnClickListener(v -> {
+                if (shotCounter > 0) {
+                    shotCounter--;
+                    updateShotCount();
+                    updateTotalCalories();
+                    removeDrinkFromFirestore("Shot");
+                    //updateBACFromManualLogs();
+                    minusButtonState();
+                }
+            });
+
+            minusSakeButton.setOnClickListener(v -> {
+                if (sakeCounter > 0) {
+                    sakeCounter--;
+                    updateSakeCount();
+                    updateTotalCalories();
+                    removeDrinkFromFirestore("Sake");
+                    //updateBACFromManualLogs();
+                    minusButtonState();
+                }
+            });
+
+        } catch (Exception e) {
+            Log.e(TAG, "Error setting up button listeners", e);
+        }
     }
-
 
 
     /**
@@ -511,42 +531,50 @@ public class DashboardFragment extends Fragment {
 
     //Saving the dashboard data locally
     private void saveDashboardData() {
-        SharedPreferences prefs = requireContext().getSharedPreferences("DashboardPrefs", Context.MODE_PRIVATE);
-        SharedPreferences.Editor editor = prefs.edit();
-        editor.putString("currentSessionId", currentSessionId);
-        editor.putInt("beerCounter", beerCounter);
-        editor.putInt("wineCounter", wineCounter);
-        editor.putInt("champagneCounter", champagneCounter);
-        editor.putInt("cocktailCounter", cocktailCounter);
-        editor.putInt("shotCounter", shotCounter);
-        editor.putInt("sakeCounter", sakeCounter);
-        editor.putInt("totalCalories", totalCalories);
-        editor.putFloat("bacValue", (float) bacValue);
-        editor.apply();
+        try {
+            SharedPreferences prefs = requireContext().getSharedPreferences("DashboardPrefs", Context.MODE_PRIVATE);
+            SharedPreferences.Editor editor = prefs.edit();
+            editor.putString("currentSessionId", currentSessionId);
+            editor.putInt("beerCounter", beerCounter);
+            editor.putInt("wineCounter", wineCounter);
+            editor.putInt("champagneCounter", champagneCounter);
+            editor.putInt("cocktailCounter", cocktailCounter);
+            editor.putInt("shotCounter", shotCounter);
+            editor.putInt("sakeCounter", sakeCounter);
+            editor.putInt("totalCalories", totalCalories);
+            editor.putFloat("bacValue", (float) bacValue);
+            editor.apply();
+        } catch (Exception e) {
+            Log.e(TAG, "Error saving the dashboard", e);
+        }
     }
 
     //Loading the dashboard data from local save
     private void loadDashboardData() {
-        SharedPreferences prefs = requireContext().getSharedPreferences("DashboardPrefs", Context.MODE_PRIVATE);
-        currentSessionId = prefs.getString("currentSessionId", null);
-        beerCounter = prefs.getInt("beerCounter", 0);
-        wineCounter = prefs.getInt("wineCounter", 0);
-        champagneCounter = prefs.getInt("champagneCounter", 0);
-        cocktailCounter = prefs.getInt("cocktailCounter", 0);
-        shotCounter = prefs.getInt("shotCounter", 0);
-        sakeCounter = prefs.getInt("sakeCounter", 0);
-        totalCalories = prefs.getInt("totalCalories", 0);
-        bacValue = prefs.getFloat("bacValue", 0);
+        try {
+            SharedPreferences prefs = requireContext().getSharedPreferences("DashboardPrefs", Context.MODE_PRIVATE);
+            currentSessionId = prefs.getString("currentSessionId", null);
+            beerCounter = prefs.getInt("beerCounter", 0);
+            wineCounter = prefs.getInt("wineCounter", 0);
+            champagneCounter = prefs.getInt("champagneCounter", 0);
+            cocktailCounter = prefs.getInt("cocktailCounter", 0);
+            shotCounter = prefs.getInt("shotCounter", 0);
+            sakeCounter = prefs.getInt("sakeCounter", 0);
+            totalCalories = prefs.getInt("totalCalories", 0);
+            bacValue = prefs.getFloat("bacValue", 0);
 
-        //Update the UI
-        updateBeerCount();
-        updateWineCount();
-        updateChampagneCount();
-        updateCocktailCount();
-        updateShotCount();
-        updateSakeCount();
-        updateTotalCalories();
-        updateBacLevel(bacValue);
+            //Update the UI
+            updateBeerCount();
+            updateWineCount();
+            updateChampagneCount();
+            updateCocktailCount();
+            updateShotCount();
+            updateSakeCount();
+            updateTotalCalories();
+            updateBacLevel(bacValue);
+        } catch (Exception e) {
+            Log.e(TAG, "Error loading dashboard data", e);
+        }
     }
 
 
@@ -576,40 +604,44 @@ public class DashboardFragment extends Fragment {
 
     @SuppressLint({"DefaultLocale", "SetTextI18n"})
     private void updateBacLevel(double bacValue) {
-        if (getContext() == null) return;
+        try {
+            if (getContext() == null) return;
 
-        bacLevel.setText(String.format("%.2f%%", bacValue));
-        int progress = (int) (bacValue * 100);
-        bacProgressBar.setProgress(progress);
+            bacLevel.setText(String.format("%.2f%%", bacValue));
+            int progress = (int) (bacValue * 100);
+            bacProgressBar.setProgress(progress);
 
-        if (bacValue <= 0.02) {
-            bacStatus.setText("Safe");
-            bacStatus.setTextColor(ContextCompat.getColor(requireContext(), R.color.bac_safe));
-            bacProgressBar.setProgressDrawable(ContextCompat.getDrawable(requireContext(), R.drawable.bac_progress_bar_safe));
-        } else if (bacValue <= 0.05) {
-            bacStatus.setText("Mild Impairment");
-            bacStatus.setTextColor(ContextCompat.getColor(requireContext(), R.color.bac_mild_impairment));
-            bacProgressBar.setProgressDrawable(ContextCompat.getDrawable(requireContext(), R.drawable.bac_progress_bar_mild_impairment));
-        } else if (bacValue <= 0.08) {
-            bacStatus.setText("Impaired");
-            bacStatus.setTextColor(ContextCompat.getColor(requireContext(), R.color.bac_impaired));
-            bacProgressBar.setProgressDrawable(ContextCompat.getDrawable(requireContext(), R.drawable.bac_progress_bar_impaired));
-        } else if (bacValue <= 0.15) {
-            bacStatus.setText("High Impairment");
-            bacStatus.setTextColor(ContextCompat.getColor(requireContext(), R.color.bac_high_impairment));
-            bacProgressBar.setProgressDrawable(ContextCompat.getDrawable(requireContext(), R.drawable.bac_progress_bar_high_impairment));
-        } else if (bacValue <= 0.30) {
-            bacStatus.setText("Severe Impairment");
-            bacStatus.setTextColor(ContextCompat.getColor(requireContext(), R.color.bac_severe_impairment));
-            bacProgressBar.setProgressDrawable(ContextCompat.getDrawable(requireContext(), R.drawable.bac_progress_bar_severe_impairment));
-        } else {
-            bacStatus.setText("Medical Emergency");
-            bacStatus.setTextColor(ContextCompat.getColor(requireContext(), R.color.bac_medical_emergency));
-            bacProgressBar.setProgressDrawable(ContextCompat.getDrawable(requireContext(), R.drawable.bac_progress_bar_medical_emergency));
+            if (bacValue <= 0.02) {
+                bacStatus.setText("Safe");
+                bacStatus.setTextColor(ContextCompat.getColor(requireContext(), R.color.bac_safe));
+                bacProgressBar.setProgressDrawable(ContextCompat.getDrawable(requireContext(), R.drawable.bac_progress_bar_safe));
+            } else if (bacValue <= 0.05) {
+                bacStatus.setText("Mild Impairment");
+                bacStatus.setTextColor(ContextCompat.getColor(requireContext(), R.color.bac_mild_impairment));
+                bacProgressBar.setProgressDrawable(ContextCompat.getDrawable(requireContext(), R.drawable.bac_progress_bar_mild_impairment));
+            } else if (bacValue <= 0.08) {
+                bacStatus.setText("Impaired");
+                bacStatus.setTextColor(ContextCompat.getColor(requireContext(), R.color.bac_impaired));
+                bacProgressBar.setProgressDrawable(ContextCompat.getDrawable(requireContext(), R.drawable.bac_progress_bar_impaired));
+            } else if (bacValue <= 0.15) {
+                bacStatus.setText("High Impairment");
+                bacStatus.setTextColor(ContextCompat.getColor(requireContext(), R.color.bac_high_impairment));
+                bacProgressBar.setProgressDrawable(ContextCompat.getDrawable(requireContext(), R.drawable.bac_progress_bar_high_impairment));
+            } else if (bacValue <= 0.30) {
+                bacStatus.setText("Severe Impairment");
+                bacStatus.setTextColor(ContextCompat.getColor(requireContext(), R.color.bac_severe_impairment));
+                bacProgressBar.setProgressDrawable(ContextCompat.getDrawable(requireContext(), R.drawable.bac_progress_bar_severe_impairment));
+            } else {
+                bacStatus.setText("Medical Emergency");
+                bacStatus.setTextColor(ContextCompat.getColor(requireContext(), R.color.bac_medical_emergency));
+                bacProgressBar.setProgressDrawable(ContextCompat.getDrawable(requireContext(), R.drawable.bac_progress_bar_medical_emergency));
+            }
+
+            displayQuickHelp(quickHelp);
+            Log.d(TAG, "BAC updated: " + bacValue + ", progress: " + progress);
+        } catch (Exception e) {
+            Log.e(TAG, "Error updating BAC level", e);
         }
-
-        displayQuickHelp(quickHelp);
-        Log.d(TAG, "BAC updated: " + bacValue + ", progress: " + progress);
     }
 
     private void displayDrinkInfo(String name, int volume, double bac, int calories) {
@@ -1056,6 +1088,12 @@ public class DashboardFragment extends Fragment {
     private boolean bacCheckEnabled = false;
 
     private void showAlertWithUndo(String title, String message) {
+        //Check if ALert toggle is off or on before showing the pop-up
+        if(!alerts) {
+            Log.d(TAG, "Alerts toggle is off, not showing the pop-up.");
+            return;
+        }
+
         if (!canShowDrinkAlert(title)) {
             Log.d(TAG, "showAlertWithUndo: Cooldown active for alert: " + title);
             return;
@@ -1261,6 +1299,12 @@ public class DashboardFragment extends Fragment {
 
     // Recommendation pop-up
     private void showRecommendationDialog(int drinkCount, String message) {
+       //Check if recommendations toggle is off or on before showing the pop-up
+        if(!recommendations) {
+            Log.d(TAG, "Recommendations toggle is off, not showing the pop-up.");
+            return;
+        }
+
         String title = "Healthy tips!";
         Log.d(TAG, "Preparing to show recommendation dialog. Drink count: " + drinkCount + ", Message: " + message);
         if (!canShowDrinkAlert(title)) {
