@@ -1389,6 +1389,7 @@ public class DashboardFragment extends Fragment {
                                     .addOnSuccessListener(aVoid -> {
                                         Log.d(TAG, "Log " + logId + " successfully deleted");
                                         saveDashboardData();
+                                        loadDashboardData();
                                     })
                                     .addOnFailureListener(e -> Log.e(TAG, "Error deleting log " + logId, e));
                         }
