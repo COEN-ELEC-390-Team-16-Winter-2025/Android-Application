@@ -78,15 +78,17 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
 
     @Override
     public void onDestroy() {
-        if (recommendationListener != null) {
-            recommendationListener.remove();
-        }
-        if (alertListener != null) {
-            alertListener.remove();
-        }
-
-        if (reminderListener != null)
-            reminderListener.remove();
+//        if (recommendationListener != null) {
+//            recommendationListener.remove();
+//        }
+//        if (alertListener != null) {
+//            alertListener.remove();
+//
+//        }
+//
+//        if (reminderListener != null)
+//            reminderListener.remove();
+//            Log.d(TAG, "Reminder Listener destroyed");
 
         super.onDestroy();
     }
@@ -170,6 +172,19 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
     }
 
     private void handleNewRecommendation(DocumentSnapshot doc) {
+
+        NotificationManager manager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+        NotificationChannel channel = manager.getNotificationChannel(CHANNEL_ID);
+        Log.d(TAG, "Channel exists: " + (channel != null));
+        if (channel != null) {
+            Log.d(TAG, String.format(
+                    "Channel settings:\nImportance: %d\nVibration: %b\nSound: %s",
+                    channel.getImportance(),
+                    channel.shouldVibrate(),
+                    channel.getSound()
+            ));
+        }
+
         doc.getReference().update("Resolved", true)
                 .addOnSuccessListener(aVoid -> {
                     String message = doc.getString("Message");
