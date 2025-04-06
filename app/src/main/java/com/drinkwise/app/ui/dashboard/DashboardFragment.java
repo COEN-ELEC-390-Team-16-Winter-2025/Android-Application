@@ -48,6 +48,7 @@ import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.Timestamp;
 import com.google.firebase.firestore.Query;
@@ -925,65 +926,46 @@ public class DashboardFragment extends Fragment {
         }
     }
 
-    //Prompt to ask user if they want to start a new session
-    private void askUserToStartNewSession(String userId) {
-        new AlertDialog.Builder(requireContext())
-                .setTitle("New Drinking Session")
-                .setMessage("More than 2 hours since your last drink. Start a new session?")
-                .setPositiveButton("Yes", (d, which) -> {
-                    String newSessionId = db.collection("users").document(userId)
-                            .collection("drinking_sessions").document().getId();
-                    startNewSession(userId, newSessionId);
-                })
-                .setNegativeButton("No", (d, which) -> d.dismiss())
-                .show();
-    }
-
-    private void startNewSession(String userId, String sessionId) {
-        Map<String, Object> sessionData = new HashMap<>();
-        sessionData.put("startTimestamp", new Timestamp(new Date()));
-        sessionData.put("sessionId", sessionId);
-
-        db.collection("users").document(userId)
-                .collection("drinking_sessions")
-                .document(sessionId)
-                .set(sessionData)
-                .addOnSuccessListener(aVoid -> {
-                    Log.d(TAG, "New drinking session started: " + sessionId);
-                    currentSessionId = sessionId;
-                    //Reset dashboard if new session
-                    resetDashboard();
-                })
-                .addOnFailureListener(e -> Log.e(TAG, "Failed to start a new drinking session", e));
-    }
-
-
-    // Store recommendation to Firestore with added logs.
+    //Store the recommendation to firestore
     public void storeRecommendation(Recommendation recommendation) {
-        Log.d(TAG, "Storing recommendation: " + recommendation.getMessage());
+        db = FirebaseFirestore.getInstance();
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
         if (user == null) {
             Log.e(TAG, "User is not authenticated");
             return;
         }
-        String userId = user.getUid();
+
+        Timestamp timestamp = Timestamp.now();
+        Date date = timestamp.toDate();
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault());
+        String timestampId = dateFormat.format(date);
+
+        // Create recommendation data
         Map<String, Object> recommendationMap = new HashMap<>();
         recommendationMap.put("DrinkCount", recommendation.getDrinkCount());
         recommendationMap.put("Message", recommendation.getMessage());
-        recommendationMap.put("Timestamp", Timestamp.now());
+        recommendationMap.put("Timestamp", timestamp); // Store as proper Timestamp
         recommendationMap.put("Resolved", recommendation.isResolved());
         recommendationMap.put("sessionId", currentSessionId);
 
-        db.collection("users")
-                .document(userId)
+        // Store with explicit timestamp ID
+        DocumentReference docRef = db.collection("users")
+                .document(user.getUid())
                 .collection("Recommendations")
-                .add(recommendationMap)
-                .addOnSuccessListener(documentReference -> {
-                    Log.d(TAG, "Recommendation saved successfully with ID: " + documentReference.getId());
-                })
-                .addOnFailureListener(e -> {
-                    Log.e(TAG, "Error saving recommendation: " + e);
-                });
+                .document(timestampId);
+
+        // Check if document exists before setting/updating
+        docRef.get().addOnSuccessListener(documentSnapshot -> {
+            if (documentSnapshot.exists()) {
+                docRef.update(recommendationMap);
+                Log.d("RecTesting", "Recommendation updated at " + timestampId);
+            } else {
+                docRef.set(recommendationMap);
+                Log.d("RecTesting", "New recommendation saved at " + timestampId);
+            }
+        }).addOnFailureListener(e -> {
+            Log.e("RecTesting", "Error checking document: " + e.getMessage());
+        });
     }
 
     //TODO: test if it is annoying that the drinks are checked everytime bac updated
