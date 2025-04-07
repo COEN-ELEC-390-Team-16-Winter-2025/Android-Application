@@ -14,16 +14,19 @@ public class BACCalculator {
      * @return The total estimated BAC.
      */
     public static double calculateBAC(List<DrinkLogItem> drinkLogItems) {
-        // Initialize the total BAC to 0.0
         double totalBAC = 0.0;
 
-        // Loop through each DrinkLogItem in the list
         for (DrinkLogItem item : drinkLogItems) {
-            // Add the bacContribution of the current item to the total
-            totalBAC += item.getBacContribution();
+            Double contribution = item.getBacContribution();
+            if (contribution != null) {
+                totalBAC += contribution;
+            } else {
+                // Optional: log this issue
+                System.out.println("Warning: bacContribution was null for a drink.");
+            }
         }
 
-        // Return the total estimated BAC
         return totalBAC;
     }
+
 }

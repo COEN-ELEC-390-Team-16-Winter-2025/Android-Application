@@ -13,6 +13,9 @@ public class DrinkLogItem {
     private Double bacContribution;
 
     // Constructor: initializes a DrinkLogItem with the provided values.
+
+    public DrinkLogItem() {}
+
     public DrinkLogItem(String drinkType, Long calories, String time, Double bacContribution) {
         this.drinkType = drinkType;
         this.calories = calories;
@@ -35,4 +38,21 @@ public class DrinkLogItem {
     public Double getBacContribution() {
         return bacContribution;
     }
+
+    public void setDrinkType(String drinkType) {
+        this.drinkType = drinkType;
+    }
+
+    public void setCalories(Long calories) {
+        this.calories = calories;
+    }
+
+    public void setTime(String time) {
+        this.time = time;
+    }
+
+    public void setBacContribution(Double bacContribution) {
+        this.bacContribution = bacContribution;
+    }
+
 }
