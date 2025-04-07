@@ -47,6 +47,7 @@ import com.drinkwise.app.ui.home.drinklog.DrinkLogItem;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -762,7 +763,7 @@ public class DashboardFragment extends Fragment {
         if(currentSessionId == null) {
             currentSessionId = db.collection("users").document(userId)
                     .collection("drinking_sessions").document().getId();
-            startNewSession(userId, currentSessionId);
+            //startNewSession(userId, currentSessionId);
         }
         Log.d(TAG, "Current session id: "+currentSessionId);
 
@@ -788,7 +789,7 @@ public class DashboardFragment extends Fragment {
                             Log.d(TAG, "Time interval since last drink: " + interval[0] + " seconds");
                             if (interval[0] > 7200) {
                                 Log.d(TAG, "Interval > 2 hours, prompting new session.");
-                                askUserToStartNewSession(userId);
+                                //askUserToStartNewSession(userId);
                                 return;
                             }
                         }
@@ -809,14 +810,14 @@ public class DashboardFragment extends Fragment {
                                             (new Timestamp(new Date()).toDate().getTime() - lastDrinkTime.toDate().getTime()) > 7200000) {
                                         sessionId = db.collection("users").document(userId)
                                                 .collection("drinking_sessions").document().getId();
-                                        startNewSession(userId, sessionId);
+                                        //startNewSession(userId, sessionId);
                                     } else {
                                         sessionId = lastSession.getId();
                                     }
                                 } else {
                                     sessionId = db.collection("users").document(userId)
                                             .collection("drinking_sessions").document().getId();
-                                    startNewSession(userId, sessionId);
+                                    //startNewSession(userId, sessionId);
                                 }
 
                                 //Log the drink

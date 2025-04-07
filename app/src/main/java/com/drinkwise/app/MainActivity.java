@@ -80,7 +80,8 @@ public class MainActivity extends AppCompatActivity {
         Log.d("FCM_DEBUG", "Firebase Messaging Servoce initialized in Main");
 
         // Handle first-time launch
-        SharedPreferences preferences = getSharedPreferences("AppPrefs", MODE_PRIVATE);
+        //SharedPreferences
+                preferences = getSharedPreferences("AppPrefs", MODE_PRIVATE);
         if (preferences.getBoolean("firstTime", true)) {
             preferences.edit().putBoolean("firstTime", false).apply();
             startActivity(new Intent(this, LandingActivity.class));
@@ -100,7 +101,7 @@ public class MainActivity extends AppCompatActivity {
         initializeFCM();
 
         // Test notification channel
-        testChannelNow();
+        //testChannelNow();
     }
 
     private void requestNotificationPermission() {

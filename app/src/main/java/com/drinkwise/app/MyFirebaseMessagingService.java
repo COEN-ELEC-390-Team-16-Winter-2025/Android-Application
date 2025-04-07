@@ -342,7 +342,8 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
                     .setCategory(NotificationCompat.CATEGORY_REMINDER)
                     .setAutoCancel(true)
                     .setContentIntent(pendingIntent)
-                    .setVibrate(vibrationPattern);
+                    .setVibrate(vibrationPattern)
+                    .setVisibility(NotificationCompat.VISIBILITY_PUBLIC);
 
             manager.notify("REMINDER_" + System.currentTimeMillis(),
                     (int) System.currentTimeMillis(),
