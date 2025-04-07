@@ -94,15 +94,14 @@ public class AnalyticsFragment extends Fragment {
 
     @Override
     public void onPause() {
-        destroyGraph();
         super.onPause();
+        destroyGraph();
     }
 
     @Override
     public void onDestroyView() {
-
-        destroyGraph();
         super.onDestroyView();
+        destroyGraph();
     }
 
     public void destroyGraph(){
@@ -374,27 +373,23 @@ public class AnalyticsFragment extends Fragment {
         db.collection("users")
                 .document(userId)
                 .collection("BacEntry")
-                .addSnapshotListener(((value, error) -> {
-                    if (error != null) {
-                        Log.e("Error", "Error fetching data: " + error);
-                    }
-
-                    for (QueryDocumentSnapshot document : value) {
+                .get()
+                .addOnSuccessListener(queryDocumentSnapshots -> {
+                    for (QueryDocumentSnapshot document : queryDocumentSnapshots) {
                         String timestamp = document.getId();
                         Log.d("Timestamp", timestamp);
-                        if(timestamp.compareTo(startDate) >= 0 && timestamp.compareTo(endDate) <= 0){
+                        if (timestamp.compareTo(startDate) >= 0 && timestamp.compareTo(endDate) <= 0) {
                             Double bac = document.getDouble("bacValue");
 
-                            if(bac != null){
-                                Date parsedDate = null;
+                            if (bac != null) {
+                                Date parsedDate;
                                 try {
                                     parsedDate = formatter.parse(timestamp);
                                     String date = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(parsedDate);
 
-                                    if(data.containsKey(date)){
+                                    if (data.containsKey(date)) {
                                         data.put(date, data.get(date) + bac);
-                                    }
-                                    else{
+                                    } else {
                                         data.put(date, bac);
                                     }
 
@@ -404,23 +399,23 @@ public class AnalyticsFragment extends Fragment {
                             }
                         }
                     }
+
                     int index = 0;
                     ArrayList<String> dates = new ArrayList<>();
-                    for(Map.Entry<String, Double> entry : data.entrySet()){
+                    for (Map.Entry<String, Double> entry : data.entrySet()) {
+                        float xValue = index;
+                        float yValue = entry.getValue().floatValue();
+                        dates.add(entry.getKey());
 
-                            float xValue = index;
-                            float yValue = entry.getValue().floatValue();
-                            dates.add(entry.getKey());
-
-                            Log.d("DEBUG", "Timestamp: "+entry.getKey());
-                            Log.d("DEBUG", "Value: "+yValue);
-                            lineChartEntries.add(new Entry(xValue, yValue));
-
-                            index++;
+                        Log.d("DEBUG", "Timestamp: " + entry.getKey());
+                        Log.d("DEBUG", "Value: " + yValue);
+                        lineChartEntries.add(new Entry(xValue, yValue));
+                        index++;
                     }
 
                     callback.onDataFetchedLine(lineChartEntries, dates);
-                }));
+                })
+                .addOnFailureListener(e -> Log.e("Error", "Error fetching data: " + e));
 
 
     }
@@ -458,39 +453,39 @@ public class AnalyticsFragment extends Fragment {
                 .collection("manual_drink_logs")
                 .whereGreaterThanOrEqualTo("timestamp", start)
                 .whereLessThanOrEqualTo("timestamp", end)
-                .addSnapshotListener((value, error) -> {
-                    if(error != null){
-                        Log.e("Error", "Error fetching data" + error);
+                .get()
+                .addOnSuccessListener(queryDocumentSnapshots -> {
+                    if (queryDocumentSnapshots == null || queryDocumentSnapshots.isEmpty()) {
+                        return;
                     }
 
-                    if(value == null || value.isEmpty()){
-                        Toast.makeText(requireContext(), "The current timestamp didn't return any results", Toast.LENGTH_SHORT).show();
-                    }
-
-                    for (QueryDocumentSnapshot document : value) {
+                    for (QueryDocumentSnapshot document : queryDocumentSnapshots) {
                         String drinkType = document.getString("drinkType");
                         Long calories = document.getLong("calories");
                         Timestamp timestamp = document.getTimestamp("timestamp");
 
-                        if(calories != null){
+                        if (calories != null) {
                             String date = formatter.format(timestamp.toDate());
 
-                            if(data.containsKey(date)){
+                            if (data.containsKey(date)) {
                                 data.put(date, data.get(date) + calories);
-                            }
-                            else{
+                            } else {
                                 data.put(date, calories);
                             }
                         }
                     }
+
                     int i = 0;
                     ArrayList<String> dates = new ArrayList<>();
-                    for(Map.Entry<String, Long> entry : data.entrySet()){
+                    for (Map.Entry<String, Long> entry : data.entrySet()) {
                         dates.add(entry.getKey());
                         barEntries.add(new BarEntry(i, entry.getValue()));
                         i++;
                     }
                     callback.onDataFetchedBar(barEntries, dates);
+                })
+                .addOnFailureListener(e -> {
+                    Log.e("Error", "Error fetching data: " + e);
                 });
     }
     public void fetch_drink_consumed(Timestamp start, Timestamp end, DataCallback callback){
@@ -512,31 +507,34 @@ public class AnalyticsFragment extends Fragment {
                 .collection("manual_drink_logs")
                 .whereGreaterThanOrEqualTo("timestamp", start)
                 .whereLessThanOrEqualTo("timestamp", end)
-                .addSnapshotListener((value, error) -> {
-                    if(error != null){
-                        Log.e("Error", "Error fetching data: ", error);
-                    }
-
-                    if(value == null || value.isEmpty()){
+                .get()
+                .addOnSuccessListener(queryDocumentSnapshots -> {
+                    if (queryDocumentSnapshots == null || queryDocumentSnapshots.isEmpty()) {
                         Toast.makeText(requireContext(), "The current timestamp didn't return any results", Toast.LENGTH_SHORT).show();
+                        return;
                     }
 
-                    for (QueryDocumentSnapshot document : value) {
+                    for (QueryDocumentSnapshot document : queryDocumentSnapshots) {
                         String drinkType = document.getString("drinkType");
                         Long calories = document.getLong("calories");
                         Timestamp timestamp = document.getTimestamp("timestamp");
 
-                        data.put(drinkType, data.getOrDefault(drinkType, 0 )+1);
+                        // Update the count for the drink type
+                        data.put(drinkType, data.getOrDefault(drinkType, 0) + 1);
 
                         Log.d("Fetching Results", "Drink: " + drinkType + ", Calories: " + calories + ", Date: " + timestamp.toDate());
                     }
 
-                    for(Map.Entry<String, Integer> drinkEntry: data.entrySet()){
+                    for (Map.Entry<String, Integer> drinkEntry : data.entrySet()) {
                         pieEntries.add(new PieEntry(drinkEntry.getValue(), drinkEntry.getKey()));
                         Log.d("Pie Entries", pieEntries.toString());
                     }
 
+                    // Trigger the callback with the fetched pie entries
                     callback.onDataFetched(pieEntries);
+                })
+                .addOnFailureListener(e -> {
+                    Log.e("Error", "Error fetching data: ", e);
                 });
     }
 
