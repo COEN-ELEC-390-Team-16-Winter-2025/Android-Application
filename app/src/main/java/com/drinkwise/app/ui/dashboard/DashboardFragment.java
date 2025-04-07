@@ -365,12 +365,10 @@ public class DashboardFragment extends Fragment {
             beerCounter++;
             updateBeerCount();
             updateTotalCalories();
-            //updateBACFromManualLogs();
+            updateBACFromManualLogs();
             logDrinkToFirestore("Beer", 150, 0.03);
             //check for rapid logging and errors
             checkDrinkLogAndBAC();
-
-            startSafetyMonitor(); //for testing
             minusButtonState();
 
         });
@@ -379,7 +377,7 @@ public class DashboardFragment extends Fragment {
             wineCounter++;
             updateWineCount();
             updateTotalCalories();
-            //updateBACFromManualLogs();
+            updateBACFromManualLogs();
             logDrinkToFirestore("Wine", 125, 0.05);
             //check for rapid logging and errors
             checkDrinkLogAndBAC();
@@ -390,7 +388,7 @@ public class DashboardFragment extends Fragment {
             champagneCounter++;
             updateChampagneCount();
             updateTotalCalories();
-            //updateBACFromManualLogs();
+            updateBACFromManualLogs();
             logDrinkToFirestore("Champagne", 90, 0.04);
             //check for rapid logging and errors
             checkDrinkLogAndBAC();
@@ -401,7 +399,7 @@ public class DashboardFragment extends Fragment {
             cocktailCounter++;
             updateCocktailCount();
             updateTotalCalories();
-            //updateBACFromManualLogs();
+            updateBACFromManualLogs();
             logDrinkToFirestore("Cocktail", 200, 0.07);
             //check for rapid logging and errors
             checkDrinkLogAndBAC();
@@ -412,7 +410,7 @@ public class DashboardFragment extends Fragment {
             shotCounter++;
             updateShotCount();
             updateTotalCalories();
-            //updateBACFromManualLogs();
+            updateBACFromManualLogs();
             logDrinkToFirestore("Shot", 95, 0.04);
             //check for rapid logging and errors
             checkDrinkLogAndBAC();
@@ -423,7 +421,7 @@ public class DashboardFragment extends Fragment {
             sakeCounter++;
             updateSakeCount();
             updateTotalCalories();
-            //updateBACFromManualLogs();
+            updateBACFromManualLogs();
             logDrinkToFirestore("Sake", 230, 0.06);
             //check for rapid logging and errors
             checkDrinkLogAndBAC();
@@ -491,7 +489,7 @@ public class DashboardFragment extends Fragment {
                 updateBeerCount();
                 updateTotalCalories();
                 removeDrinkFromFirestore("Beer");
-                //updateBACFromManualLogs();
+                updateBACFromManualLogs();
                 minusButtonState();
             }
         });
@@ -502,7 +500,7 @@ public class DashboardFragment extends Fragment {
                 updateWineCount();
                 updateTotalCalories();
                 removeDrinkFromFirestore("Wine");
-                //updateBACFromManualLogs();
+                updateBACFromManualLogs();
                 minusButtonState();
             }
         });
@@ -513,7 +511,7 @@ public class DashboardFragment extends Fragment {
                 updateChampagneCount();
                 updateTotalCalories();
                 removeDrinkFromFirestore("Champagne");
-                //updateBACFromManualLogs();
+                updateBACFromManualLogs();
                 minusButtonState();
             }
         });
@@ -524,7 +522,7 @@ public class DashboardFragment extends Fragment {
                 updateCocktailCount();
                 updateTotalCalories();
                 removeDrinkFromFirestore("Cocktail");
-                //updateBACFromManualLogs();
+                updateBACFromManualLogs();
                 minusButtonState();
             }
         });
@@ -535,7 +533,7 @@ public class DashboardFragment extends Fragment {
                 updateShotCount();
                 updateTotalCalories();
                 removeDrinkFromFirestore("Shot");
-                //updateBACFromManualLogs();
+                updateBACFromManualLogs();
                 minusButtonState();
             }
         });
@@ -546,7 +544,7 @@ public class DashboardFragment extends Fragment {
                 updateSakeCount();
                 updateTotalCalories();
                 removeDrinkFromFirestore("Sake");
-                //updateBACFromManualLogs();
+                updateBACFromManualLogs();
             }
         });
 
@@ -557,6 +555,7 @@ public class DashboardFragment extends Fragment {
      * Retrieves manual drink logs from Firestore, calculates overall BAC using BACCalculator, and updates the BAC display.
      */
     private void updateBACFromManualLogs() {
+        Log.e(TAG, "User not logged in; cannot update BAC");
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
 //        if (user == null) {
 //            Log.e(TAG, "User not logged in; cannot update BAC");
@@ -579,6 +578,7 @@ public class DashboardFragment extends Fragment {
                             }
                         });
                     }
+                    Log.d(TAG, "Drink logs size: " + drinkLogs.size());
                     double estimatedBAC = BACCalculator.calculateBAC(drinkLogs);
                     Log.d(TAG, "Calculated BAC from manual logs: " + estimatedBAC);
                     updateBacLevel(estimatedBAC);
@@ -835,7 +835,7 @@ public class DashboardFragment extends Fragment {
                                             drinkEntry.put("drinkType", drinkType);
                                             drinkEntry.put("calories", calories);
                                             drinkEntry.put("timestamp", timestamp);
-                                            drinkEntry.put("BAC_Contribution", BACContribution);
+                                            drinkEntry.put("bacContribution", BACContribution);
                                             drinkEntry.put("sessionId", sessionId);
 
                                             db.collection("users").document(userId)
