@@ -19,6 +19,8 @@ public class ReminderItem implements NotificationItem {
     private String status;
     // The escalation level of the reminder ("Low", "Medium", "High", "Emergency")
     private String escalation;
+    //If the reminder has been read by user or not
+    private Boolean resolved;
 
     // No-argument constructor required for Firestore deserialization
     public ReminderItem() {}
@@ -29,6 +31,14 @@ public class ReminderItem implements NotificationItem {
 
     public void setReminderType(String reminderType) {
         this.reminderType = reminderType;
+    }
+
+    public Boolean getResolved() {
+        return resolved;
+    }
+
+    public void setResolved(Boolean resolved) {
+        this.resolved = resolved;
     }
 
     @Override

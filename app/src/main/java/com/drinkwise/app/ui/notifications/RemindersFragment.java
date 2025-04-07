@@ -9,6 +9,7 @@ import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -35,12 +36,27 @@ public class RemindersFragment extends Fragment {
                              Bundle savedInstanceState) {
         View root = inflater.inflate(R.layout.fragment_reminders, container, false);
         recyclerView = root.findViewById(R.id.recyclerViewReminders);
-        recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
+        LinearLayoutManager layoutManager = new LinearLayoutManager(getContext());
+        recyclerView.setLayoutManager(layoutManager);
+
+        //Adding a separation line to the recommendations
+        DividerItemDecoration dividerItemDecoration =  new DividerItemDecoration(getContext(), layoutManager.getOrientation());
+        recyclerView.addItemDecoration(dividerItemDecoration);
 
         notifAdapter = new NotifAdapter(getContext(), reminderList);
         recyclerView.setAdapter(notifAdapter);
 
-        loadReminders();
+        boolean showReminders = true;
+        if(getArguments() != null) {
+            showReminders = getArguments().getBoolean("showRecommendations", true);
+        }
+
+        if(showReminders) {
+            loadReminders();
+        } else {
+            reminderList.clear();
+            notifAdapter.updateData(reminderList);
+        }
         return root;
     }
 
