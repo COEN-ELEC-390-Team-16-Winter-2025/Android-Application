@@ -94,6 +94,7 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
     }
 
     private void createNotificationChannels() {
+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             // Regular notifications channel
             NotificationChannel channel = new NotificationChannel(
@@ -101,6 +102,8 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
                     "DrinkWise Notifications",
                     NotificationManager.IMPORTANCE_HIGH
             );
+
+
             channel.setDescription("General drink recommendations");
             channel.enableVibration(true);
             channel.setVibrationPattern(new long[]{100, 200, 300, 400, 500});
@@ -127,7 +130,7 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
             NotificationChannel remindersChannel = new NotificationChannel(
                     REMINDERS_CHANNEL_ID,
                     "DrinkWise Reminders",
-                    NotificationManager.IMPORTANCE_DEFAULT
+                    NotificationManager.IMPORTANCE_HIGH
             );
             remindersChannel.setDescription("Scheduled reminders");
             remindersChannel.enableVibration(true);
@@ -246,7 +249,7 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
                     String message = doc.getString("Message");
                     String safetyLevel = doc.getString("SafetyLevel");
                     Double bacValue = doc.getDouble("bacValue");
-                    Long escalationLevel = doc.getLong("EscalationLevel");
+                    String escalationLevel = doc.getString("EscalationLevel");
 
                     String notificationMsg = buildAlertMessage(message, safetyLevel, bacValue);
                     sendAlertNotification("Safety Alert", notificationMsg, escalationLevel);
@@ -338,12 +341,11 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
                     .setContentTitle(title)
                     .setContentText(message)
                     .setColor(color)
-                    .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+                    .setPriority(NotificationCompat.PRIORITY_HIGH)
                     .setCategory(NotificationCompat.CATEGORY_REMINDER)
                     .setAutoCancel(true)
                     .setContentIntent(pendingIntent)
-                    .setVibrate(vibrationPattern)
-                    .setVisibility(NotificationCompat.VISIBILITY_PUBLIC);
+                    .setVibrate(vibrationPattern);
 
             manager.notify("REMINDER_" + System.currentTimeMillis(),
                     (int) System.currentTimeMillis(),
@@ -401,7 +403,7 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
     }
 
 
-    private void sendAlertNotification(String title, String message, Long escalationLevel) {
+    private void sendAlertNotification(String title, String message, String escalationLevel) {
         if (TextUtils.isEmpty(message)) return;
 
         Log.d(TAG, "Attempting to send alert. Channel: " + ALERTS_CHANNEL_ID +
@@ -418,7 +420,7 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
                     PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
 
             int color = Color.RED;
-            if (escalationLevel != null && escalationLevel <= 1) {
+            if (escalationLevel != null && escalationLevel.equals("Low")) {
                 color = Color.YELLOW;
             }
 
@@ -433,7 +435,7 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
                     .setContentIntent(pendingIntent)
                     .setVibrate(new long[]{0, 500, 200, 500});
 
-            if (escalationLevel != null && escalationLevel >= 2) {
+            if (escalationLevel != null && (escalationLevel.equals("Medium") || escalationLevel.equals("High Impairment") || escalationLevel.equals("Severe Impairment") || escalationLevel.equals("Medical Emergency"))) {
                 builder.setFullScreenIntent(pendingIntent, true);
             }
 
@@ -501,9 +503,9 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
         String bacValue = data.get("bacValue");
         String escalationLevel = data.get("escalationLevel");
 
-        Long escLevel = null;
+        String escLevel = null;
         try {
-            escLevel = Long.parseLong(escalationLevel);
+            escLevel = escalationLevel;
         } catch (NumberFormatException e) {
             Log.e(TAG, "Invalid escalation level", e);
         }

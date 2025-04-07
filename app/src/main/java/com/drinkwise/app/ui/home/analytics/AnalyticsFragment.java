@@ -92,6 +92,27 @@ public class AnalyticsFragment extends Fragment {
         return view;
     }
 
+    @Override
+    public void onPause() {
+        destroyGraph();
+        super.onPause();
+    }
+
+    @Override
+    public void onDestroyView() {
+
+        destroyGraph();
+        super.onDestroyView();
+    }
+
+    public void destroyGraph(){
+        if(BACLineChart != null){
+            BACLineChart.clear();
+            BACLineChart.setData(null);
+            BACLineChart.invalidate();
+        }
+    }
+
     public void BAC_line_init(ArrayList<Entry> lineChartEntries, ArrayList<String> dates, Timestamp start, Timestamp end){
 
         drinkTypePieChart.setVisibility(View.GONE);
@@ -103,8 +124,11 @@ public class AnalyticsFragment extends Fragment {
             return;
         }
 
+
+        //TODO: Remove this line of code and use get in fetching data instead of addsnapshotlistener
+        int minimumSize = Math.min(lineChartEntries.size(), dates.size());
         List<Pair<Entry, String>> combinedList = new ArrayList<>();
-        for (int i = 0; i < lineChartEntries.size(); i++) {
+        for (int i = 0; i < minimumSize; i++) {
             combinedList.add(new Pair<>(lineChartEntries.get(i), dates.get(i)));
         }
 
@@ -347,8 +371,6 @@ public class AnalyticsFragment extends Fragment {
         }
 
 
-        Log.d("DEBUG", "Start Date: " + startDate);
-        Log.d("DEBUG", "End Date: " + endDate);
         db.collection("users")
                 .document(userId)
                 .collection("BacEntry")

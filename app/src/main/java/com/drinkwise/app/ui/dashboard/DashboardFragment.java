@@ -763,7 +763,7 @@ public class DashboardFragment extends Fragment {
         if(currentSessionId == null) {
             currentSessionId = db.collection("users").document(userId)
                     .collection("drinking_sessions").document().getId();
-            //startNewSession(userId, currentSessionId);
+            startNewSession(userId, currentSessionId);
         }
         Log.d(TAG, "Current session id: "+currentSessionId);
 
@@ -789,7 +789,7 @@ public class DashboardFragment extends Fragment {
                             Log.d(TAG, "Time interval since last drink: " + interval[0] + " seconds");
                             if (interval[0] > 7200) {
                                 Log.d(TAG, "Interval > 2 hours, prompting new session.");
-                                //askUserToStartNewSession(userId);
+                                askUserToStartNewSession(userId);
                                 return;
                             }
                         }
@@ -810,14 +810,14 @@ public class DashboardFragment extends Fragment {
                                             (new Timestamp(new Date()).toDate().getTime() - lastDrinkTime.toDate().getTime()) > 7200000) {
                                         sessionId = db.collection("users").document(userId)
                                                 .collection("drinking_sessions").document().getId();
-                                        //startNewSession(userId, sessionId);
+                                        startNewSession(userId, sessionId);
                                     } else {
                                         sessionId = lastSession.getId();
                                     }
                                 } else {
                                     sessionId = db.collection("users").document(userId)
                                             .collection("drinking_sessions").document().getId();
-                                    //startNewSession(userId, sessionId);
+                                    startNewSession(userId, sessionId);
                                 }
 
                                 //Log the drink
@@ -1233,14 +1233,22 @@ public class DashboardFragment extends Fragment {
                 });
     }
 
+    private AlertDialog activeDialog;
     private void showAlertDialog(String title, String message) {
         if (!isAdded()) return;  // Ensure fragment is attached to avoid crashes
 
-        new AlertDialog.Builder(requireContext())
-                .setTitle(title)  // SafetyLevel as title
-                .setMessage(message)  // Message as content
-                .setPositiveButton("OK", (dialog, which) -> dialog.dismiss())  // OK button
-                .show();
+        if (activeDialog != null && activeDialog.isShowing()) {
+            activeDialog.dismiss();
+        }
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(requireContext());
+
+        builder.setTitle(title)
+                .setMessage(message)
+                .setPositiveButton("OK", (dialog, which) -> dialog.dismiss());  // OK buttom
+
+        activeDialog = builder.create();
+        activeDialog.show();
     }
 
 
@@ -1651,6 +1659,37 @@ public class DashboardFragment extends Fragment {
                         callback.onCallback(emergencyContacts);
                     }
                 });
+    }
+
+    private void startNewSession(String userId, String sessionId) {
+        Map<String, Object> sessionData = new HashMap<>();
+        sessionData.put("startTimestamp", new Timestamp(new Date()));
+        sessionData.put("sessionId", sessionId);
+
+        db.collection("users").document(userId)
+                .collection("drinking_sessions")
+                .document(sessionId)
+                .set(sessionData)
+                .addOnSuccessListener(aVoid -> {
+                    Log.d(TAG, "New drinking session started: " + sessionId);
+                    currentSessionId = sessionId;
+                    //Reset dashboard if new session
+                    resetDashboard();
+                })
+                .addOnFailureListener(e -> Log.e(TAG, "Failed to start a new drinking session", e));
+    }
+
+    private void askUserToStartNewSession(String userId) {
+        new AlertDialog.Builder(requireContext())
+                .setTitle("New Drinking Session")
+                .setMessage("More than 2 hours since your last drink. Start a new session?")
+                .setPositiveButton("Yes", (d, which) -> {
+                    String newSessionId = db.collection("users").document(userId)
+                            .collection("drinking_sessions").document().getId();
+                    startNewSession(userId, newSessionId);
+                })
+                .setNegativeButton("No", (d, which) -> d.dismiss())
+                .show();
     }
 
     public interface PreferencesCallback {
