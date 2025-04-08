@@ -18,6 +18,7 @@
         <item name="android:textColorPrimary">@color/dark_brown</item> <!-- Title text in the header -->
     </style>
 
+
     <style name="RedBorderAlertDialog" parent="ThemeOverlay.MaterialComponents.Dialog.Alert">
         <!-- Dark red border -->
         <item name="android:windowBackground">@drawable/alert_dialog_red_border</item>
@@ -35,6 +36,7 @@
     <style name="AlertDialogMessageText" parent="MaterialAlertDialog.MaterialComponents.Body.Text">
         <item name="android:textSize">18sp</item>
     </style>
+
 
 
     <style name="RecommendationDialog" parent="ThemeOverlay.MaterialComponents.Dialog.Alert">
@@ -62,4 +64,5 @@
 
 
     holo_green_dark
+
 </resources>
