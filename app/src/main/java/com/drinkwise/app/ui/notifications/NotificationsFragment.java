@@ -5,6 +5,8 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
+
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
@@ -86,22 +88,22 @@ public class NotificationsFragment extends Fragment {
 
         RecommendationsFragment recommendationsFragment =  new RecommendationsFragment();
         Bundle recArgs = new Bundle();
-        recArgs.putBoolean("showReminders", showRecommendations);
+        recArgs.putBoolean("showRecommendations", showRecommendations);
         recommendationsFragment.setArguments(recArgs);
 
-        //AlertFragment remindersFragment =  new RemindersFragment();
+        //AlertFragment alertsFragment =  new AlertsFragment();
         //Bundle alertArgs = new Bundle();
         //alertArgs.putBoolean("showAlerts", showAlerts);
         //AlertFragment.setArguments(AlertArgs);
 
 
-
         //add the reminders and recommendations fragment
-        adapter.addFragment(new RemindersFragment(), "Reminders");
-        adapter.addFragment(new RecommendationsFragment(), "Recommendations");
+        adapter.addFragment(remindersFragment, "Reminders");
+        adapter.addFragment(recommendationsFragment, "Recommendations");
        // adapter.addFragment(new AlertFragment(), "Alerts");
 
         viewPager.setAdapter(adapter);
     }
+
 
 }

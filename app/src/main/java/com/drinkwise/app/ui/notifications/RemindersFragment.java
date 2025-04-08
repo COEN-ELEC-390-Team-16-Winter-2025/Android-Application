@@ -9,6 +9,7 @@ import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -35,15 +36,59 @@ public class RemindersFragment extends Fragment {
                              Bundle savedInstanceState) {
         View root = inflater.inflate(R.layout.fragment_reminders, container, false);
         recyclerView = root.findViewById(R.id.recyclerViewReminders);
-        recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
+        LinearLayoutManager layoutManager = new LinearLayoutManager(getContext());
+        recyclerView.setLayoutManager(layoutManager);
+
+        //Adding a separation line to the recommendations
+        DividerItemDecoration dividerItemDecoration =  new DividerItemDecoration(getContext(), layoutManager.getOrientation());
+        recyclerView.addItemDecoration(dividerItemDecoration);
 
         notifAdapter = new NotifAdapter(getContext(), reminderList);
         recyclerView.setAdapter(notifAdapter);
 
-        loadReminders();
+        boolean showReminders = true;
+        if(getArguments() != null) {
+            showReminders = getArguments().getBoolean("showRecommendations", true);
+        }
+
+        if(showReminders) {
+            loadReminders();
+        } else {
+            reminderList.clear();
+            notifAdapter.updateData(reminderList);
+        }
         return root;
     }
 
+    @Override
+    public void onPause() {
+        super.onPause();
+        readReminders();
+    }
+
+    private void readReminders() {
+        String userId = FirebaseAuth.getInstance().getCurrentUser().getUid();
+        for (NotificationItem item : reminderList) {
+            if (item instanceof ReminderItem) {
+                ReminderItem reminder = (ReminderItem) item;
+                if (reminder.getResolved() == null || !reminder.getResolved()) {
+                    reminder.setResolved(true);
+                    FirebaseFirestore.getInstance()
+                            .collection("users")
+                            .document(userId)
+                            .collection("Reminders")
+                            .document(reminder.getId())
+                            .update("resolved", true)
+                            .addOnSuccessListener(aVoid -> {
+                                Log.d("RemindersFragment", "Reminder marked as read");
+                            })
+                            .addOnFailureListener(e -> {
+                                Log.e("RemindersFragment", "Error updating reminder", e);
+                            });
+                }
+            }
+        }
+    }
     private void loadReminders() {
         String userId = FirebaseAuth.getInstance().getCurrentUser() != null
                 ? FirebaseAuth.getInstance().getCurrentUser().getUid()
@@ -86,10 +131,19 @@ public class RemindersFragment extends Fragment {
                                     }
                                     if (querySnapshot != null) {
                                         reminderList.clear();
+                                        int unreadCount = 0;
                                         for (QueryDocumentSnapshot document : querySnapshot) {
                                             // Convert the document to a ReminderItem object
                                             ReminderItem reminderItem = document.toObject(ReminderItem.class);
+                                            reminderItem.setId(document.getId());
                                             reminderList.add(reminderItem);
+                                            if(reminderItem.getResolved() == null || !reminderItem.getResolved()) {
+                                                unreadCount++;
+                                            }
+                                        }
+                                        if(unreadCount > 0 && unreadCount < reminderList.size()) {
+                                            SeparatorItem separator = new SeparatorItem();
+                                            reminderList.add(unreadCount, separator);
                                         }
                                         // Log the fetched reminders
                                         Log.d("RemindersFragment", "Fetched " + reminderList.size() + " reminders");
