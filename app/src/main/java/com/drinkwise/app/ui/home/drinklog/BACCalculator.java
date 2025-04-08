@@ -18,5 +18,4 @@ public class BACCalculator {
 
         return totalBAC;
     }
-
 }

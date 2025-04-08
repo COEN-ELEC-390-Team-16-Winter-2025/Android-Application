@@ -19,9 +19,6 @@ public class Alert {
     private final String date;
     private final String time;
 
-/*
-This class is the Alert class
- */
     public Alert(double bac, Timestamp timestamp) {
         this.bac = bac;
         this.timestamp = timestamp;
@@ -64,7 +61,6 @@ This class is the Alert class
         time = time1.format(temp);
     }
 
-    //Getters
     public double getBac() {
         return bac;
     }

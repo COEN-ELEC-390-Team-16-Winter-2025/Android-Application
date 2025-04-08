@@ -38,7 +38,7 @@ public class InfoActivity extends AppCompatActivity {
             actionBar.setDisplayHomeAsUpEnabled(true);
             actionBar.setHomeAsUpIndicator(R.drawable.arrow_info);
 
-            // For the Support Resources section
+            //Support resources links
             TextView supportResourcesText = findViewById(R.id.support_resources_text);
             supportResourcesText.setText(Html.fromHtml(getString(R.string.support_resources), Html.FROM_HTML_MODE_LEGACY));
 
