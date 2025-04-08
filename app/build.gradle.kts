@@ -41,6 +41,11 @@ dependencies {
     implementation("com.google.firebase:firebase-firestore") // Version managed by BOM
     implementation("com.google.firebase:firebase-database") // Version managed by BOM
     implementation("com.google.firebase:firebase-messaging") // Version managed by BOM
+    implementation("com.google.firebase:firebase-storage")
+
+    implementation("com.github.bumptech.glide:glide:4.15.1")
+    annotationProcessor("com.github.bumptech.glide:compiler:4.15.1")
+
 
     implementation ("com.github.PhilJay:MPAndroidChart:v3.1.0")
 
