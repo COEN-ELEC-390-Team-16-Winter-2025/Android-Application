@@ -6,7 +6,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.widget.Button;
 
-// LandingActivity is the first screen shown to users when they open the app.
+// LandingActivity is the first screen shown to users when they open the app
 public class LandingActivity extends AppCompatActivity {
 
     @Override

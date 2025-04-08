@@ -97,8 +97,7 @@ public class DashboardFragment extends Fragment {
     private Button minusSakeButton;
     private Button minusCustomButton;
 
-    // Drinks info
-    private ImageView beerImage, wineImage, champagneImage, cocktailImage, shotImage, sakeImage;
+
     private TextView drinkInfo;
 
     // Bottom Buttons
@@ -696,13 +695,13 @@ public class DashboardFragment extends Fragment {
         if (drinkInfo.getVisibility() == View.VISIBLE) {
             drinkInfo.setVisibility(View.GONE);
         } else {
-            // Format the name to be bold and underlined using HTML
+
             String formattedName = "<b><u>" + name + "</u></b>";
 
-            // Multiply bac by 100 to show as a percentage and add a % symbol
+            // Multiply bac by 100 to show as percentage
             @SuppressLint("DefaultLocale") String info = String.format("%s<br>Volume: %dml<br>BAC: %.2f%%<br>Calories: %d kcal",
                     formattedName, volume, bac, calories);
-            // Set the text using Html.fromHtml() to render the formatting
+
             drinkInfo.setText(Html.fromHtml(info));
             drinkInfo.setVisibility(View.VISIBLE);
         }
@@ -711,7 +710,6 @@ public class DashboardFragment extends Fragment {
 
     @SuppressLint("SetTextI18n")
     private void updateTotalCalories() {
-        // Provide a safe helper method to get the integer value or return 0 if null
         int beerCalories = getSafeInt(drinkCalories.get("Beer"));
         int wineCalories = getSafeInt(drinkCalories.get("Wine"));
         int champCalories = getSafeInt(drinkCalories.get("Champagne"));
@@ -860,7 +858,7 @@ public class DashboardFragment extends Fragment {
         EditText nameInput = dialogView.findViewById(R.id.editDrinkName);
         EditText quantityInput = dialogView.findViewById(R.id.editDrinkQuantity);
         EditText caloriesInput = dialogView.findViewById(R.id.editDrinkCalories);
-        EditText ABVInput = dialogView.findViewById(R.id.editABV);
+
 
         new AlertDialog.Builder(requireContext())
                 .setTitle("Add Custom Drink")
@@ -869,7 +867,7 @@ public class DashboardFragment extends Fragment {
                     String name = nameInput.getText().toString().trim();
                     String quantity = quantityInput.getText().toString().trim();
                     String caloriesStr = caloriesInput.getText().toString().trim();
-                    String ABVStr = ABVInput.getText().toString().trim();
+
 
 
                     if (!name.isEmpty() && !caloriesStr.isEmpty()) {
@@ -1257,7 +1255,7 @@ public class DashboardFragment extends Fragment {
 //                        Log.d("SafetyMonitor", "Status changed: " + lastStatus + " → " + currentStatus +
 //                                " after " + duration + "s");
 //
-//                        // 🔔 ALERT: You can do something here!
+//
 //                        // E.g., show a toast, vibrate, or store an alert
 //                    }
 //
