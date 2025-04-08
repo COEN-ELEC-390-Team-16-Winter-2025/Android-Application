@@ -337,14 +337,14 @@ public class DashboardFragment extends Fragment {
 
     private void minusButtonState() {
        try {
-        minusBeerButton.setEnabled(beerCounter > 0);
-        minusWineButton.setEnabled(wineCounter > 0);
-        minusChampagneButton.setEnabled(champagneCounter > 0);
-        minusCocktailButton.setEnabled(cocktailCounter > 0);
-        minusShotButton.setEnabled(shotCounter > 0);
-        minusSakeButton.setEnabled(sakeCounter > 0);
-        minusCustomButton.setEnabled(customCounter > 0);
-         catch (Exception e) {
+           minusBeerButton.setEnabled(beerCounter > 0);
+           minusWineButton.setEnabled(wineCounter > 0);
+           minusChampagneButton.setEnabled(champagneCounter > 0);
+           minusCocktailButton.setEnabled(cocktailCounter > 0);
+           minusShotButton.setEnabled(shotCounter > 0);
+           minusSakeButton.setEnabled(sakeCounter > 0);
+           minusCustomButton.setEnabled(customCounter > 0);
+       } catch (Exception e) {
             Log.e(TAG, "Error in minus button state");
         }
     }
@@ -509,7 +509,8 @@ public class DashboardFragment extends Fragment {
                 removeDrinkFromFirestore("Beer");
                 updateBACFromManualLogs();
                 minusButtonState();
-            });
+            }
+        });
 
             minusWineButton.setOnClickListener(v -> {
                 if (wineCounter > 0) {
