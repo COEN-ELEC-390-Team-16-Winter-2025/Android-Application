@@ -8,7 +8,7 @@
     android:paddingTop="10dp"
     android:background="@color/background_color_light">
 
-    <!-- Search Bar -->
+
     <EditText
         android:id="@+id/searchBar"
         android:layout_width="match_parent"
@@ -19,7 +19,7 @@
         android:textColor="@color/text_color_light"
         android:textColorHint="@color/secondary_text_color_light" />
 
-    <!-- Sorting and Filtering Buttons -->
+
     <LinearLayout
         android:id="@+id/sortingFilteringLayout"
         android:layout_width="match_parent"
@@ -28,7 +28,7 @@
         android:layout_marginTop="16dp"
         android:orientation="horizontal">
 
-        <!-- Sort Button -->
+
         <Button
             android:id="@+id/sortButton"
             android:layout_width="0dp"
@@ -41,7 +41,7 @@
             android:textSize="16sp"
             android:drawablePadding="8dp" />
 
-        <!-- Filter Button -->
+
         <Button
             android:id="@+id/filterButton"
             android:layout_width="0dp"
@@ -56,7 +56,6 @@
             android:drawablePadding="8dp" />
     </LinearLayout>
 
-    <!-- RecyclerView -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/drinkLogRecyclerView"
         android:layout_width="match_parent"

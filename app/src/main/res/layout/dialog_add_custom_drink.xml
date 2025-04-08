@@ -19,10 +19,19 @@
         android:fontFamily="@font/asul"/>
 
     <EditText
+        android:id="@+id/editABV"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="ABV percentage"
+        android:inputType="number"
+        android:fontFamily="@font/asul"/>
+
+    <EditText
         android:id="@+id/editDrinkCalories"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:hint="Calories"
         android:inputType="number"
         android:fontFamily="@font/asul"/>
+
 </LinearLayout>
