@@ -550,17 +550,9 @@ public class DashboardFragment extends Fragment {
 
     }
 
-
-    /**
-     * Retrieves manual drink logs from Firestore, calculates overall BAC using BACCalculator, and updates the BAC display.
-     */
     private void updateBACFromManualLogs() {
         Log.e(TAG, "User not logged in; cannot update BAC");
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
-//        if (user == null) {
-//            Log.e(TAG, "User not logged in; cannot update BAC");
-//            return;
-//        }
         assert user != null;
 
         String userId = user.getUid();
@@ -868,6 +860,7 @@ public class DashboardFragment extends Fragment {
         EditText nameInput = dialogView.findViewById(R.id.editDrinkName);
         EditText quantityInput = dialogView.findViewById(R.id.editDrinkQuantity);
         EditText caloriesInput = dialogView.findViewById(R.id.editDrinkCalories);
+        EditText ABVInput = dialogView.findViewById(R.id.editABV);
 
         new AlertDialog.Builder(requireContext())
                 .setTitle("Add Custom Drink")
@@ -876,6 +869,8 @@ public class DashboardFragment extends Fragment {
                     String name = nameInput.getText().toString().trim();
                     String quantity = quantityInput.getText().toString().trim();
                     String caloriesStr = caloriesInput.getText().toString().trim();
+                    String ABVStr = ABVInput.getText().toString().trim();
+
 
                     if (!name.isEmpty() && !caloriesStr.isEmpty()) {
                         try {

@@ -23,7 +23,7 @@ public class SignInActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_signin);
 
-        //Initialize FirebaseAuth instance
+        //Initialize FirebaseAuth
 
         auth = FirebaseAuth.getInstance();
 
@@ -86,7 +86,7 @@ public class SignInActivity extends AppCompatActivity {
         }
         auth.signInWithEmailAndPassword(email, password).addOnCompleteListener(this, task -> {
             if (task.isSuccessful()) {
-                //Sign in successful
+
                 SharedPreferences sharedPreferences = getSharedPreferences("AppPrefs", MODE_PRIVATE);
                 SharedPreferences.Editor editor = sharedPreferences.edit();
                 editor.putBoolean("returningUser", true);
