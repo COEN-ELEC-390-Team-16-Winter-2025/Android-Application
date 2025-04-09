@@ -8,7 +8,6 @@ import java.util.Locale;
 
 public class BACCalculator {
 
-
     private static final double ELIMINATION_RATE = 0.015; // Elimination rate per hour. We should change it or maybe adjust it for weight and height ??
 
     public static double calculateBAC(List<DrinkLogItem> drinkLogItems) {
@@ -21,18 +20,24 @@ public class BACCalculator {
             if (contribution != null) {
                 double effectiveContribution = contribution;
                 String timeString = item.getTime();
-                try {
-                    Date drinkTime = sdf.parse(timeString);
-                    if (drinkTime != null) {
-                        long elapsedMillis = currentTimeMillis - drinkTime.getTime();
-                        double elapsedHours = elapsedMillis / 3600000.0;
-                        effectiveContribution = contribution - (ELIMINATION_RATE * elapsedHours);
-                        if (effectiveContribution < 0) {
-                            effectiveContribution = 0;
+
+                // Check if timeString is null before parsing
+                if (timeString != null) {
+                    try {
+                        Date drinkTime = sdf.parse(timeString);
+                        if (drinkTime != null) {
+                            long elapsedMillis = currentTimeMillis - drinkTime.getTime();
+                            double elapsedHours = elapsedMillis / 3600000.0;
+                            effectiveContribution = contribution - (ELIMINATION_RATE * elapsedHours);
+                            if (effectiveContribution < 0) {
+                                effectiveContribution = 0;
+                            }
                         }
+                    } catch (ParseException e) {
+                        System.out.println("Warning: could not parse time for drink log item: " + timeString);
                     }
-                } catch (ParseException e) {
-                    System.out.println("Warning: could not parse time for drink log item: " + timeString);
+                } else {
+                    System.out.println("Warning: timeString was null for a drink log item.");
                 }
                 totalBAC += effectiveContribution;
             } else {
