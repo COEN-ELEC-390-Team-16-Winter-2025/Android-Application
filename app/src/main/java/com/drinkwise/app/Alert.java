@@ -25,7 +25,7 @@ public class Alert {
         this.resolved = false;
 
 
-        //Instantiates the status and message based on a bac reading
+        //this creates the status and message based on the bac reading
         if (bac <= 0.02) {
             this.safetyLevel = "Safe";
             this.message = "You're sober. Good job!";

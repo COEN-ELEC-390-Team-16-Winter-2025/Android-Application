@@ -47,9 +47,9 @@ public class DrinkLogFragment extends Fragment {
 
     private FirebaseFirestore db;
     private DrinkLogAdapter adapter;
-    private List<DrinkLogItem> drinkLogList = new ArrayList<>();
+    private final List<DrinkLogItem> drinkLogList = new ArrayList<>(); //made final
 
-    private List<DrinkLogItem> filteredList = new ArrayList<>();
+    private final List<DrinkLogItem> filteredList = new ArrayList<>(); //made final
 
     @Nullable
     @Override

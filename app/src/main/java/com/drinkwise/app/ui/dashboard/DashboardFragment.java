@@ -6,10 +6,7 @@ import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.content.Intent;
 import android.content.Context;
-import android.app.ProgressDialog;
-import android.content.Intent;
 import android.content.SharedPreferences;
-import android.media.MediaPlayer;
 import android.media.RingtoneManager;
 import android.net.Uri;
 import android.os.Bundle;
@@ -349,6 +346,7 @@ public class DashboardFragment extends Fragment {
         }
     }
 
+    @SuppressLint("SetTextI18n")
     private void setupButtonListeners() {
       
         try {
@@ -486,9 +484,7 @@ public class DashboardFragment extends Fragment {
                                                 saveDashboardData();
                                                 minusButtonState();
                                             })
-                                            .addOnFailureListener(e -> {
-                                                Log.e(TAG, "Failed to delete custom drink: ", e);
-                                            });
+                                            .addOnFailureListener(e -> Log.e(TAG, "Failed to delete custom drink: ", e));
 
                                     return;
                                 }
@@ -891,6 +887,7 @@ public class DashboardFragment extends Fragment {
                 .addOnFailureListener(e -> Log.e(TAG, "Error fetching last drink log", e));
     }
 
+    @SuppressLint("SetTextI18n")
     private void showAddCustomDrinkDialog() {
         LayoutInflater inflater = LayoutInflater.from(getContext());
         View dialogView = inflater.inflate(R.layout.dialog_add_custom_drink, null);
@@ -954,9 +951,7 @@ public class DashboardFragment extends Fragment {
                                         Log.d(TAG, drinkType + " successfully deleted");
                                         saveDashboardData();
                                     })
-                                    .addOnFailureListener(error -> {
-                                        Log.d(TAG, "Error deleting entry: " + error);
-                                    });
+                                    .addOnFailureListener(error -> Log.d(TAG, "Error deleting entry: " + error));
                         } else {
                             Log.d(TAG, "No drink log found for" + drinkType);
                         }
@@ -1017,12 +1012,8 @@ public class DashboardFragment extends Fragment {
                 .document(userId)
                 .collection("Recommendations")
                 .add(recommendationMap)
-                .addOnSuccessListener(documentReference -> {
-                    Log.d(TAG, "Recommendation saved successfully with ID: " + documentReference.getId());
-                })
-                .addOnFailureListener(e -> {
-                    Log.e(TAG, "Error saving recommendation: " + e);
-                });
+                .addOnSuccessListener(documentReference -> Log.d(TAG, "Recommendation saved successfully with ID: " + documentReference.getId()))
+                .addOnFailureListener(e -> Log.e(TAG, "Error saving recommendation: " + e));
     }
 
     //TODO: test if it is annoying that the drinks are checked everytime bac updated
@@ -1405,7 +1396,7 @@ public class DashboardFragment extends Fragment {
 
         for (String logId : drinkLogToUndo) {
             db.collection("users")
-                    .document(getCurrentUserId())
+                    .document(Objects.requireNonNull(getCurrentUserId()))
                     .collection("manual_drink_logs")
                     .document(logId)
                     .get()

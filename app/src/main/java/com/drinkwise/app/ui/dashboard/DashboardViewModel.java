@@ -4,22 +4,18 @@ import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 
-// DashboardViewModel holds UI-related data for the DashboardFragment.
 public class DashboardViewModel extends ViewModel {
 
-    // A MutableLiveData instance holding a String value.
-    // MutableLiveData allows us to change its value, and observers (like UI components)
-    // will be notified when it changes.
+    // MutableLiveData is an instance that holds a string value. This allows us to change its value and observers (like UI components)
     private final MutableLiveData<String> mText;
 
-    // Constructor initializes the MutableLiveData.
+    // Constructor that initializes the MutableLiveData.
     public DashboardViewModel() {
         mText = new MutableLiveData<>();
-        // Set the initial value for mText. This value can be seen in the UI.
         mText.setValue("This is dashboard fragment");
     }
 
-    // Expose mText as LiveData so that UI components can see changes without modifying it.
+    // Makes mText available in a way that lets the UI watch for updates, but without giving it the ability to change mText directly.
     public LiveData<String> getText() {
         return mText;
     }

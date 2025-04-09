@@ -6,8 +6,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
 
-// This class represents a recommendation based on the number of drinks logged,
-// the time interval between drinks, and the timestamp of the log.
+// This class represents a recommendation based on the number of drinks logged, the time interval between drinks, and the timestamp of the log
 public class Recommendation {
     // The recommendation message
     private String message;
@@ -24,14 +23,14 @@ public class Recommendation {
     // Formatted time string from the timestamp
     private final String time;
 
-    // Constructor that calculates the recommendation based on drinkCount, interval, and timestamp.
+    // constructor
     public Recommendation(int drinkCount, long interval, Timestamp timestamp) {
         this.timestamp = timestamp;
         this.drinkCount = drinkCount;
         this.interval = interval;
         this.resolved = false;
 
-        // Set the recommendation message based on the number of drinks logged.
+        // recommendation message based on the number of drinks logged.
         if (drinkCount == 1) {
             this.message = "Enjoy your drink! Remember to pace yourself and stay hydrated";
         } else if (drinkCount == 2) {
@@ -64,19 +63,16 @@ public class Recommendation {
         // 4 drinks in 2 hours
         // if(drinkCount >= 4 && interval < 7200000) { ... }
 
-        // Convert the Firebase Timestamp to a Date object.
+        // conversion of Firebase Timestamp to a Date object
         Date temp = timestamp.toDate();
-        // Format the date as "yyyy-MM-dd"
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
-        // Format the time as "HH:mm:ss"
         SimpleDateFormat timeFormat = new SimpleDateFormat("HH:mm:ss", Locale.getDefault());
 
-        // Save the formatted date and time.
         this.date = dateFormat.format(temp);
         this.time = timeFormat.format(temp);
     }
 
-    // Returns whether the recommendation is resolved.
+    // is recommendation resolved.
     public boolean isResolved() {
         return resolved;
     }
