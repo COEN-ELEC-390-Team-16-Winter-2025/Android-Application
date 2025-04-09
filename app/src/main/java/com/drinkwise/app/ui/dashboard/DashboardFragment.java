@@ -350,7 +350,7 @@ public class DashboardFragment extends Fragment {
 
     @SuppressLint("SetTextI18n")
     private void setupButtonListeners() {
-      
+
         try {
             seeListButton.setOnClickListener(v -> {
             Intent intent = new Intent(getActivity(), ScanningActivity.class);
@@ -384,7 +384,7 @@ public class DashboardFragment extends Fragment {
             updateBeerCount();
             updateTotalCalories();
 
-            logDrinkToFirestore("Beer", 150, 0.03);
+            logDrinkToFirestore("Beer", 150, 0.03, this::updateBACFromManualLogs);
             //check for rapid logging and errors
             checkDrinkLogAndBAC();
             minusButtonState();
@@ -397,55 +397,63 @@ public class DashboardFragment extends Fragment {
             wineCounter++;
             updateWineCount();
             updateTotalCalories();
-            updateBACFromManualLogs();
-            logDrinkToFirestore("Wine", 125, 0.05);
+            logDrinkToFirestore("Wine", 125, 0.05, this::updateBACFromManualLogs);
             //check for rapid logging and errors
             checkDrinkLogAndBAC();
             minusButtonState();
+
+            updateBACFromManualLogs();
         });
 
         addChampagneButton.setOnClickListener(v -> {
             champagneCounter++;
             updateChampagneCount();
             updateTotalCalories();
-            updateBACFromManualLogs();
-            logDrinkToFirestore("Champagne", 90, 0.04);
+            logDrinkToFirestore("Champagne", 90, 0.04, this::updateBACFromManualLogs);
             //check for rapid logging and errors
             checkDrinkLogAndBAC();
             minusButtonState();
+
+            updateBACFromManualLogs();
         });
 
         addCocktailButton.setOnClickListener(v -> {
             cocktailCounter++;
             updateCocktailCount();
             updateTotalCalories();
-            updateBACFromManualLogs();
-            logDrinkToFirestore("Cocktail", 200, 0.07);
+
+            logDrinkToFirestore("Cocktail", 200, 0.07, this::updateBACFromManualLogs);
             //check for rapid logging and errors
             checkDrinkLogAndBAC();
             minusButtonState();
+
+            updateBACFromManualLogs();
         });
 
         addShotButton.setOnClickListener(v -> {
             shotCounter++;
             updateShotCount();
             updateTotalCalories();
-            updateBACFromManualLogs();
-            logDrinkToFirestore("Shot", 95, 0.04);
+
+            logDrinkToFirestore("Shot", 95, 0.04, this::updateBACFromManualLogs);
             //check for rapid logging and errors
             checkDrinkLogAndBAC();
             minusButtonState();
+
+            updateBACFromManualLogs();
         });
 
         addSakeButton.setOnClickListener(v -> {
             sakeCounter++;
             updateSakeCount();
             updateTotalCalories();
-            updateBACFromManualLogs();
-            logDrinkToFirestore("Sake", 230, 0.06);
+
+            logDrinkToFirestore("Sake", 230, 0.06, this::updateBACFromManualLogs);
             //check for rapid logging and errors
             checkDrinkLogAndBAC();
             minusButtonState();
+
+            updateBACFromManualLogs();
         });
 
         //custom drink add
@@ -506,8 +514,7 @@ public class DashboardFragment extends Fragment {
                 beerCounter--;
                 updateBeerCount();
                 updateTotalCalories();
-                removeDrinkFromFirestore("Beer");
-                updateBACFromManualLogs();
+                removeDrinkFromFirestore("Beer", this::updateBACFromManualLogs);
                 minusButtonState();
             }
         });
@@ -517,9 +524,10 @@ public class DashboardFragment extends Fragment {
                     wineCounter--;
                     updateWineCount();
                     updateTotalCalories();
-                    removeDrinkFromFirestore("Wine");
-                    updateBACFromManualLogs();
+                    removeDrinkFromFirestore("Wine", this::updateBACFromManualLogs);
                     minusButtonState();
+
+                    updateBACFromManualLogs();
                 }
             });
 
@@ -528,8 +536,7 @@ public class DashboardFragment extends Fragment {
                     champagneCounter--;
                     updateChampagneCount();
                     updateTotalCalories();
-                    removeDrinkFromFirestore("Champagne");
-                    updateBACFromManualLogs();
+                    removeDrinkFromFirestore("Champagne", this::updateBACFromManualLogs);
                     minusButtonState();
                 }
             });
@@ -539,8 +546,7 @@ public class DashboardFragment extends Fragment {
                     cocktailCounter--;
                     updateCocktailCount();
                     updateTotalCalories();
-                    removeDrinkFromFirestore("Cocktail");
-                    updateBACFromManualLogs();
+                    removeDrinkFromFirestore("Cocktail", this::updateBACFromManualLogs);
                     minusButtonState();
                 }
             });
@@ -550,8 +556,7 @@ public class DashboardFragment extends Fragment {
                     shotCounter--;
                     updateShotCount();
                     updateTotalCalories();
-                    removeDrinkFromFirestore("Shot");
-                    updateBACFromManualLogs();
+                    removeDrinkFromFirestore("Shot", this::updateBACFromManualLogs);
                     minusButtonState();
                 }
             });
@@ -561,8 +566,7 @@ public class DashboardFragment extends Fragment {
                     sakeCounter--;
                     updateSakeCount();
                     updateTotalCalories();
-                    removeDrinkFromFirestore("Sake");
-                    updateBACFromManualLogs();
+                    removeDrinkFromFirestore("Sake", this::updateBACFromManualLogs);
                     minusButtonState();
                 }
             });
@@ -697,7 +701,7 @@ public class DashboardFragment extends Fragment {
     @SuppressLint({"DefaultLocale", "SetTextI18n"})
     private void updateBacLevel(double bacValue) {
         try {
-          
+
         startSafetyMonitor();
 
         if (getContext() == null) return;
@@ -790,7 +794,7 @@ public class DashboardFragment extends Fragment {
 
     int drinkCount;
 
-    private void logDrinkToFirestore(String drinkType, int calories, double BACContribution) {
+    private void logDrinkToFirestore(String drinkType, int calories, double BACContribution, Runnable onSuccessCallback) {
         Log.d(TAG, "Starting logDrinkToFirestore for drink: " + drinkType);
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
         if (user == null) {
@@ -890,7 +894,10 @@ public class DashboardFragment extends Fragment {
                                                         // Store recommendation and then show pop-up
                                                         storeRecommendation(recommendation);
                                                         showRecommendationDialog(drinkCount, recommendation.getMessage());
-                                                        saveDashboardData();   //Persist the updated dashboard state
+                                                        saveDashboardData();//Persist the updated dashboard state
+                                                        if(onSuccessCallback != null) {
+                                                            onSuccessCallback.run();
+                                                        }
                                                     })
                                                     .addOnFailureListener(e -> Log.e(TAG, "Error adding drink log", e));
                                         });
@@ -930,7 +937,7 @@ public class DashboardFragment extends Fragment {
                             caloriesTextView.setText("Total Calories: " + totalCalories + " kcal");
 
                             // Save to Firestore
-                            logDrinkToFirestore(name, calories, 0);
+                            logDrinkToFirestore(name, calories, 0, this::updateBACFromManualLogs);
                             saveDashboardData();
 
                             Toast.makeText(getContext(), "Added: " + name, Toast.LENGTH_SHORT).show();
@@ -945,7 +952,7 @@ public class DashboardFragment extends Fragment {
                 .show();
     }
 
-    private void removeDrinkFromFirestore(String drinkType) {
+    private void removeDrinkFromFirestore(String drinkType,Runnable onSuccessCallback) {
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
         if (user != null) {
             String userID = user.getUid();
@@ -963,6 +970,9 @@ public class DashboardFragment extends Fragment {
                                     .addOnSuccessListener(result -> {
                                         Log.d(TAG, drinkType + " successfully deleted");
                                         saveDashboardData();
+                                        if (onSuccessCallback != null) {
+                                            onSuccessCallback.run();
+                                        }
                                     })
                                     .addOnFailureListener(error -> Log.d(TAG, "Error deleting entry: " + error));
                         } else {
