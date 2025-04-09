@@ -44,6 +44,7 @@ dependencies {
     implementation("com.google.firebase:firebase-storage")
 
     implementation("com.github.bumptech.glide:glide:4.15.1")
+    implementation(libs.locationdelegation)
     annotationProcessor("com.github.bumptech.glide:compiler:4.15.1")
 
 

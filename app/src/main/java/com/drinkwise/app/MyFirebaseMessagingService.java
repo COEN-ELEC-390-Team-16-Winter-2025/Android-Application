@@ -6,16 +6,21 @@ import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
+import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.media.AudioAttributes;
 import android.os.Build;
+import android.os.Handler;
 import android.provider.Settings;
 import android.text.TextUtils;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
+import androidx.core.app.ActivityCompat;
 import androidx.core.app.NotificationCompat;
+import androidx.core.content.ContextCompat;
 
+import com.google.androidbrowserhelper.locationdelegation.PermissionRequestActivity;
 import com.google.firebase.Timestamp;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -38,7 +43,7 @@ import java.util.Map;
 import android.content.pm.ServiceInfo;
 
 import android.content.Intent;
-
+import android.Manifest;
 public class MyFirebaseMessagingService extends FirebaseMessagingService {
     private static final String TAG = "FCM_DEBUG";
     private static final String CHANNEL_ID = "drinkwise_alerts_channel";
@@ -103,7 +108,6 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
                     NotificationManager.IMPORTANCE_HIGH
             );
 
-
             channel.setDescription("General drink recommendations");
             channel.enableVibration(true);
             channel.setVibrationPattern(new long[]{100, 200, 300, 400, 500});
@@ -132,9 +136,11 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
                     "DrinkWise Reminders",
                     NotificationManager.IMPORTANCE_HIGH
             );
+
             remindersChannel.setDescription("Scheduled reminders");
             remindersChannel.enableVibration(true);
             remindersChannel.setVibrationPattern(new long[]{100, 200, 100});
+            remindersChannel.setLockscreenVisibility(Notification.VISIBILITY_PUBLIC);
 
             NotificationManager manager = getSystemService(NotificationManager.class);
             manager.createNotificationChannel(channel);
@@ -178,6 +184,7 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
 
         NotificationManager manager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
         NotificationChannel channel = manager.getNotificationChannel(CHANNEL_ID);
+
         Log.d(TAG, "Channel exists: " + (channel != null));
         if (channel != null) {
             Log.d(TAG, String.format(
@@ -294,22 +301,27 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
     private void handleNewReminder(DocumentSnapshot doc) {
         Log.d(TAG, "NEW REMINDER DETECTED: " + doc.getData());
 
+        // Early exit if already marked as completed
+        if ("completed".equals(doc.getString("status"))) {
+            Log.d(TAG, "Reminder already completed, skipping.");
+            return;
+        }
+
         String message = doc.getString("message");
         String reminderType = doc.getString("reminderType");
         String escalation = doc.getString("escalation");
 
-        // Mark as completed after showing
+        // Show notification immediately
+        sendReminderNotification(
+                reminderType != null ? reminderType : "Reminder",
+                message != null ? message : "New reminder",
+                escalation
+        );
+
+        // Update status without delay (removed Handler.postDelayed)
         doc.getReference().update("status", "completed")
-                .addOnSuccessListener(aVoid -> {
-                    sendReminderNotification(
-                            reminderType != null ? reminderType : "Reminder",
-                            message != null ? message : "New reminder",
-                            escalation
-                    );
-                })
-                .addOnFailureListener(e -> {
-                    Log.e(TAG, "Failed to mark reminder as completed", e);
-                });
+                .addOnSuccessListener(aVoid -> Log.d(TAG, "Reminder marked as completed."))
+                .addOnFailureListener(e -> Log.e(TAG, "Failed to update reminder status", e));
     }
 
     private void sendReminderNotification(String title, String message, String escalation) {
@@ -319,44 +331,46 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
             NotificationManager manager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
             if (manager == null) return;
 
+            // Create intent to open app when notification is tapped
             Intent intent = new Intent(this, MainActivity.class);
-            intent.putExtra("show_reminders", true);
-            PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, intent,
-                    PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
+            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+            PendingIntent pendingIntent = PendingIntent.getActivity(
+                    this,
+                    0,
+                    intent,
+                    PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE
+            );
 
-            // Customize based on escalation level
-            int color = Color.BLUE;
-            long[] vibrationPattern = {100, 200, 100};
-
-            if ("Urgent".equals(escalation)) {
-                color = Color.YELLOW;
-                vibrationPattern = new long[]{0, 500, 200, 500};
-            } else if ("Emergency".equals(escalation)) {
-                color = Color.RED;
-                vibrationPattern = new long[]{0, 1000, 300, 1000};
-            }
-
+            // Build the notification with heads-up display
             NotificationCompat.Builder builder = new NotificationCompat.Builder(this, REMINDERS_CHANNEL_ID)
                     .setSmallIcon(R.drawable.ic_notifications_black_24dp)
                     .setContentTitle(title)
                     .setContentText(message)
-                    .setColor(color)
                     .setPriority(NotificationCompat.PRIORITY_HIGH)
                     .setCategory(NotificationCompat.CATEGORY_REMINDER)
                     .setAutoCancel(true)
                     .setContentIntent(pendingIntent)
-                    .setVibrate(vibrationPattern);
+                    .setVibrate(new long[]{0, 250, 250, 250})
+                    .setSound(Settings.System.DEFAULT_NOTIFICATION_URI)
+                    .setFullScreenIntent(pendingIntent, true); // THIS IS CRUCIAL FOR POP-UPS
 
-            manager.notify("REMINDER_" + System.currentTimeMillis(),
-                    (int) System.currentTimeMillis(),
-                    builder.build());
+            // For Android 13+ we need to specify the notification type
+//            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+//                builder.setFlag(Notification.FLAG_INSISTENT, true);
+//            }
 
-            Log.d(TAG, "Reminder notification sent: " + message);
+            // Show notification with unique ID
+            int notificationId = (int) System.currentTimeMillis();
+            manager.notify(notificationId, builder.build());
+
+            Log.d(TAG, "Reminder pop-up notification displayed with ID: " + notificationId);
 
         } catch (Exception e) {
             Log.e(TAG, "Reminder notification failed", e);
         }
     }
+
+
     private String buildAlertMessage(String message, String safetyLevel, Double bacValue) {
         StringBuilder builder = new StringBuilder();
         if (message != null) {

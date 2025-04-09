@@ -12,6 +12,7 @@ navigationFragment = "2.8.5"
 navigationUi = "2.8.5"
 activity = "1.10.0"
 googleGmsGoogleServices = "4.4.2"
+locationdelegation = "1.1.1"
 
 
 [libraries]
@@ -26,6 +27,7 @@ lifecycle-viewmodel-ktx = { group = "androidx.lifecycle", name = "lifecycle-view
 navigation-fragment = { group = "androidx.navigation", name = "navigation-fragment", version.ref = "navigationFragment" }
 navigation-ui = { group = "androidx.navigation", name = "navigation-ui", version.ref = "navigationUi" }
 activity = { group = "androidx.activity", name = "activity", version.ref = "activity" }
+locationdelegation = { group = "com.google.androidbrowserhelper", name = "locationdelegation", version.ref = "locationdelegation" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
