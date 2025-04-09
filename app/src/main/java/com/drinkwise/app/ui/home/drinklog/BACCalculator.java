@@ -11,11 +11,12 @@ import java.util.Locale;
 public class BACCalculator {
 
     private static final double ELIMINATION_RATE = 0.015; // Elimination rate per hour. We should change it or maybe adjust it for weight and height ??
+
     static double totalBAC;
     public static double calculateBAC(List<DrinkLogItem> drinkLogItems) {
         totalBAC = 0;
 
-        Log.d("DashboardFragment", "BAC Before: " + String.valueOf(totalBAC));
+        Log.d("DashboardFragment", "BAC Before: " + totalBAC);
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault());
         long currentTimeMillis = System.currentTimeMillis();
 
@@ -31,8 +32,17 @@ public class BACCalculator {
                         Date drinkTime = sdf.parse(timeString);
                         if (drinkTime != null) {
                             long elapsedMillis = currentTimeMillis - drinkTime.getTime();
-                            double elapsedHours = elapsedMillis / 3600000.0;
-                            effectiveContribution = contribution - (ELIMINATION_RATE * elapsedHours);
+
+                            // Original code (decay per hour):
+                            // double elapsedHours = elapsedMillis / 3600000.0;
+                            // effectiveContribution = contribution - (ELIMINATION_RATE * elapsedHours);
+                            // if (effectiveContribution < 0) {
+                            //     effectiveContribution = 0;
+                            // }
+
+                            // Test code for verifying decay every 30 seconds:
+                            double elapsed30SecUnits = elapsedMillis / 30000.0;
+                            effectiveContribution = contribution - (ELIMINATION_RATE * elapsed30SecUnits);
                             if (effectiveContribution < 0) {
                                 effectiveContribution = 0;
                             }
@@ -48,7 +58,7 @@ public class BACCalculator {
                 System.out.println("Warning: bacContribution was null for a drink.");
             }
         }
-        Log.d("DashboardFragment", "BAC After: " + String.valueOf(totalBAC));
+        Log.d("DashboardFragment", "BAC After: " + totalBAC);
 
         return totalBAC;
     }
