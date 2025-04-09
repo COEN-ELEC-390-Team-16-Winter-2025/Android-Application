@@ -454,7 +454,7 @@
                         android:layout_height="wrap_content"
                         android:layout_marginTop="8dp"
                         android:fontFamily="@font/asul"
-                        android:text="• The BAC readings provided by this app are not legally certified and cannot be used as evidence of sobriety or impairment.\n\n• Warning: The sensor used in this app may provide less accurate results in cold weather. For best accuracy, avoid using the device if the ambient temperature is below 0°C (32°F).\n\n• Regardless of your BAC reading, if you have consumed any amount of alcohol, do not drive. Always choose a safe option like a taxi, rideshare, or designated driver.
+                        android:text="• The BAC readings provided by this app are not legally certified and cannot be used as evidence of sobriety or impairment.\n\n• Warning: The sensor used in this app may provide less accurate results in cold weather. For best accuracy, avoid using the device if the ambient temperature is below 0°C.\n\n• Regardless of your BAC reading, if you have consumed any amount of alcohol, do not drive. Always choose a safe option like a taxi, rideshare, or designated driver.
                                         \n\nWe strongly encourage users to prioritize safety and never rely solely on this app to determine their fitness to drive."
                         android:textColor="@color/deep_red"
                         android:textSize="16sp" />

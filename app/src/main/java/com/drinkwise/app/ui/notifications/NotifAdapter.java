@@ -29,6 +29,7 @@ public class NotifAdapter extends RecyclerView.Adapter<NotifAdapter.NotifViewHol
     private List<NotificationItem> itemList;
     private static final int TYPE_REMINDER = 0;
     private static final int TYPE_RECOMMENDATION = 1;
+    private static final int TYPE_SEPARATOR = 3;
 
     public NotifAdapter(Context context, List<NotificationItem> itemList) {
         this.itemList = itemList;
@@ -46,12 +47,22 @@ public class NotifAdapter extends RecyclerView.Adapter<NotifAdapter.NotifViewHol
 
     @Override
     public int getItemViewType(int position) {
-        return itemList.get(position).getType();
+        NotificationItem item =  itemList.get(position);
+        if(item instanceof SeparatorItem) {
+            return TYPE_SEPARATOR;
+        } else {
+            return itemList.get(position).getType();
+        }
+
     }
 
     @NonNull
     @Override
     public NotifViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+        if(viewType == TYPE_SEPARATOR) {
+            View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_separator, parent, false);
+            return new SeparatorViewHolder(view);
+        }
         if(viewType == TYPE_REMINDER) {
             View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_reminder, parent, false);
             return new ReminderViewHolder(view);
@@ -68,7 +79,11 @@ public class NotifAdapter extends RecyclerView.Adapter<NotifAdapter.NotifViewHol
     @Override
     public void onBindViewHolder(@NonNull NotifViewHolder holder, int position) {
         NotificationItem item = itemList.get(position);
-       holder.bind(item);
+        if(holder instanceof SeparatorViewHolder) {
+            ((SeparatorViewHolder) holder).bind(item);
+        } else {
+            holder.bind(item);
+        }
     }
 
     @Override
@@ -78,7 +93,7 @@ public class NotifAdapter extends RecyclerView.Adapter<NotifAdapter.NotifViewHol
 
     public void updateData(List<NotificationItem> newList) {
         this.itemList = newList;
-        sortList();
+        //sortList();
         notifyDataSetChanged();
     }
 
@@ -132,86 +147,30 @@ public class NotifAdapter extends RecyclerView.Adapter<NotifAdapter.NotifViewHol
         }
     }
 
+    public static class SeparatorViewHolder extends NotifViewHolder {
+        TextView separatorLabel;
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    /*
-    private List<ReminderItem> reminderList;
-
-    // ViewHolder class to hold the views for each notification item
-    public static class NotifViewHolder extends RecyclerView.ViewHolder {
-        public TextView reminderTypeTextView;
-        public TextView messageTextView;
-        public TextView timestampTextView;
-        public TextView intervalTextView;
-        public TextView escalationTextView;
-
-        public NotifViewHolder(View itemView) {
+        public SeparatorViewHolder(@NonNull View itemView) {
             super(itemView);
-            reminderTypeTextView = itemView.findViewById(R.id.reminderTypeTextView);
-            messageTextView = itemView.findViewById(R.id.messageTextView);
-            timestampTextView = itemView.findViewById(R.id.timestampTextView);
-            intervalTextView = itemView.findViewById(R.id.intervalTextView);
-            escalationTextView = itemView.findViewById(R.id.escalationTextView);
+            separatorLabel = itemView.findViewById(R.id.separatorLabel);
+        }
+
+        //@Override
+        public void bind(NotificationItem sep) {
+            separatorLabel.setText("New messages");
         }
     }
 
-    // Constructor for the adapter
-    public NotifAdapter(List<ReminderItem> reminders) {
-        this.reminderList = reminders;
-    }
 
-    @NonNull
-    @Override
-    public NotifViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        // Inflate the layout for each item (item_reminder.xml)
-        View itemView = LayoutInflater.from(parent.getContext())
-                .inflate(R.layout.item_reminder, parent, false);
-        return new NotifViewHolder(itemView);
-    }
 
-    @SuppressLint("SetTextI18n")
-    @Override
-    public void onBindViewHolder(NotifViewHolder holder, int position) {
-        // Get the current reminder item
-        ReminderItem reminderItem = reminderList.get(position);
 
-        // Bind the data to the views in the ViewHolder
-        holder.reminderTypeTextView.setText(reminderItem.getReminderType());
-        holder.messageTextView.setText(reminderItem.getMessage());
 
-        // Format the timestamp (convert Timestamp to a readable format)
-        Timestamp timestamp = reminderItem.getTimestamp();
-        @SuppressLint("SimpleDateFormat") SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-        String formattedTimestamp = sdf.format(new Date(timestamp.getSeconds() * 1000));
-        holder.timestampTextView.setText(formattedTimestamp);
 
-        // Display interval and escalation if available
-        holder.intervalTextView.setText("Interval: " + reminderItem.getIntervalMinutes() + " minutes");
-        holder.escalationTextView.setText("Escalation: " + reminderItem.getEscalation());
-    }
 
-    @Override
-    public int getItemCount() {
-        return reminderList.size();
-    }*/
+
+
+
+
+
 
 }

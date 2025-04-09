@@ -47,9 +47,9 @@ public class DrinkLogFragment extends Fragment {
 
     private FirebaseFirestore db;
     private DrinkLogAdapter adapter;
-    private List<DrinkLogItem> drinkLogList = new ArrayList<>();
+    private final List<DrinkLogItem> drinkLogList = new ArrayList<>(); //made final
 
-    private List<DrinkLogItem> filteredList = new ArrayList<>();
+    private final List<DrinkLogItem> filteredList = new ArrayList<>(); //made final
 
     @Nullable
     @Override
@@ -98,7 +98,7 @@ public class DrinkLogFragment extends Fragment {
 
         db.collection("users").document(userId)
                 .collection("manual_drink_logs")
-                .orderBy("timestamp") // Sort by time (optional)
+                .orderBy("timestamp")
                 .addSnapshotListener((value, error) -> {
                     if (error != null) {
                         Log.e(TAG, "Error fetching drink logs", error);
@@ -126,10 +126,10 @@ public class DrinkLogFragment extends Fragment {
                             drinkLogList.add(new DrinkLogItem(drinkType, calories, formattedTime, BACContribution));
                         }
 
-                        // Reset filtered list and update the adapter with the full list
+
                         filteredList.clear();
                         filteredList.addAll(drinkLogList);
-                        applySearchFilter("");  // Reset the search filter
+                        applySearchFilter("");
                         adapter.setDrinkLogEntries(filteredList);
 
                     } else {

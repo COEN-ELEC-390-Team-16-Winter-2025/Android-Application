@@ -6,10 +6,7 @@ import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.content.Intent;
 import android.content.Context;
-import android.app.ProgressDialog;
-import android.content.Intent;
 import android.content.SharedPreferences;
-import android.media.MediaPlayer;
 import android.media.RingtoneManager;
 import android.net.Uri;
 import android.os.Bundle;
@@ -99,8 +96,7 @@ public class DashboardFragment extends Fragment {
     private Button minusSakeButton;
     private Button minusCustomButton;
 
-    // Drinks info
-    private ImageView beerImage, wineImage, champagneImage, cocktailImage, shotImage, sakeImage;
+
     private TextView drinkInfo;
 
     // Bottom Buttons
@@ -175,6 +171,7 @@ public class DashboardFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
+  try {
         // Initialize BAC section views
         bacLevel = view.findViewById(R.id.bacLevel);
         bacProgressBar = view.findViewById(R.id.bacProgressBar);
@@ -233,7 +230,7 @@ public class DashboardFragment extends Fragment {
         cocktailImage.setOnClickListener(v -> displayDrinkInfo("Cocktail", 200, 0.07, 200));
         shotImage.setOnClickListener(v -> displayDrinkInfo("Shot", 45, 0.04, 95));
         sakeImage.setOnClickListener(v -> displayDrinkInfo("Sake", 180, 0.06, 230));
-        customImage.setOnClickListener(v -> displayDrinkInfo("Custom Drink", 0,0,0));
+        customImage.setOnClickListener(v -> displayDrinkInfo("Custom Drink", 0, 0, 0));
 
         //Initialize total calories TextView
         caloriesTextView = view.findViewById(R.id.caloriesTextView);
@@ -256,30 +253,31 @@ public class DashboardFragment extends Fragment {
         loadDashboardData();
 
         // Show default values if no sessionId
-        if(currentSessionId ==null) {
+        if (currentSessionId == null) {
             showDefaultBacValue();
         }
 
-        // Handle arguments passed to the fragment (latest BAC)
-        if (getArguments() != null) {
-            String latestBacEntry = getArguments().getString("latest_bac_entry");
-            if (latestBacEntry != null) {
-                try {
-                    bacValue = Double.parseDouble(latestBacEntry);
-                    updateBacLevel(bacValue);
-                } catch (NumberFormatException e) {
-                    Log.e(TAG, "Invalid BAC entry from arguments: " + latestBacEntry, e);
+
+            // Handle arguments passed to the fragment (latest BAC)
+            if (getArguments() != null) {
+                String latestBacEntry = getArguments().getString("latest_bac_entry");
+                if (latestBacEntry != null) {
+                    try {
+                        bacValue = Double.parseDouble(latestBacEntry);
+                        updateBacLevel(bacValue);
+                    } catch (NumberFormatException e) {
+                        Log.e(TAG, "Invalid BAC entry from arguments: " + latestBacEntry, e);
+                        showDefaultBacValue();
+                    }
+                } else {
                     showDefaultBacValue();
+                    checkDrinkLogAndBAC();
                 }
             } else {
                 showDefaultBacValue();
+                //check for rapid logging and errors
                 checkDrinkLogAndBAC();
             }
-        } else {
-            showDefaultBacValue();
-            //check for rapid logging and errors
-            checkDrinkLogAndBAC();
-        }
 
         // Initialize counters
         updateBeerCount();
@@ -290,19 +288,28 @@ public class DashboardFragment extends Fragment {
         updateSakeCount();
         updateCustomCount();
         updateTotalCalories();
-        minusButtonState();
+
+            minusButtonState();
+        } catch (Exception e) {
+            Log.e(TAG, "Exception in onViewCreated", e);
+        }
     }
 
     @SuppressLint("SetTextI18n")
     private void showDefaultBacValue() {
-        bacLevel.setText("No Reading");
-        bacProgressBar.setProgress(0);
-        bacStatus.setText("MEASURE BAC to update!");
-        bacStatus.setTextColor(ContextCompat.getColor(requireContext(), R.color.bac_default));
+        try {
+            bacLevel.setText("No Reading");
+            bacProgressBar.setProgress(0);
+            bacStatus.setText("MEASURE BAC to update!");
+            bacStatus.setTextColor(ContextCompat.getColor(requireContext(), R.color.bac_default));
+        } catch (Exception e) {
+            Log.e(TAG, "Error showing default BAC value", e);
+        }
     }
 
     //Clear the counters and UI
     private void resetDashboard() {
+   try {
         beerCounter = 0;
         wineCounter = 0;
         champagneCounter = 0;
@@ -322,19 +329,30 @@ public class DashboardFragment extends Fragment {
         showDefaultBacValue();
 
         saveDashboardData(); //Save the changes
+     } catch (Exception e) {
+            Log.e(TAG, "Error resetting dashboard", e);
+        }
     }
 
-    private void minusButtonState(){
-        minusBeerButton.setEnabled(beerCounter>0);
-        minusWineButton.setEnabled(wineCounter>0);
-        minusChampagneButton.setEnabled(champagneCounter>0);
-        minusCocktailButton.setEnabled(cocktailCounter>0);
-        minusShotButton.setEnabled(shotCounter>0);
-        minusSakeButton.setEnabled(sakeCounter>0);
-        minusCustomButton.setEnabled(customCounter>0);
+    private void minusButtonState() {
+       try {
+           minusBeerButton.setEnabled(beerCounter > 0);
+           minusWineButton.setEnabled(wineCounter > 0);
+           minusChampagneButton.setEnabled(champagneCounter > 0);
+           minusCocktailButton.setEnabled(cocktailCounter > 0);
+           minusShotButton.setEnabled(shotCounter > 0);
+           minusSakeButton.setEnabled(sakeCounter > 0);
+           minusCustomButton.setEnabled(customCounter > 0);
+       } catch (Exception e) {
+            Log.e(TAG, "Error in minus button state");
+        }
     }
+
+    @SuppressLint("SetTextI18n")
     private void setupButtonListeners() {
-        seeListButton.setOnClickListener(v -> {
+      
+        try {
+            seeListButton.setOnClickListener(v -> {
             Intent intent = new Intent(getActivity(), ScanningActivity.class);
             startActivity(intent);
         });
@@ -349,10 +367,9 @@ public class DashboardFragment extends Fragment {
         quickHelpButton.setOnClickListener(v -> {
             quickHelpCounter++;
 
-            if(quickHelpCounter < 7){
+            if (quickHelpCounter < 7) {
                 showEmergencyContactFromQuickHelp();
-            }
-            else{
+            } else {
                 call911();
             }
         });
@@ -366,7 +383,7 @@ public class DashboardFragment extends Fragment {
             beerCounter++;
             updateBeerCount();
             updateTotalCalories();
-            //updateBACFromManualLogs();
+            updateBACFromManualLogs();
             logDrinkToFirestore("Beer", 150, 0.03);
             //check for rapid logging and errors
             checkDrinkLogAndBAC();
@@ -378,7 +395,7 @@ public class DashboardFragment extends Fragment {
             wineCounter++;
             updateWineCount();
             updateTotalCalories();
-            //updateBACFromManualLogs();
+            updateBACFromManualLogs();
             logDrinkToFirestore("Wine", 125, 0.05);
             //check for rapid logging and errors
             checkDrinkLogAndBAC();
@@ -389,7 +406,7 @@ public class DashboardFragment extends Fragment {
             champagneCounter++;
             updateChampagneCount();
             updateTotalCalories();
-            //updateBACFromManualLogs();
+            updateBACFromManualLogs();
             logDrinkToFirestore("Champagne", 90, 0.04);
             //check for rapid logging and errors
             checkDrinkLogAndBAC();
@@ -400,7 +417,7 @@ public class DashboardFragment extends Fragment {
             cocktailCounter++;
             updateCocktailCount();
             updateTotalCalories();
-            //updateBACFromManualLogs();
+            updateBACFromManualLogs();
             logDrinkToFirestore("Cocktail", 200, 0.07);
             //check for rapid logging and errors
             checkDrinkLogAndBAC();
@@ -411,7 +428,7 @@ public class DashboardFragment extends Fragment {
             shotCounter++;
             updateShotCount();
             updateTotalCalories();
-            //updateBACFromManualLogs();
+            updateBACFromManualLogs();
             logDrinkToFirestore("Shot", 95, 0.04);
             //check for rapid logging and errors
             checkDrinkLogAndBAC();
@@ -422,7 +439,7 @@ public class DashboardFragment extends Fragment {
             sakeCounter++;
             updateSakeCount();
             updateTotalCalories();
-            //updateBACFromManualLogs();
+            updateBACFromManualLogs();
             logDrinkToFirestore("Sake", 230, 0.06);
             //check for rapid logging and errors
             checkDrinkLogAndBAC();
@@ -469,9 +486,7 @@ public class DashboardFragment extends Fragment {
                                                 saveDashboardData();
                                                 minusButtonState();
                                             })
-                                            .addOnFailureListener(e -> {
-                                                Log.e(TAG, "Failed to delete custom drink: ", e);
-                                            });
+                                            .addOnFailureListener(e -> Log.e(TAG, "Failed to delete custom drink: ", e));
 
                                     return;
                                 }
@@ -490,78 +505,78 @@ public class DashboardFragment extends Fragment {
                 updateBeerCount();
                 updateTotalCalories();
                 removeDrinkFromFirestore("Beer");
-                //updateBACFromManualLogs();
+                updateBACFromManualLogs();
                 minusButtonState();
             }
         });
 
-        minusWineButton.setOnClickListener(v -> {
-            if (wineCounter > 0) {
-                wineCounter--;
-                updateWineCount();
-                updateTotalCalories();
-                removeDrinkFromFirestore("Wine");
-                //updateBACFromManualLogs();
-                minusButtonState();
-            }
-        });
+            minusWineButton.setOnClickListener(v -> {
+                if (wineCounter > 0) {
+                    wineCounter--;
+                    updateWineCount();
+                    updateTotalCalories();
+                    removeDrinkFromFirestore("Wine");
+                    updateBACFromManualLogs();
+                    minusButtonState();
+                }
+            });
 
-        minusChampagneButton.setOnClickListener(v -> {
-            if (champagneCounter > 0) {
-                champagneCounter--;
-                updateChampagneCount();
-                updateTotalCalories();
-                removeDrinkFromFirestore("Champagne");
-                //updateBACFromManualLogs();
-                minusButtonState();
-            }
-        });
+            minusChampagneButton.setOnClickListener(v -> {
+                if (champagneCounter > 0) {
+                    champagneCounter--;
+                    updateChampagneCount();
+                    updateTotalCalories();
+                    removeDrinkFromFirestore("Champagne");
+                    //updateBACFromManualLogs();
+                    minusButtonState();
+                }
+            });
 
-        minusCocktailButton.setOnClickListener(v -> {
-            if (cocktailCounter > 0) {
-                cocktailCounter--;
-                updateCocktailCount();
-                updateTotalCalories();
-                removeDrinkFromFirestore("Cocktail");
-                //updateBACFromManualLogs();
-                minusButtonState();
-            }
-        });
+            minusCocktailButton.setOnClickListener(v -> {
+                if (cocktailCounter > 0) {
+                    cocktailCounter--;
+                    updateCocktailCount();
+                    updateTotalCalories();
+                    removeDrinkFromFirestore("Cocktail");
+                    updateBACFromManualLogs();
+                    minusButtonState();
+                }
+            });
 
-        minusShotButton.setOnClickListener(v -> {
-            if (shotCounter > 0) {
-                shotCounter--;
-                updateShotCount();
-                updateTotalCalories();
-                removeDrinkFromFirestore("Shot");
-                //updateBACFromManualLogs();
-                minusButtonState();
-            }
-        });
+            minusShotButton.setOnClickListener(v -> {
+                if (shotCounter > 0) {
+                    shotCounter--;
+                    updateShotCount();
+                    updateTotalCalories();
+                    removeDrinkFromFirestore("Shot");
+                    updateBACFromManualLogs();
+                    minusButtonState();
+                }
+            });
 
-        minusSakeButton.setOnClickListener(v -> {
-            if (sakeCounter > 0) {
-                sakeCounter--;
-                updateSakeCount();
-                updateTotalCalories();
-                removeDrinkFromFirestore("Sake");
-                //updateBACFromManualLogs();
-            }
-        });
+            minusSakeButton.setOnClickListener(v -> {
+                if (sakeCounter > 0) {
+                    sakeCounter--;
+                    updateSakeCount();
+                    updateTotalCalories();
+                    removeDrinkFromFirestore("Sake");
+                    updateBACFromManualLogs();
+                    minusButtonState();
+                }
+            });
 
+        } catch (Exception e) {
+            Log.e(TAG, "Error setting up button listeners", e);
+        }
     }
-
 
 
     /**
      * Retrieves manual drink logs from Firestore, calculates overall BAC using BACCalculator, and updates the BAC display.
      */
     private void updateBACFromManualLogs() {
+        Log.e(TAG, "User not logged in; cannot update BAC");
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
-//        if (user == null) {
-//            Log.e(TAG, "User not logged in; cannot update BAC");
-//            return;
-//        }
         assert user != null;
 
         String userId = user.getUid();
@@ -579,6 +594,7 @@ public class DashboardFragment extends Fragment {
                             }
                         });
                     }
+                    Log.d(TAG, "Drink logs size: " + drinkLogs.size());
                     double estimatedBAC = BACCalculator.calculateBAC(drinkLogs);
                     Log.d(TAG, "Calculated BAC from manual logs: " + estimatedBAC);
                     updateBacLevel(estimatedBAC);
@@ -589,6 +605,7 @@ public class DashboardFragment extends Fragment {
 
     //Saving the dashboard data locally
     private void saveDashboardData() {
+  try {
         SharedPreferences prefs = requireContext().getSharedPreferences("DashboardPrefs", Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = prefs.edit();
 
@@ -603,10 +620,14 @@ public class DashboardFragment extends Fragment {
         editor.putInt("totalCalories", totalCalories);
         editor.putFloat("bacValue", (float) bacValue);
         editor.apply();
+  } catch (Exception e) {
+            Log.e(TAG, "Error saving the dashboard", e);
+        }
     }
 
     //Loading the dashboard data from local save
     private void loadDashboardData() {
+  try {
         SharedPreferences prefs = requireContext().getSharedPreferences("DashboardPrefs", Context.MODE_PRIVATE);
         currentSessionId = prefs.getString("currentSessionId", null);
         beerCounter = prefs.getInt("beerCounter", 0);
@@ -629,6 +650,9 @@ public class DashboardFragment extends Fragment {
         updateCustomCount();
         updateTotalCalories();
         updateBacLevel(bacValue);
+  } catch (Exception e) {
+            Log.e(TAG, "Error loading dashboard data", e);
+        }
     }
 
 
@@ -659,9 +683,12 @@ public class DashboardFragment extends Fragment {
     private void updateCustomCount() {
         customCount.setText(String.valueOf(customCounter));
     }
+
     @SuppressLint({"DefaultLocale", "SetTextI18n"})
     private void updateBacLevel(double bacValue) {
-            startSafetyMonitor();
+        try {
+          
+        startSafetyMonitor();
 
         if (getContext() == null) return;
 
@@ -695,21 +722,24 @@ public class DashboardFragment extends Fragment {
             bacProgressBar.setProgressDrawable(ContextCompat.getDrawable(requireContext(), R.drawable.bac_progress_bar_medical_emergency));
         }
 
-        displayQuickHelp(quickHelp);
-        Log.d(TAG, "BAC updated: " + bacValue + ", progress: " + progress);
+            displayQuickHelp(quickHelp);
+            Log.d(TAG, "BAC updated: " + bacValue + ", progress: " + progress);
+        } catch (Exception e) {
+            Log.e(TAG, "Error updating BAC level", e);
+        }
     }
 
     private void displayDrinkInfo(String name, int volume, double bac, int calories) {
         if (drinkInfo.getVisibility() == View.VISIBLE) {
             drinkInfo.setVisibility(View.GONE);
         } else {
-            // Format the name to be bold and underlined using HTML
+
             String formattedName = "<b><u>" + name + "</u></b>";
 
-            // Multiply bac by 100 to show as a percentage and add a % symbol
+            // Multiply bac by 100 to show as percentage
             @SuppressLint("DefaultLocale") String info = String.format("%s<br>Volume: %dml<br>BAC: %.2f%%<br>Calories: %d kcal",
                     formattedName, volume, bac, calories);
-            // Set the text using Html.fromHtml() to render the formatting
+
             drinkInfo.setText(Html.fromHtml(info));
             drinkInfo.setVisibility(View.VISIBLE);
         }
@@ -718,13 +748,12 @@ public class DashboardFragment extends Fragment {
 
     @SuppressLint("SetTextI18n")
     private void updateTotalCalories() {
-        // Provide a safe helper method to get the integer value or return 0 if null
-        int beerCalories   = getSafeInt(drinkCalories.get("Beer"));
-        int wineCalories   = getSafeInt(drinkCalories.get("Wine"));
-        int champCalories  = getSafeInt(drinkCalories.get("Champagne"));
-        int cocktCalories  = getSafeInt(drinkCalories.get("Cocktail"));
-        int shotCalories   = getSafeInt(drinkCalories.get("Shot"));
-        int sakeCalories   = getSafeInt(drinkCalories.get("Sake"));
+        int beerCalories = getSafeInt(drinkCalories.get("Beer"));
+        int wineCalories = getSafeInt(drinkCalories.get("Wine"));
+        int champCalories = getSafeInt(drinkCalories.get("Champagne"));
+        int cocktCalories = getSafeInt(drinkCalories.get("Cocktail"));
+        int shotCalories = getSafeInt(drinkCalories.get("Shot"));
+        int sakeCalories = getSafeInt(drinkCalories.get("Sake"));
 
         totalCalories = (beerCounter * beerCalories) +
                 (wineCounter * wineCalories) +
@@ -749,6 +778,7 @@ public class DashboardFragment extends Fragment {
     }
 
     int drinkCount;
+
     private void logDrinkToFirestore(String drinkType, int calories, double BACContribution) {
         Log.d(TAG, "Starting logDrinkToFirestore for drink: " + drinkType);
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
@@ -760,12 +790,12 @@ public class DashboardFragment extends Fragment {
         Timestamp timestamp = new Timestamp(new Date());
 
         //Set currentSessionId or create a new one
-        if(currentSessionId == null) {
+        if (currentSessionId == null) {
             currentSessionId = db.collection("users").document(userId)
                     .collection("drinking_sessions").document().getId();
             startNewSession(userId, currentSessionId);
         }
-        Log.d(TAG, "Current session id: "+currentSessionId);
+        Log.d(TAG, "Current session id: " + currentSessionId);
 
         //find last drink
         db.collection("users").document(userId)
@@ -776,7 +806,7 @@ public class DashboardFragment extends Fragment {
                 .get()
                 .addOnSuccessListener(queryDocumentSnapshots -> {
                     final int[] interval = {0};
-                    if(queryDocumentSnapshots.isEmpty()){
+                    if (queryDocumentSnapshots.isEmpty()) {
                         Log.d(TAG, "Document is empty");
                     }
                     if (!queryDocumentSnapshots.isEmpty()) {
@@ -826,14 +856,14 @@ public class DashboardFragment extends Fragment {
                                         .whereEqualTo("sessionId", sessionId)
                                         .get()
                                         .addOnSuccessListener(drinkSnapshots -> {
-                                            drinkCount = drinkSnapshots.size() +1 ;
+                                            drinkCount = drinkSnapshots.size() + 1;
                                             Log.d(TAG, "Total drink count for session: " + drinkCount);
 
                                             Map<String, Object> drinkEntry = new HashMap<>();
                                             drinkEntry.put("drinkType", drinkType);
                                             drinkEntry.put("calories", calories);
                                             drinkEntry.put("timestamp", timestamp);
-                                            drinkEntry.put("BAC_Contribution", BACContribution);
+                                            drinkEntry.put("bacContribution", BACContribution);
                                             drinkEntry.put("sessionId", sessionId);
 
                                             db.collection("users").document(userId)
@@ -858,6 +888,8 @@ public class DashboardFragment extends Fragment {
                 })
                 .addOnFailureListener(e -> Log.e(TAG, "Error fetching last drink log", e));
     }
+
+    @SuppressLint("SetTextI18n")
     private void showAddCustomDrinkDialog() {
         LayoutInflater inflater = LayoutInflater.from(getContext());
         View dialogView = inflater.inflate(R.layout.dialog_add_custom_drink, null);
@@ -866,6 +898,7 @@ public class DashboardFragment extends Fragment {
         EditText quantityInput = dialogView.findViewById(R.id.editDrinkQuantity);
         EditText caloriesInput = dialogView.findViewById(R.id.editDrinkCalories);
 
+
         new AlertDialog.Builder(requireContext())
                 .setTitle("Add Custom Drink")
                 .setView(dialogView)
@@ -873,6 +906,8 @@ public class DashboardFragment extends Fragment {
                     String name = nameInput.getText().toString().trim();
                     String quantity = quantityInput.getText().toString().trim();
                     String caloriesStr = caloriesInput.getText().toString().trim();
+
+
 
                     if (!name.isEmpty() && !caloriesStr.isEmpty()) {
                         try {
@@ -898,9 +933,10 @@ public class DashboardFragment extends Fragment {
                 .setNegativeButton("Cancel", null)
                 .show();
     }
+
     private void removeDrinkFromFirestore(String drinkType) {
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
-        if(user != null){
+        if (user != null) {
             String userID = user.getUid();
             db.collection("users")
                     .document(userID)
@@ -910,20 +946,18 @@ public class DashboardFragment extends Fragment {
                     .limit(1)
                     .get()
                     .addOnSuccessListener(queryDocumentSnapshots -> {
-                        if(!queryDocumentSnapshots.isEmpty()) {
-                        DocumentSnapshot drinkEntry = queryDocumentSnapshots.getDocuments().get(0);
-                        drinkEntry.getReference().delete()
-                                .addOnSuccessListener(result -> {
-                                    Log.d(TAG, drinkType + " successfully deleted");
-                                    saveDashboardData();
-                                })
-                                .addOnFailureListener(error -> {
-                                    Log.d(TAG, "Error deleting entry: " + error);
-                                });
-                    } else {
+                        if (!queryDocumentSnapshots.isEmpty()) {
+                            DocumentSnapshot drinkEntry = queryDocumentSnapshots.getDocuments().get(0);
+                            drinkEntry.getReference().delete()
+                                    .addOnSuccessListener(result -> {
+                                        Log.d(TAG, drinkType + " successfully deleted");
+                                        saveDashboardData();
+                                    })
+                                    .addOnFailureListener(error -> Log.d(TAG, "Error deleting entry: " + error));
+                        } else {
                             Log.d(TAG, "No drink log found for" + drinkType);
                         }
-                        });
+                    });
         }
     }
 
@@ -976,6 +1010,7 @@ public class DashboardFragment extends Fragment {
         Log.d(TAG, "Current user ID: " + userId);
         return userId;
     }
+
     String userId = getCurrentUserId();
 
     private static int rapidLoggingCount = 0; // Tracks repeated alerts in a session
@@ -1223,12 +1258,37 @@ public class DashboardFragment extends Fragment {
                     }
 
 
-
                     // Update lastCheckedTimestamp to the latest alert timestamp
-                            lastCheckedTimestamp = snapshots.getDocuments()
+                    lastCheckedTimestamp = snapshots.getDocuments()
                             .get(snapshots.size() - 1)  // Get last document in the list
                             .getTimestamp("Timestamp");
 
+
+//                    String currentStatus = doc.getString("Status");
+//
+//                    long now = System.currentTimeMillis();
+//
+//                    if (lastStatus != null && !lastStatus.equals(currentStatus)) {
+//                        long duration = (now - lastStatusTime) / 1000;
+//                        Log.d("SafetyMonitor", "Status changed: " + lastStatus + " → " + currentStatus +
+//                                " after " + duration + "s");
+//
+//
+//                        // E.g., show a toast, vibrate, or store an alert
+//                    }
+//
+//                    // Check for Danger duration
+//                    if ("Danger".equals(currentStatus)) {
+//                        dangerCount++;
+//                        if (dangerCount >= 3) {
+//                            Log.w("SafetyMonitor", "⚠️ 3 consecutive Danger readings!");
+//                        }
+//                    } else {
+//                        dangerCount = 0;
+//                    }
+//
+//                    lastStatus = currentStatus;
+//                    lastStatusTime = now;
 
                 });
     }
@@ -1253,12 +1313,17 @@ public class DashboardFragment extends Fragment {
 
 
 
-
     private final Map<String, Long> alertCooldowns = new HashMap<>();
     private static final long ALERT_COOLDOWN_PERIOD = 5 * 60 * 1000;
     private boolean bacCheckEnabled = false;
 
     private void showAlertWithUndo(String title, String message) {
+        //Check if ALert toggle is off or on before showing the pop-up
+        if(!alerts) {
+            Log.d(TAG, "Alerts toggle is off, not showing the pop-up.");
+            return;
+        }
+
         if (!canShowDrinkAlert(title)) {
             Log.d(TAG, "showAlertWithUndo: Cooldown active for alert: " + title);
             return;
@@ -1321,9 +1386,12 @@ public class DashboardFragment extends Fragment {
 
         Log.d(TAG, "Deleting logs: " + drinkLogToUndo.toString());
         FirebaseFirestore db = FirebaseFirestore.getInstance();
+        final int totalDeletions = drinkLogToUndo.size();
+        final int[] deletionsCompleted = {0};
+
         for (String logId : drinkLogToUndo) {
             db.collection("users")
-                    .document(getCurrentUserId())
+                    .document(Objects.requireNonNull(getCurrentUserId()))
                     .collection("manual_drink_logs")
                     .document(logId)
                     .get()
@@ -1379,8 +1447,11 @@ public class DashboardFragment extends Fragment {
                                     .delete()
                                     .addOnSuccessListener(aVoid -> {
                                         Log.d(TAG, "Log " + logId + " successfully deleted");
-                                        saveDashboardData();
-                                        loadDashboardData();
+                                        deletionsCompleted[0]++;
+                                        if(deletionsCompleted[0] == totalDeletions) {
+                                            saveDashboardData();
+                                            loadDashboardData();
+                                        }
                                     })
                                     .addOnFailureListener(e -> Log.e(TAG, "Error deleting log " + logId, e));
                         }
@@ -1465,6 +1536,12 @@ public class DashboardFragment extends Fragment {
 
     // Recommendation pop-up
     private void showRecommendationDialog(int drinkCount, String message) {
+       //Check if recommendations toggle is off or on before showing the pop-up
+        if(!recommendations) {
+            Log.d(TAG, "Recommendations toggle is off, not showing the pop-up.");
+            return;
+        }
+
         String title = "Healthy tips!";
         Log.d(TAG, "Preparing to show recommendation dialog. Drink count: " + drinkCount + ", Message: " + message);
         if (!canShowDrinkAlert(title)) {

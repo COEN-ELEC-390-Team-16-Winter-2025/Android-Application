@@ -25,4 +25,5 @@
         android:hint="Calories"
         android:inputType="number"
         android:fontFamily="@font/asul"/>
+
 </LinearLayout>

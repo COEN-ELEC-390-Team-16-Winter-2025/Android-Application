@@ -1,18 +1,19 @@
 package com.drinkwise.app.ui.home.drinklog;
 
-// This class represents a single drink log entry, including details such as
-// the type of drink, calories, time of consumption, and its contribution to the BAC.
+// This class represents a single drink log entry
 public class DrinkLogItem {
     // The type of drink (example : "Beer", "Wine")
     private String drinkType;
-    // The number of calories in the drink (as a Long, to allow for null values)
+    // The number of calories in the drink (long so that it allows null values)
     private Long calories;
-    // The time when the drink was consumed (stored as a String)
+    // The time when the drink was consumed
     private String time;
-    // The contribution of this drink to the overall BAC (as a Double)
+    // The contribution of this drink to the overall BAC
     private Double bacContribution;
 
-    // Constructor: initializes a DrinkLogItem with the provided values.
+    // constructor
+    public DrinkLogItem() {}
+
     public DrinkLogItem(String drinkType, Long calories, String time, Double bacContribution) {
         this.drinkType = drinkType;
         this.calories = calories;
@@ -35,4 +36,21 @@ public class DrinkLogItem {
     public Double getBacContribution() {
         return bacContribution;
     }
+
+    public void setDrinkType(String drinkType) {
+        this.drinkType = drinkType;
+    }
+
+    public void setCalories(Long calories) {
+        this.calories = calories;
+    }
+
+    public void setTime(String time) {
+        this.time = time;
+    }
+
+    public void setBacContribution(Double bacContribution) {
+        this.bacContribution = bacContribution;
+    }
+
 }

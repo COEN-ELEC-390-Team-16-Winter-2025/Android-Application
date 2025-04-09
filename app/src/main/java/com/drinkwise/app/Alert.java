@@ -19,16 +19,13 @@ public class Alert {
     private final String date;
     private final String time;
 
-/*
-This class is the Alert class
- */
     public Alert(double bac, Timestamp timestamp) {
         this.bac = bac;
         this.timestamp = timestamp;
         this.resolved = false;
 
 
-        //Instantiates the status and message based on a bac reading
+        //this creates the status and message based on the bac reading
         if (bac <= 0.02) {
             this.safetyLevel = "Safe";
             this.message = "You're sober. Good job!";
@@ -64,7 +61,6 @@ This class is the Alert class
         time = time1.format(temp);
     }
 
-    //Getters
     public double getBac() {
         return bac;
     }
