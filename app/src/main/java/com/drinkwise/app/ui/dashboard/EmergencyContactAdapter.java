@@ -17,14 +17,13 @@ import java.util.ArrayList;
 
 public class EmergencyContactAdapter extends RecyclerView.Adapter<EmergencyContactAdapter.ViewHolder> {
 
-    // This provides a way for the adapter to notify us when a contact is clicked so we can respond accordingly.
+    // This provides a way for the adapter to notify us when a contact is clicked so we can respond accordingly
     public interface OnContactClickListener {
         void onContactClick(EmergencyContact contact);
     }
 
-    // The list of emergency contacts to be displayed in the RecyclerView.
+    // The list of emergency contacts to be displayed in the RecyclerView
     ArrayList<EmergencyContact> emergencyContacts;
-    // Listener that will handle click events.
     OnContactClickListener listener;
 
     // This sets up the adapter with a list of contacts and a function to handle clicks
@@ -50,7 +49,7 @@ public class EmergencyContactAdapter extends RecyclerView.Adapter<EmergencyConta
         holder.getEmail().setText(emergencyContacts.get(position).getEmail());
         holder.getRelationship().setText(emergencyContacts.get(position).getRelationship());
 
-        // lambda expression that sets an OnClickListener for the recycler_layout. When it is clicked, the adapter will notify the listener.
+        //When it is clicked, the adapter will notify the listener
         holder.getRecycler_layout().setOnClickListener(v -> {
             if (listener != null) {
                 listener.onContactClick(emergencyContacts.get(position));
