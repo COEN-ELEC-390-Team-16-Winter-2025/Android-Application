@@ -11,6 +11,8 @@ public class EmergencyContact {
     private String email;
     private String relationship;
 
+    private String id;
+
     // constructor
     public EmergencyContact(String name, String phone_no, String email, String relationship) {
         this.name = " " + name;
@@ -33,5 +35,9 @@ public class EmergencyContact {
 
     public String getEmail() {
         return email;
+    }
+
+    public String getId() {
+        return id;
     }
 }
