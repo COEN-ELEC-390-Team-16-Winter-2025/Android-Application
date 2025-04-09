@@ -17,41 +17,39 @@ import java.util.ArrayList;
 
 public class EmergencyContactAdapter extends RecyclerView.Adapter<EmergencyContactAdapter.ViewHolder> {
 
-    // Callback interface for handling contact clicks from the adapter.
+    // This provides a way for the adapter to notify us when a contact is clicked so we can respond accordingly
     public interface OnContactClickListener {
         void onContactClick(EmergencyContact contact);
     }
 
-    // List of emergency contacts to be displayed in the RecyclerView.
+    // The list of emergency contacts to be displayed in the RecyclerView
     ArrayList<EmergencyContact> emergencyContacts;
-    // Listener that will handle click events.
     OnContactClickListener listener;
 
-    // Constructor: initializes the adapter with a list of contacts and a click listener.
+    // This sets up the adapter with a list of contacts and a function to handle clicks
     public EmergencyContactAdapter(ArrayList<EmergencyContact> emergencyContacts, OnContactClickListener listener) {
         this.emergencyContacts = emergencyContacts;
         this.listener = listener;
     }
 
-    // Called when RecyclerView needs a new ViewHolder of the given type.
+    // This is called when RecyclerView needs a new ViewHolder of the given type.
     @NonNull
     @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        // Inflate the layout for an individual emergency contact item.
+        // this creates the view for one emergency contact
         View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.emerrgency_contact_recycler_view, parent, false);
         return new ViewHolder(view);
     }
 
-    // Binds data to the ViewHolder for the item at the given position.
+    // method that connects the data to the ViewHolder for the item at the given position.
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
-        // Set the text for name, phone, email, and relationship using data from the emergencyContacts list.
         holder.getName().setText(emergencyContacts.get(position).getName());
         holder.getPhone_no().setText(emergencyContacts.get(position).getPhone_no());
         holder.getEmail().setText(emergencyContacts.get(position).getEmail());
         holder.getRelationship().setText(emergencyContacts.get(position).getRelationship());
 
-        // Set an OnClickListener for the recycler_layout. When clicked, the adapter notifies the listener.
+        //When it is clicked, the adapter will notify the listener
         holder.getRecycler_layout().setOnClickListener(v -> {
             if (listener != null) {
                 listener.onContactClick(emergencyContacts.get(position));
@@ -67,17 +65,13 @@ public class EmergencyContactAdapter extends RecyclerView.Adapter<EmergencyConta
 
     // The ViewHolder class holds the views for each individual item.
     public static class ViewHolder extends RecyclerView.ViewHolder {
-
-        // Declare views to display contact information.
         TextView name, phone_no, email, relationship;
         ImageView profile_picture;
-        // Layouts that might be toggled for additional details.
         LinearLayout recycler_layout, phone_no_layout, email_layout, relationship_layout;
 
-        // Constructor: initializes the view references.
+        // Constructor that initializes the view references.
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
-            // Find views by their IDs.
             name = itemView.findViewById(R.id.name_recycler);
             phone_no = itemView.findViewById(R.id.phone_no_recycler);
             email = itemView.findViewById(R.id.email_recycler);
@@ -89,7 +83,7 @@ public class EmergencyContactAdapter extends RecyclerView.Adapter<EmergencyConta
             relationship_layout = itemView.findViewById(R.id.relationship_layout_recycler);
         }
 
-        // Getter methods to access the views from outside this class.
+        // Getter methods
         public TextView getName() { return name; }
         public TextView getPhone_no() { return phone_no; }
         public TextView getEmail() { return email; }

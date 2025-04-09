@@ -344,6 +344,8 @@ public class ScanningActivity extends AppCompatActivity {
         double bmiFactor = (height / 100.0) / Math.sqrt(weight); // Simplified BMI effect
 
         return (bac * (70.0 / weight)) * bodyWaterConstant * bmiFactor - metabolismRate;
+
+        // TODO: 2025-04-08 Test before and after
     }
 
 

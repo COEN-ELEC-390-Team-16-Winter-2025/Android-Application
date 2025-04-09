@@ -25,6 +25,8 @@ public class NotifAdapter extends RecyclerView.Adapter<NotifAdapter.NotifViewHol
     private static final int TYPE_REMINDER = 0;
     private static final int TYPE_RECOMMENDATION = 1;
     private static final int TYPE_ALERT = 2;
+    private static final int TYPE_SEPARATOR = 3;
+
 
     public NotifAdapter(Context context, List<NotificationItem> itemList) {
         this.itemList = itemList;
@@ -42,13 +44,24 @@ public class NotifAdapter extends RecyclerView.Adapter<NotifAdapter.NotifViewHol
 
     @Override
     public int getItemViewType(int position) {
-        return itemList.get(position).getType();
+        NotificationItem item =  itemList.get(position);
+        if(item instanceof SeparatorItem) {
+            return TYPE_SEPARATOR;
+        } else {
+            return itemList.get(position).getType();
+        }
+
     }
 
     @NonNull
     @Override
     public NotifViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        if (viewType == TYPE_REMINDER) {
+        if(viewType == TYPE_SEPARATOR) {
+            View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_separator, parent, false);
+            return new SeparatorViewHolder(view);
+        }
+        if(viewType == TYPE_REMINDER) {
+
             View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_reminder, parent, false);
             return new ReminderViewHolder(view);
         } else if (viewType == TYPE_RECOMMENDATION) {
@@ -65,7 +78,11 @@ public class NotifAdapter extends RecyclerView.Adapter<NotifAdapter.NotifViewHol
     @Override
     public void onBindViewHolder(@NonNull NotifViewHolder holder, int position) {
         NotificationItem item = itemList.get(position);
-        holder.bind(item);
+        if(holder instanceof SeparatorViewHolder) {
+            ((SeparatorViewHolder) holder).bind(item);
+        } else {
+            holder.bind(item);
+        }
     }
 
     @Override
@@ -75,7 +92,7 @@ public class NotifAdapter extends RecyclerView.Adapter<NotifAdapter.NotifViewHol
 
     public void updateData(List<NotificationItem> newList) {
         this.itemList = newList;
-        sortList();
+        //sortList();
         notifyDataSetChanged();
     }
 
@@ -125,6 +142,7 @@ public class NotifAdapter extends RecyclerView.Adapter<NotifAdapter.NotifViewHol
         }
     }
 
+
     public static class AlertViewHolder extends NotifViewHolder {
         TextView alertMessageTextView, alertTimestampTextView, alertTypeTextView, alertBacValueTextView, alertSafetyLevelTextView;
 
@@ -141,6 +159,7 @@ public class NotifAdapter extends RecyclerView.Adapter<NotifAdapter.NotifViewHol
         public void bind(NotificationItem item) {
             if (item instanceof AlertItem) {
                 AlertItem alert = (AlertItem) item;
+
 
                 // Message
                 alertMessageTextView.setText(alert.getMessage() != null ? alert.getMessage() : "No message");
@@ -159,13 +178,25 @@ public class NotifAdapter extends RecyclerView.Adapter<NotifAdapter.NotifViewHol
                 // BAC
                 alertBacValueTextView.setText("BAC: " + alert.getBacValue());
 
+
                 // Safety Level
                 alertSafetyLevelTextView.setText("Safety: " + (alert.getSafetyLevel() != null ? alert.getSafetyLevel() : "Unknown"));
             }
         }
     }
+  public static class SeparatorViewHolder extends NotifViewHolder {
+        TextView separatorLabel;
 
+        public SeparatorViewHolder(@NonNull View itemView) {
+            super(itemView);
+            separatorLabel = itemView.findViewById(R.id.separatorLabel);
+        }
+
+        //@Override
+        public void bind(NotificationItem sep) {
+            separatorLabel.setText("New messages");
+        }
+    }
 
 }
-
 
