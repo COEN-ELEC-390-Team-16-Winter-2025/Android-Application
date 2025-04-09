@@ -61,10 +61,10 @@ public class ReminderManager {
     }
 
     private void checkAndGenerateReminders() {
-        // 1) Check BAC for follow-up reminders
+        // follow-up reminders
         retrieveCurrentBAC(bac -> {
             createBACFollowUpReminder(bac);
-            // 2) Late Night Safe Check
+            // late night Safe Check
             if (isLateNight() && bac >= 0.08) {
                 createReminder(
                         "Late Night Safe Check",
@@ -75,7 +75,7 @@ public class ReminderManager {
             }
         });
 
-        // 3) Drinking Confirmation
+        // drinking Confirmation
         checkNoDrinksLoggedFor(noDrinksLogged -> {
             if (noDrinksLogged) {
                 createReminder(
@@ -89,13 +89,13 @@ public class ReminderManager {
     }
 
     /**
-     * Determines which reminder to create based on the user's current BAC.
-     * - Safe (< 0.02)
-     * - Mild Impairment (< 0.05)
-     * - Impaired (< 0.08)
-     * - High Impairment (< 0.15)
-     * - Severe Impairment (< 0.30)
-     * - Medical Emergency (>= 0.30)
+     * This is based on the user story 14 document i need to review the code for this case later
+     * Safe (< 0.02)
+     * Mild Impairment (< 0.05)
+     * Impaired (< 0.08)
+     * High Impairment (< 0.15)
+     * Severe Impairment (< 0.30)
+     * Medical Emergency (>= 0.30)
      */
     private void createBACFollowUpReminder(double bac) {
         if (bac < 0.02) {
@@ -103,7 +103,7 @@ public class ReminderManager {
             createReminder(
                     "Follow-up Reminder: Safe",
                     "Still sober? Come back and check!",
-                    30, // 30 minutes
+                    30,
                     "Low"
             );
         } else if (bac < 0.05) {
@@ -148,7 +148,7 @@ public class ReminderManager {
             );
         }
     }
-    // Creates and writes a reminder to Firestore
+    // creates and writes a reminder to Firestore
     private void createReminder(String reminderType, String message, int intervalMinutes, String escalation) {
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
         if (user == null) {
@@ -181,7 +181,7 @@ public class ReminderManager {
                 });
     }
 
-    // Checks if no drinks logged for X minutes
+    // this checks if no drinks were logged for X amount of minutes
     private void checkNoDrinksLoggedFor(final NoDrinksCallback callback) {
         if(userId == null) {
             callback.onResult(false);
@@ -207,7 +207,7 @@ public class ReminderManager {
         return hour < 6;
     }
 
-    // Async retrieval of current BAC from Firestore
+    // retrieval of current BAC Firestore
     public interface BACCallback {
         void onBACRetrieved(double bac);
     }
@@ -238,7 +238,7 @@ public class ReminderManager {
                 });
     }
 
-    // Async callback for no drinks check
+    // callback for no drinks check (its asynchronous)
     public interface NoDrinksCallback {
         void onResult(boolean noDrinksLogged);
     }

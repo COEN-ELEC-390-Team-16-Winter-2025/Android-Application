@@ -98,7 +98,7 @@ public class RemindersFragment extends Fragment {
             Log.e("RemindersFragment", "No user logged in");
             return;
         }
-        //Fetch the preferences
+        //get the preferences
         db.collection("users")
                 .document(userId)
                 .collection("profile")
@@ -119,10 +119,10 @@ public class RemindersFragment extends Fragment {
                         Log.d("RemindersFragment", "Reminders are disabled");
                     } else {
 
-                        //Fetch the reminders
+                        //get the reminders
                         db.collection("users")
-                                .document(Objects.requireNonNull(userId))  // Point to the specific user document
-                                .collection("reminders")  // Fetch from the "reminders" subcollection of that user
+                                .document(Objects.requireNonNull(userId))  // This points to the specific user document
+                                .collection("reminders")
                                 .addSnapshotListener((querySnapshot, queryError) -> {
 
                                     if (queryError != null) {
@@ -133,7 +133,7 @@ public class RemindersFragment extends Fragment {
                                         reminderList.clear();
                                         int unreadCount = 0;
                                         for (QueryDocumentSnapshot document : querySnapshot) {
-                                            // Convert the document to a ReminderItem object
+                                            // This converts the document to a ReminderItem object
                                             ReminderItem reminderItem = document.toObject(ReminderItem.class);
                                             reminderItem.setId(document.getId());
                                             reminderList.add(reminderItem);
@@ -145,7 +145,7 @@ public class RemindersFragment extends Fragment {
                                             SeparatorItem separator = new SeparatorItem();
                                             reminderList.add(unreadCount, separator);
                                         }
-                                        // Log the fetched reminders
+                                        //logging
                                         Log.d("RemindersFragment", "Fetched " + reminderList.size() + " reminders");
                                         notifAdapter.updateData(reminderList);
                                     }
