@@ -604,6 +604,7 @@
             android:text="GET HOME"
             android:textSize="18sp"
             android:padding="16dp"
+            android:backgroundTint="@color/danger_color"
             android:layout_marginTop="16dp"/>
 
         <Button
@@ -611,10 +612,10 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="UPDATE"
-            android:textSize="180sp"
+            android:textSize="18sp"
             android:padding="16dp"
             android:layout_marginTop="16dp"
-            android:backgroundTint="@color/button_background_color"
+            android:backgroundTint="@color/van_dyke"
             android:textColor="@color/button_text_color" />
 
     </LinearLayout>

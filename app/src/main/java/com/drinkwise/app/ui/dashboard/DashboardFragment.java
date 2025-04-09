@@ -383,12 +383,14 @@ public class DashboardFragment extends Fragment {
             beerCounter++;
             updateBeerCount();
             updateTotalCalories();
-            updateBACFromManualLogs();
+
             logDrinkToFirestore("Beer", 150, 0.03);
             //check for rapid logging and errors
             checkDrinkLogAndBAC();
             minusButtonState();
 
+        //wait for update
+        updateBACFromManualLogs();
         });
 
         addWineButton.setOnClickListener(v -> {
@@ -527,7 +529,7 @@ public class DashboardFragment extends Fragment {
                     updateChampagneCount();
                     updateTotalCalories();
                     removeDrinkFromFirestore("Champagne");
-                    //updateBACFromManualLogs();
+                    updateBACFromManualLogs();
                     minusButtonState();
                 }
             });
@@ -586,10 +588,14 @@ public class DashboardFragment extends Fragment {
                 .get()
                 .addOnSuccessListener(queryDocumentSnapshots -> {
                     List<DrinkLogItem> drinkLogs = new ArrayList<>();
+
                     if (!queryDocumentSnapshots.isEmpty()) {
                         queryDocumentSnapshots.getDocuments().forEach(doc -> {
                             DrinkLogItem logItem = doc.toObject(DrinkLogItem.class);
                             if (logItem != null) {
+
+                                Log.d(TAG, "Drink log added: " + logItem);
+
                                 drinkLogs.add(logItem);
                             }
                         });
@@ -649,7 +655,11 @@ public class DashboardFragment extends Fragment {
         updateSakeCount();
         updateCustomCount();
         updateTotalCalories();
-        updateBacLevel(bacValue);
+
+
+        updateBacLevel(bacValue); //sensor bac
+      updateBACFromManualLogs(); //manual bac
+
   } catch (Exception e) {
             Log.e(TAG, "Error loading dashboard data", e);
         }
@@ -693,6 +703,7 @@ public class DashboardFragment extends Fragment {
         if (getContext() == null) return;
 
         bacLevel.setText(String.format("%.2f%%", bacValue));
+
         int progress = (int) (bacValue * 100);
         bacProgressBar.setProgress(progress);
 

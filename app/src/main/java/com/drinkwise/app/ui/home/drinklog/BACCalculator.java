@@ -1,5 +1,7 @@
 package com.drinkwise.app.ui.home.drinklog;
 
+import android.util.Log;
+
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -9,9 +11,11 @@ import java.util.Locale;
 public class BACCalculator {
 
     private static final double ELIMINATION_RATE = 0.015; // Elimination rate per hour. We should change it or maybe adjust it for weight and height ??
-
+    static double totalBAC;
     public static double calculateBAC(List<DrinkLogItem> drinkLogItems) {
-        double totalBAC = 0.0;
+        totalBAC = 0;
+
+        Log.d("DashboardFragment", "BAC Before: " + String.valueOf(totalBAC));
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault());
         long currentTimeMillis = System.currentTimeMillis();
 
@@ -44,6 +48,7 @@ public class BACCalculator {
                 System.out.println("Warning: bacContribution was null for a drink.");
             }
         }
+        Log.d("DashboardFragment", "BAC After: " + String.valueOf(totalBAC));
 
         return totalBAC;
     }
