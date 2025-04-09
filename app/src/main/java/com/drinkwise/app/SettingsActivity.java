@@ -113,6 +113,19 @@ public class SettingsActivity extends AppCompatActivity {
             profileButton.setVisibility(View.GONE);
         }
 
+        // Set up Edit button listener
+        holder.editButton.setOnClickListener(v -> {
+            if(actionListener != null){
+                actionListener.onEditContact(contact, position);
+            }
+        });
+// Set up Delete button listener
+        holder.deleteButton.setOnClickListener(v -> {
+            if(actionListener != null){
+                actionListener.onDeleteContact(contact, position);
+            }
+        });
+
         launchGallery = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result ->{
             if(result.getResultCode() == RESULT_OK && result.getData() != null){
                 Uri uri = result.getData().getData();
@@ -811,6 +824,83 @@ public class SettingsActivity extends AppCompatActivity {
         reminders_switch = findViewById(R.id.reminders_switch);
         quick_help_switch = findViewById(R.id.quick_help_switch);
     }
+
+    private void deleteEmergencyContact(EmergencyContact contact, int position) {
+        if (contact.getId() == null) {
+            Toast.makeText(this, "Contact ID not found", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        db.collection("users")
+                .document(userId)
+                .collection("profile")
+                .document("Contacts")
+                .collection("Emergency_Contacts")
+                .document(contact.getId())
+                .delete()
+                .addOnSuccessListener(aVoid -> {
+                    Toast.makeText(SettingsActivity.this, "Contact deleted", Toast.LENGTH_SHORT).show();
+                    // Remove the contact from the local list and update the adapter
+                    emergency_contacts.remove(position);
+                    settingsAdapter.notifyItemRemoved(position);
+                })
+                .addOnFailureListener(e -> {
+                    Toast.makeText(SettingsActivity.this, "Error deleting contact", Toast.LENGTH_SHORT).show();
+                    Log.d(TAG, "Error deleting contact: " + e);
+                });
+    }
+
+    private void showEditContactDialog(EmergencyContact contact, int position) {
+        android.app.AlertDialog.Builder builder = new android.app.AlertDialog.Builder(this);
+        // Inflate the custom dialog layout
+        View dialogView = LayoutInflater.from(this).inflate(R.layout.dialog_edit_contact, null);
+        builder.setView(dialogView);
+
+        // Find EditTexts in the dialog layout
+        EditText editName = dialogView.findViewById(R.id.edit_name);
+        EditText editPhone = dialogView.findViewById(R.id.edit_phone);
+        EditText editEmail = dialogView.findViewById(R.id.edit_email);
+        EditText editRelationship = dialogView.findViewById(R.id.edit_relationship);
+
+        // Pre-fill fields with current contact values
+        editName.setText(contact.getName());
+        editPhone.setText(contact.getPhone_no());
+        editEmail.setText(contact.getEmail());
+        editRelationship.setText(contact.getRelationship());
+
+        builder.setTitle("Edit Contact");
+        builder.setPositiveButton("Save", (dialog, which) -> {
+            String newName = editName.getText().toString();
+            String newPhone = editPhone.getText().toString();
+            String newEmail = editEmail.getText().toString();
+            String newRelationship = editRelationship.getText().toString();
+
+            // Create a map with the updated values
+            Map<String, Object> updates = new HashMap<>();
+            updates.put("Name", newName);
+            updates.put("Phone_no", newPhone);
+            updates.put("Email", newEmail);
+            updates.put("Relationship", newRelationship);
+
+            // Update the Firestore document using the stored document id
+            db.collection("users")
+                    .document(userId)
+                    .collection("profile")
+                    .document("Contacts")
+                    .collection("Emergency_Contacts")
+                    .document(contact.getId())
+                    .update(updates)
+                    .addOnSuccessListener(aVoid -> {
+                        Toast.makeText(SettingsActivity.this, "Contact updated", Toast.LENGTH_SHORT).show();
+                    })
+                    .addOnFailureListener(e -> {
+                        Toast.makeText(SettingsActivity.this, "Error updating contact", Toast.LENGTH_SHORT).show();
+                        Log.d(TAG, "Error updating contact: " + e);
+                    });
+        });
+        builder.setNegativeButton("Cancel", (dialog, which) -> dialog.dismiss());
+        builder.create().show();
+    }
+
 
     @SuppressLint("NotifyDataSetChanged")
     public void setupRecyclerView() {

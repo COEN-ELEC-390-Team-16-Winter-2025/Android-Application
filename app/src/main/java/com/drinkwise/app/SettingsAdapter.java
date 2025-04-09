@@ -38,6 +38,18 @@ public class SettingsAdapter extends RecyclerView.Adapter<SettingsAdapter.ViewHo
             relationship_layout = itemView.findViewById(R.id.relationship_layout_recycler);
         }
 
+        settingsAdapter.setOnContactActionListener(new SettingsAdapter.OnContactActionListener() {
+            @Override
+            public void onEditContact(EmergencyContact contact, int position) {
+                showEditContactDialog(contact, position);  // <-- NEW: Open the edit dialog
+            }
+
+            @Override
+            public void onDeleteContact(EmergencyContact contact, int position) {
+                deleteEmergencyContact(contact, position);  // <-- NEW: Delete the contact
+            }
+        });
+
         public TextView getName() {
             return name;
         }
