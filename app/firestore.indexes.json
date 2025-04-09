@@ -1,0 +1,33 @@
+{
+  "indexes": [
+    {
+      "collectionGroup": "manual_drink_logs",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "drinkType",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "timestamp",
+          "order": "DESCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "manual_drink_logs",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "sessionId",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "timestamp",
+          "order": "DESCENDING"
+        }
+      ]
+    }
+  ],
+  "fieldOverrides": []
+}

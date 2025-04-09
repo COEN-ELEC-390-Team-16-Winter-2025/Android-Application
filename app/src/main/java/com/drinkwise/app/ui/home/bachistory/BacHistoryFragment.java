@@ -238,7 +238,7 @@ public class BacHistoryFragment extends Fragment {
                             }
                         }
 
-                        bacEntries = bacHistory; // save full list
+                        bacEntries = bacHistory;
                         adapter.setBacEntries(bacHistory);
                     } else {
                         Log.d(TAG, "No BAC history found");
@@ -403,7 +403,7 @@ public class BacHistoryFragment extends Fragment {
         Calendar ts = Calendar.getInstance();       // Create a calendar from the timestamp
         ts.setTime(timestamp.toDate());
 
-        // Match YEAR and MONTH (same as your week function style)
+
         return current.get(Calendar.YEAR) == ts.get(Calendar.YEAR) &&
                 current.get(Calendar.MONTH) == ts.get(Calendar.MONTH);
     }

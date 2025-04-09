@@ -5,20 +5,19 @@
     <string name="title_notifications">Notifications</string>
     <string name="drink_image_desc">Beer</string>
 
-
     <string name="support_resources">
-    Alcoholics Anonymous (AA) – Montreal&lt;br&gt;
-    Website: https://www.aa87.org/&lt;br&gt;
-    Contact: 514-350-3444&lt;br&gt;&lt;br&gt;
+        Alcoholics Anonymous (AA) – Montreal&lt;br/&gt;
+        Website: https://www.aa87.org/&lt;br/&gt;
+        Contact: 514-350-3444&lt;br/&gt;&lt;br/&gt;
 
-    MADD Canada&lt;br&gt;
-    Website: https://madd.ca&lt;br&gt;&lt;br&gt;
+        MADD Canada&lt;br/&gt;
+        Website: https://madd.ca&lt;br/&gt;&lt;br/&gt;
 
-    Éducalcool&lt;br&gt;
-    Website: https://www.educalcool.qc.ca/&lt;br&gt;&lt;br&gt;
+        Éducalcool&lt;br/&gt;
+        Website: https://www.educalcool.qc.ca/&lt;br/&gt;&lt;br/&gt;
 
-    211 Grand Montréal&lt;br&gt;
-    Website: https://www.211qc.ca/en/mental-health-and-addictions&lt;br&gt;
-    Contact: Dial 211
-</string>
+        211 Grand Montréal&lt;br/&gt;
+        Website: https://www.211qc.ca/en/mental-health-and-addictions&lt;br/&gt;
+        Contact: Dial 211
+    </string>
 </resources>

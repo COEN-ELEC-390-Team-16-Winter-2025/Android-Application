@@ -55,6 +55,14 @@ public class ReminderListener {
 
     // Builds and displays a notification with the provided title and message.
     private void showNotification(String title, String message) {
+        //Check first if toggle is on or off before showing reminders
+        //Check if recommendations toggle is off or on before showing the pop-up
+       // if(!reminders) {
+         //   Log.d("Reminder listener", "Reminder toggle is off, not showing the pop-up.");
+           // return;
+       // }
+
+
         // Create a notification builder with the specified channel.
         NotificationCompat.Builder builder = new NotificationCompat.Builder(context, "reminder_channel")
                 .setSmallIcon(android.R.drawable.ic_dialog_info) // Using built-in icon

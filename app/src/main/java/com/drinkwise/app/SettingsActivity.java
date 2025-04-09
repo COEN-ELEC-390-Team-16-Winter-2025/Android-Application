@@ -3,6 +3,7 @@ package com.drinkwise.app;
 import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.media.Image;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
@@ -29,12 +30,16 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 
+import com.bumptech.glide.Glide;
 import com.google.firebase.auth.AuthCredential;
 import com.google.firebase.auth.EmailAuthProvider;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.SetOptions;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -117,11 +122,12 @@ public class SettingsActivity extends AppCompatActivity {
             if(result.getResultCode() == RESULT_OK && result.getData() != null){
                 Uri uri = result.getData().getData();
                 profile_picture.setImageURI(uri);
+                uploadImagetoFirestore(uri);
             }
         });
 
         setupUI(); //Initializes UI components
-
+        loadImage(profile_picture);
         //Fetches users information from firestore, edit the corresponding textview and edit texts
         fetchUserInformation((userName, userHeight, userWeight, isMetric, birthday) -> {
 
@@ -437,6 +443,59 @@ public class SettingsActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);  // Pass the event to the superclass for default behavior
     }
 
+
+    public void uploadImagetoFirestore(Uri uri){
+        String userID = FirebaseAuth.getInstance().getCurrentUser().getUid();
+        FirebaseStorage firebaseStorage = FirebaseStorage.getInstance();
+
+        StorageReference storageReference = firebaseStorage.getReference().child("profile_images/"+userID);
+
+        storageReference.putFile(uri)
+                .addOnSuccessListener(taskSnapshot -> storageReference.getDownloadUrl().addOnSuccessListener( uri1 -> {
+                    String downloadUri = uri1.toString();
+                    saveImageToFirestore(downloadUri, userID);
+                    Log.d(TAG, "Image Saved to Storage");
+                }))
+                .addOnFailureListener(e -> {
+                    Log.d(TAG, "Image not saved: "+e);
+                });
+    }
+
+    public void saveImageToFirestore(String url, String userId){
+
+        Map<String, Object> imageMap = new HashMap<>();
+
+        imageMap.put("profile_pic_url", url);
+
+        db.collection("users")
+                .document(userId)
+                .set(imageMap, SetOptions.merge())
+                .addOnSuccessListener(result -> {
+                    Log.d(TAG, "Image Url Saved in Firestore");
+                })
+                .addOnFailureListener(e -> {
+                    Log.d(TAG, "Error Saving Image Url: "+e);
+                });
+    }
+
+    public void loadImage(ImageView profile_picture){
+
+        db = FirebaseFirestore.getInstance();
+        String userID = FirebaseAuth.getInstance().getCurrentUser().getUid();
+
+        db.collection("users").document(userID).get()
+                .addOnSuccessListener(documentSnapshot -> {
+                    if (documentSnapshot.exists()) {
+                        String imageUrl = documentSnapshot.getString("profile_pic_url");
+                        if (imageUrl != null) {
+                            Glide.with(this).load(imageUrl).into(profile_picture);
+                            Log.d(TAG, "Image loaded");
+                        }
+                    }
+                })
+                .addOnFailureListener(e ->
+                        Toast.makeText(this, "Error loading image: " + e.getMessage(), Toast.LENGTH_SHORT).show());
+    }
     //This function fetches all the user's information from firestore and stores them in their respective variables
     public void fetchUserInformation(onDataFetched callback){
         db = FirebaseFirestore.getInstance();

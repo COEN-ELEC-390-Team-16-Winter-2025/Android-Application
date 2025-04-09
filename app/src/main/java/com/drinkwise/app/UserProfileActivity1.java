@@ -56,7 +56,7 @@ public class UserProfileActivity1 extends AppCompatActivity {
             }
         });
 
-        // Next Button logic : goes to user profile activity 2
+        // next goes to user profile activity 2
         nextButton.setOnClickListener(v -> {
             if(validateInputs()){
                 storeUserData();

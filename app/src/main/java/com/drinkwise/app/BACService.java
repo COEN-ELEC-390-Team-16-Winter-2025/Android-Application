@@ -15,27 +15,23 @@ public class BACService {
     private final FirebaseFirestore db = FirebaseFirestore.getInstance();
     private final FirebaseAuth auth = FirebaseAuth.getInstance();
 
-    //Upload BAC readings
+    //to upload BAC readings
     public void uploadBACReading(float bacValue) {
-        //Retrieve user by userID
         String userId = Objects.requireNonNull(auth.getCurrentUser()).getUid();
-        //Ensure user is logged in
-        //Validate BAC Range (0.00-0.50%)
         if(bacValue < 0.00 || bacValue > 0.50 ) {
             Log.e("Firestore", "Invalid BAC value: " + bacValue);
             return;
         }
 
-        //Generate a timestamp
+        //timestamp
         @SuppressLint("SimpleDateFormat") String timeStamp = new java.text.SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date());
 
-        //Check for duplicate timestamp in collection
+        //this checks for duplicate timestamp in collection
         db.collection("users").document(userId).collection("bacData").document(timeStamp)
                 .get().addOnSuccessListener(documentSnapshot -> {
             if(documentSnapshot.exists()) {
                 Log.e("Firestore", "Duplicate timestamp detected");
             } else {
-                //Create map to store data
                 Map<String, Object> data = new HashMap<>();
                 data.put("timeStamp", new Timestamp(new Date()));
                 data.put("bac", bacValue);
@@ -46,6 +42,5 @@ public class BACService {
             }
         });
     }
-
 
 }

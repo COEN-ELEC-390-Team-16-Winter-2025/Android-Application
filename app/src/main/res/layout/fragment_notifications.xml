@@ -8,6 +8,7 @@
     tools:context=".ui.notifications.NotificationsFragment">
 
     <com.google.android.material.tabs.TabLayout
+        android:paddingTop="80dp"
         android:id="@+id/tabLayout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
