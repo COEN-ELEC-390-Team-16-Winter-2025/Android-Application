@@ -659,7 +659,7 @@ public class DashboardFragment extends Fragment {
     }
     @SuppressLint({"DefaultLocale", "SetTextI18n"})
     private void updateBacLevel(double bacValue) {
-            startSafetyMonitor();
+            //startSafetyMonitor();
 
         if (getContext() == null) return;
 
@@ -731,10 +731,19 @@ public class DashboardFragment extends Fragment {
                 (shotCounter * shotCalories) +
                 (sakeCounter * sakeCalories);
 
-        totalCalories = Math.max(totalCalories, prefs.getInt("totalCalories", 0));
+        Log.d("cals", "beerCounter: " + beerCounter + ", beerCalories: " + beerCalories);
+        Log.d("cals", "wineCounter: " + wineCounter + ", wineCalories: " + wineCalories);
+        Log.d("cals", "champagneCounter: " + champagneCounter + ", champCalories: " + champCalories);
+        Log.d("cals", "cocktailCounter: " + cocktailCounter + ", cocktCalories: " + cocktCalories);
+        Log.d("cals", "shotCounter: " + shotCounter + ", shotCalories: " + shotCalories);
+        Log.d("cals", "sakeCounter: " + sakeCounter + ", sakeCalories: " + sakeCalories);
+
 
         // Update UI
         caloriesTextView.setText("Total Calories: " + totalCalories + " kcal");
+
+        // Log the total calories calculation
+        Log.d("cals", "Total Calories: " + totalCalories);
     }
 
 
