@@ -1,8 +1,10 @@
 package com.drinkwise.app.ui.dashboard;
 
+import android.annotation.SuppressLint;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -22,14 +24,29 @@ public class EmergencyContactAdapter extends RecyclerView.Adapter<EmergencyConta
         void onContactClick(EmergencyContact contact);
     }
 
+    @FunctionalInterface
+    public interface OnEditContactListener {
+        void onEditContact(EmergencyContact contact);
+    }
+
+    @FunctionalInterface
+    public interface OnDeleteContactListener {
+        void onDeleteContact(EmergencyContact contact);
+    }
+
     // The list of emergency contacts to be displayed in the RecyclerView
     ArrayList<EmergencyContact> emergencyContacts;
     OnContactClickListener listener;
+    OnEditContactListener editListener;
+    OnDeleteContactListener deleteListener;
 
     // This sets up the adapter with a list of contacts and a function to handle clicks
-    public EmergencyContactAdapter(ArrayList<EmergencyContact> emergencyContacts, OnContactClickListener listener) {
+    public EmergencyContactAdapter(ArrayList<EmergencyContact> emergencyContacts,
+                                   OnContactClickListener listener) {
         this.emergencyContacts = emergencyContacts;
         this.listener = listener;
+        this.editListener = editListener;
+        this.deleteListener = deleteListener;
     }
 
     // This is called when RecyclerView needs a new ViewHolder of the given type.
@@ -44,15 +61,28 @@ public class EmergencyContactAdapter extends RecyclerView.Adapter<EmergencyConta
     // method that connects the data to the ViewHolder for the item at the given position.
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
-        holder.getName().setText(emergencyContacts.get(position).getName());
-        holder.getPhone_no().setText(emergencyContacts.get(position).getPhone_no());
-        holder.getEmail().setText(emergencyContacts.get(position).getEmail());
-        holder.getRelationship().setText(emergencyContacts.get(position).getRelationship());
+        EmergencyContact contact = emergencyContacts.get(position);
+        holder.getName().setText(contact.getName());
+        holder.getPhone_no().setText(contact.getPhone_no());
+        holder.getEmail().setText(contact.getEmail());
+        holder.getRelationship().setText(contact.getRelationship());
 
         //When it is clicked, the adapter will notify the listener
         holder.getRecycler_layout().setOnClickListener(v -> {
             if (listener != null) {
                 listener.onContactClick(emergencyContacts.get(position));
+            }
+        });
+
+        holder.editButton.setOnClickListener(v -> {
+            if (editListener != null) {
+                editListener.onEditContact(contact);
+            }
+        });
+
+        holder.deleteButton.setOnClickListener(v -> {
+            if (deleteListener != null) {
+                deleteListener.onDeleteContact(contact);
             }
         });
     }
@@ -68,8 +98,10 @@ public class EmergencyContactAdapter extends RecyclerView.Adapter<EmergencyConta
         TextView name, phone_no, email, relationship;
         ImageView profile_picture;
         LinearLayout recycler_layout, phone_no_layout, email_layout, relationship_layout;
+        ImageButton editButton, deleteButton;
 
         // Constructor that initializes the view references.
+        @SuppressLint("WrongViewCast")
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
             name = itemView.findViewById(R.id.name_recycler);
@@ -81,17 +113,20 @@ public class EmergencyContactAdapter extends RecyclerView.Adapter<EmergencyConta
             phone_no_layout = itemView.findViewById(R.id.phone_no_layout_recycler);
             email_layout = itemView.findViewById(R.id.email_layout_recycler);
             relationship_layout = itemView.findViewById(R.id.relationship_layout_recycler);
+
+            editButton = itemView.findViewById(R.id.edit_contact_button);
+            deleteButton = itemView.findViewById(R.id.delete_contact_button);
         }
 
         // Getter methods
-        public TextView getName() { return name; }
-        public TextView getPhone_no() { return phone_no; }
-        public TextView getEmail() { return email; }
-        public TextView getRelationship() { return relationship; }
-        public ImageView getProfile_picture() { return profile_picture; }
-        public LinearLayout getPhone_no_layout() { return phone_no_layout; }
-        public LinearLayout getEmail_layout() { return email_layout; }
-        public LinearLayout getRelationship_layout() { return relationship_layout; }
-        public LinearLayout getRecycler_layout() { return recycler_layout; }
+        public TextView getName() {return name;}
+        public TextView getPhone_no() {return phone_no;}
+        public TextView getEmail() {return email;}
+        public TextView getRelationship() {return relationship;}
+        public ImageView getProfile_picture() {return profile_picture;}
+        public LinearLayout getPhone_no_layout() {return phone_no_layout;}
+        public LinearLayout getEmail_layout() {return email_layout;}
+        public LinearLayout getRelationship_layout() {return relationship_layout;}
+        public LinearLayout getRecycler_layout() {return recycler_layout;}
     }
 }
