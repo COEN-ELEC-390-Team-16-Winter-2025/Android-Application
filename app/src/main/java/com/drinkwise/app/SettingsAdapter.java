@@ -38,17 +38,7 @@ public class SettingsAdapter extends RecyclerView.Adapter<SettingsAdapter.ViewHo
             relationship_layout = itemView.findViewById(R.id.relationship_layout_recycler);
         }
 
-        settingsAdapter.setOnContactActionListener(new SettingsAdapter.OnContactActionListener() {
-            @Override
-            public void onEditContact(EmergencyContact contact, int position) {
-                showEditContactDialog(contact, position);  // <-- NEW: Open the edit dialog
-            }
 
-            @Override
-            public void onDeleteContact(EmergencyContact contact, int position) {
-                deleteEmergencyContact(contact, position);  // <-- NEW: Delete the contact
-            }
-        });
 
         public TextView getName() {
             return name;
@@ -103,23 +93,34 @@ public class SettingsAdapter extends RecyclerView.Adapter<SettingsAdapter.ViewHo
     // connects the data from an EmergencyContact object to the views in the ViewHolder.
     @Override
     public void onBindViewHolder(@NonNull SettingsAdapter.ViewHolder holder, int position) {
-        // This sets the contact's name, phone, email, and relationship
-        holder.getName().setText(emergency_contacts.get(position).getName());
-        holder.getPhone_no().setText(emergency_contacts.get(position).getPhone_no());
-        holder.getEmail().setText(emergency_contacts.get(position).getEmail());
-        holder.getRelationship().setText(emergency_contacts.get(position).getRelationship());
+        EmergencyContact contact = emergency_contacts.get(position);
+        holder.name.setText(contact.getName());
+        holder.phone_no.setText(contact.getPhone_no());
+        holder.email.setText(contact.getEmail());
+        holder.relationship.setText(contact.getRelationship());
 
-        // this sets an OnClickListener on the main layout to toggle visibility of extra details.
-        holder.getRecycler_layout().setOnClickListener(v -> {
-            if(holder.getPhone_no_layout().getVisibility() == View.GONE){
-                holder.getPhone_no_layout().setVisibility(View.VISIBLE);
-                holder.getEmail_layout().setVisibility(View.VISIBLE);
-                holder.getRelationship_layout().setVisibility(View.VISIBLE);
+        // Set up Edit button listener
+        holder.editButton.setOnClickListener(v -> {
+            if(actionListener != null){
+                actionListener.onEditContact(contact, position);
             }
-            else{
-                holder.getPhone_no_layout().setVisibility(View.GONE);
-                holder.getEmail_layout().setVisibility(View.GONE);
-                holder.getRelationship_layout().setVisibility(View.GONE);
+        });
+        // Set up Delete button listener
+        holder.deleteButton.setOnClickListener(v -> {
+            if(actionListener != null){
+                actionListener.onDeleteContact(contact, position);
+            }
+        });
+
+        holder.recycler_layout.setOnClickListener(v -> {
+            if(holder.phone_no.getVisibility() == View.GONE){
+                holder.phone_no.setVisibility(View.VISIBLE);
+                holder.email.setVisibility(View.VISIBLE);
+                holder.relationship.setVisibility(View.VISIBLE);
+            } else {
+                holder.phone_no.setVisibility(View.GONE);
+                holder.email.setVisibility(View.GONE);
+                holder.relationship.setVisibility(View.GONE);
             }
         });
     }
