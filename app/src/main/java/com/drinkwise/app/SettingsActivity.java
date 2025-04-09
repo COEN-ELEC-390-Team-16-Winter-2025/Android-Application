@@ -115,16 +115,15 @@ public class SettingsActivity extends AppCompatActivity {
             profileButton.setVisibility(View.GONE);
         }
 
-        // Set up Edit button listener
-        holder.editButton.setOnClickListener(v -> {
-            if(actionListener != null){
-                actionListener.onEditContact(contact, position);
+        settingsAdapter.setOnContactActionListener(new SettingsAdapter.OnContactActionListener() {
+            @Override
+            public void onEditContact(EmergencyContact contact, int position) {
+                showEditContactDialog(contact, position);  // <-- NEW: Open the edit dialog
             }
-        });
-// Set up Delete button listener
-        holder.deleteButton.setOnClickListener(v -> {
-            if(actionListener != null){
-                actionListener.onDeleteContact(contact, position);
+
+            @Override
+            public void onDeleteContact(EmergencyContact contact, int position) {
+                deleteEmergencyContact(contact, position);  // <-- NEW: Delete the contact
             }
         });
 
