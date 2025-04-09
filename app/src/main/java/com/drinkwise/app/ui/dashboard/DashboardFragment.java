@@ -1290,13 +1290,13 @@ public class DashboardFragment extends Fragment {
         AlertDialog dialog = new AlertDialog.Builder(requireContext(), R.style.RedBorderAlertDialog)
                 .setTitle(title)
                 .setMessage(message)
-                .setPositiveButton("OK", (d, which) -> {
+                .setPositiveButton("NO", (d, which) -> {
                     Log.d(TAG, "OK clicked");
                     rapidLoggingCount++;
                 })
                 .setNegativeButton("UNDO", (d, which) -> {
                     Log.d(TAG, "UNDO clicked");
-                    rapidLoggingCount--;
+                    rapidLoggingCount = 0;
                     deleteLogs(drinkLogToUndo);
                 })
                 .create();

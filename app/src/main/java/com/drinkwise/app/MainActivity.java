@@ -68,9 +68,6 @@ public class MainActivity extends AppCompatActivity {
         // Start the service manually
         MyFirebaseMessagingService.safeStart(this);
 
-        // Get SharedPreferences and check if this is the first time the app is launched.
-        SharedPreferences preferences = getSharedPreferences("AppPrefs", MODE_PRIVATE);
-        boolean firstTime = preferences.getBoolean("firstTime", true);
 
         Log.d("FCM_DEBUG", "Firebase Messaging Servoce initialized in Main");
 
