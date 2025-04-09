@@ -12,12 +12,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.drinkwise.app.R;
 
-import com.google.firebase.Timestamp;
-
-import org.checkerframework.checker.units.qual.N;
-
 import java.text.SimpleDateFormat;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
@@ -29,7 +24,9 @@ public class NotifAdapter extends RecyclerView.Adapter<NotifAdapter.NotifViewHol
     private List<NotificationItem> itemList;
     private static final int TYPE_REMINDER = 0;
     private static final int TYPE_RECOMMENDATION = 1;
+    private static final int TYPE_ALERT = 2;
     private static final int TYPE_SEPARATOR = 3;
+
 
     public NotifAdapter(Context context, List<NotificationItem> itemList) {
         this.itemList = itemList;
@@ -64,17 +61,19 @@ public class NotifAdapter extends RecyclerView.Adapter<NotifAdapter.NotifViewHol
             return new SeparatorViewHolder(view);
         }
         if(viewType == TYPE_REMINDER) {
+
             View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_reminder, parent, false);
             return new ReminderViewHolder(view);
-        } else if(viewType == TYPE_RECOMMENDATION) {
+        } else if (viewType == TYPE_RECOMMENDATION) {
             View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_recommendation, parent, false);
             return new RecommendationViewHolder(view);
+        } else if (viewType == TYPE_ALERT) {
+            View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_alert, parent, false);
+            return new AlertViewHolder(view);
         }
-        // Fallback: default to reminder
         View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_reminder, parent, false);
         return new ReminderViewHolder(view);
     }
-
 
     @Override
     public void onBindViewHolder(@NonNull NotifViewHolder holder, int position) {
@@ -97,7 +96,6 @@ public class NotifAdapter extends RecyclerView.Adapter<NotifAdapter.NotifViewHol
         notifyDataSetChanged();
     }
 
-    //
     public abstract static class NotifViewHolder extends RecyclerView.ViewHolder {
         public NotifViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -105,8 +103,6 @@ public class NotifAdapter extends RecyclerView.Adapter<NotifAdapter.NotifViewHol
         public abstract void bind(NotificationItem item);
     }
 
-
-    // Reminder ViewHolder
     public static class ReminderViewHolder extends NotifViewHolder {
         TextView reminderMessage, reminderTimestamp, reminderTypeTextView;
 
@@ -125,7 +121,6 @@ public class NotifAdapter extends RecyclerView.Adapter<NotifAdapter.NotifViewHol
         }
     }
 
-    // Recommendation ViewHolder
     public static class RecommendationViewHolder extends NotifViewHolder {
         TextView recommendationMessageTextView, recommendationTimestampTextView, recommendationTypeTextView;
 
@@ -147,7 +142,49 @@ public class NotifAdapter extends RecyclerView.Adapter<NotifAdapter.NotifViewHol
         }
     }
 
-    public static class SeparatorViewHolder extends NotifViewHolder {
+
+    public static class AlertViewHolder extends NotifViewHolder {
+        TextView alertMessageTextView, alertTimestampTextView, alertTypeTextView, alertBacValueTextView, alertSafetyLevelTextView;
+
+        public AlertViewHolder(@NonNull View itemView) {
+            super(itemView);
+            alertMessageTextView = itemView.findViewById(R.id.alertMessage);
+            alertTimestampTextView = itemView.findViewById(R.id.alertTimestamp);
+            alertTypeTextView = itemView.findViewById(R.id.alertType);
+            alertBacValueTextView = itemView.findViewById(R.id.alertBacValue);
+            alertSafetyLevelTextView = itemView.findViewById(R.id.alertSafetyLevel);
+        }
+
+        @Override
+        public void bind(NotificationItem item) {
+            if (item instanceof AlertItem) {
+                AlertItem alert = (AlertItem) item;
+
+
+                // Message
+                alertMessageTextView.setText(alert.getMessage() != null ? alert.getMessage() : "No message");
+
+                // Timestamp
+                if (alert.getTimestamp() != null) {
+                    SimpleDateFormat sdf = new SimpleDateFormat("dd MMM yyyy, hh:mm a", Locale.getDefault());
+                    alertTimestampTextView.setText(sdf.format(alert.getTimestamp().toDate()));
+                } else {
+                    alertTimestampTextView.setText("No timestamp");
+                }
+
+                // Alert Type (optional)
+                alertTypeTextView.setText(alert.getAlertType() != null ? alert.getAlertType() : "Alert");
+
+                // BAC
+                alertBacValueTextView.setText("BAC: " + alert.getBacValue());
+
+
+                // Safety Level
+                alertSafetyLevelTextView.setText("Safety: " + (alert.getSafetyLevel() != null ? alert.getSafetyLevel() : "Unknown"));
+            }
+        }
+    }
+  public static class SeparatorViewHolder extends NotifViewHolder {
         TextView separatorLabel;
 
         public SeparatorViewHolder(@NonNull View itemView) {
@@ -161,16 +198,5 @@ public class NotifAdapter extends RecyclerView.Adapter<NotifAdapter.NotifViewHol
         }
     }
 
-
-
-
-
-
-
-
-
-
-
-
-
 }
+
