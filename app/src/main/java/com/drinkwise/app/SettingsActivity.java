@@ -1,5 +1,7 @@
 package com.drinkwise.app;
 
+import com.drinkwise.app.ui.dashboard.EmergencyContactAdapter;
+import com.drinkwise.app.SettingsAdapter;
 import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.content.SharedPreferences;
