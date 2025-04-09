@@ -154,12 +154,12 @@ public class SettingsActivity extends AppCompatActivity {
         settingsAdapter.setOnContactActionListener(new SettingsAdapter.OnContactActionListener() {
             @Override
             public void onEditContact(EmergencyContact contact, int position) {
-                showEditContactDialog(contact, position);  // <-- NEW: Open the edit dialog
+                showEditContactDialog(contact, position);
             }
 
             @Override
             public void onDeleteContact(EmergencyContact contact, int position) {
-                deleteEmergencyContact(contact, position);  // <-- NEW: Delete the contact
+                deleteEmergencyContact(contact, position);
             }
         });
 
@@ -764,6 +764,7 @@ public class SettingsActivity extends AppCompatActivity {
         builder.setNegativeButton("Cancel", (dialog, which) -> dialog.dismiss());
         builder.create().show();
     }
+
     public interface PreferencesCallback {
         void onCallback(boolean notifications, boolean alerts, boolean reminders);
     }
