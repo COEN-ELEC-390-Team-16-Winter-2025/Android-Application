@@ -606,6 +606,17 @@
             android:padding="16dp"
             android:layout_marginTop="16dp"/>
 
+        <Button
+            android:id="@+id/updateButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="UPDATE"
+            android:textSize="180sp"
+            android:padding="16dp"
+            android:layout_marginTop="16dp"
+            android:backgroundTint="@color/button_background_color"
+            android:textColor="@color/button_text_color" />
+
     </LinearLayout>
 </ScrollView>
 

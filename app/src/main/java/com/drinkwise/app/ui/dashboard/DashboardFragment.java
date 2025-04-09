@@ -230,6 +230,8 @@ public class DashboardFragment extends Fragment {
         sakeImage.setOnClickListener(v -> displayDrinkInfo("Sake", 180, 0.06, 230));
         customImage.setOnClickListener(v -> displayDrinkInfo("Custom Drink", 0, 0, 0));
 
+        Button updateButton = view.findViewById(R.id.updateButton);
+        updateButton.setOnClickListener(v -> updateBACFromManualLogs());
         //Initialize total calories TextView
         caloriesTextView = view.findViewById(R.id.caloriesTextView);
 
