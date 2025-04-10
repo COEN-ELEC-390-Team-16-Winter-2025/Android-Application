@@ -1,6 +1,5 @@
 package com.drinkwise.app.ui.notifications;
 
-import android.annotation.SuppressLint;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -13,12 +12,10 @@ import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.drinkwise.app.LandingActivity;
 import com.drinkwise.app.R;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
-import com.google.firebase.firestore.QuerySnapshot;
 
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -68,29 +65,6 @@ public class RemindersFragment extends Fragment {
 //        //readReminders();
 //    }
 
-    private void readReminders() {
-        String userId = FirebaseAuth.getInstance().getCurrentUser().getUid();
-        for (NotificationItem item : reminderList) {
-            if (item instanceof ReminderItem) {
-                ReminderItem reminder = (ReminderItem) item;
-                if (reminder.getResolved() == null || !reminder.getResolved()) {
-                    reminder.setResolved(true);
-                    FirebaseFirestore.getInstance()
-                            .collection("users")
-                            .document(userId)
-                            .collection("Reminders")
-                            .document(reminder.getId())
-                            .update("resolved", true)
-                            .addOnSuccessListener(aVoid -> {
-                                Log.d("RemindersFragment", "Reminder marked as read");
-                            })
-                            .addOnFailureListener(e -> {
-                                Log.e("RemindersFragment", "Error updating reminder", e);
-                            });
-                }
-            }
-        }
-    }
     private void loadReminders() {
         String userId = FirebaseAuth.getInstance().getCurrentUser() != null
                 ? FirebaseAuth.getInstance().getCurrentUser().getUid()

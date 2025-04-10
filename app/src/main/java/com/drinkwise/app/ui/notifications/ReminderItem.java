@@ -28,7 +28,7 @@ public class ReminderItem implements NotificationItem {
 
     public String getReminderType() {
         return reminderType;
-    }
+   }
 
     public void setReminderType(String reminderType) {
         this.reminderType = reminderType;
@@ -75,10 +75,6 @@ public class ReminderItem implements NotificationItem {
 
     public void setTimestamp(Timestamp timestamp) {
         this.timestamp = timestamp;
-    }
-
-    public int getIntervalMinutes() {
-        return intervalMinutes;
     }
 
     public void setIntervalMinutes(int intervalMinutes) {
