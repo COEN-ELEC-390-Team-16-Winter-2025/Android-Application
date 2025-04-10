@@ -2,22 +2,20 @@ package com.drinkwise.app.ui.notifications;
 
 import com.google.firebase.Timestamp;
 
-// ReminderItem represents a single reminder with its details.
-// It includes the type of reminder, a message, the timestamp it was created,
-// the interval (in minutes) for follow-up reminders, the current status, and an escalation level.
+// ReminderItem represents a single reminder with its details
 public class ReminderItem implements NotificationItem {
 
-    // The type/category of the reminder (example : "BAC Recheck", "Late Night Check")
+    // The type of the reminder like "BAC Recheck", "Late Night Check"
     private String reminderType;
-    // The message to be displayed for this reminder
+    // the message to be displayed for this reminder
     private String message;
     // The timestamp when the reminder was created or scheduled
     private Timestamp timestamp;
-    // The interval in minutes after which the reminder should be rechecked
+    // The interval in minutes after which the reminder should be checked again
     private int intervalMinutes;
-    // The current status of the reminder (example : "active", "resolved")
+    // The current status of the reminder for example "active" or "resolved"
     private String status;
-    // The escalation level of the reminder ("Low", "Medium", "High", "Emergency")
+    // The escalation level of the reminder (4 levels : "Low", "Medium", "High", "Emergency")
     private String escalation;
     //If the reminder has been read by user or not
     private Boolean resolved;
@@ -25,7 +23,7 @@ public class ReminderItem implements NotificationItem {
     private String id;
 
 
-    // No-argument constructor required for Firestore deserialization
+    // deserialization
     public ReminderItem() {}
 
     public String getReminderType() {
