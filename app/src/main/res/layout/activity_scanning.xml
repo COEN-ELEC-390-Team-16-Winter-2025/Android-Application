@@ -46,7 +46,7 @@
         android:id="@+id/instructionTextView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Please breathe (not blow) into the alcohol sensor until the progress bar reaches 100%."
+        android:text="Please breathe (not blow) into the alcohol sensor until the progress bar reaches 100%. For additional instructions see the Info Page!"
         android:textSize="18sp"
         android:gravity="center"
         android:layout_gravity="center_horizontal"
