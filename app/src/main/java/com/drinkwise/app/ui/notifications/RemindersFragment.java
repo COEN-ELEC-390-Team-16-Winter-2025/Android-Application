@@ -21,6 +21,8 @@ import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
 
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 
@@ -59,12 +61,12 @@ public class RemindersFragment extends Fragment {
         }
         return root;
     }
-
-    @Override
-    public void onPause() {
-        super.onPause();
-        readReminders();
-    }
+    //The on pause method would cause the notification to stop being displayed when going back to it
+//    @Override
+//    public void onPause() {
+//        super.onPause();
+//        //readReminders();
+//    }
 
     private void readReminders() {
         String userId = FirebaseAuth.getInstance().getCurrentUser().getUid();
@@ -98,6 +100,21 @@ public class RemindersFragment extends Fragment {
             Log.e("RemindersFragment", "No user logged in");
             return;
         }
+
+        Calendar calendar = Calendar.getInstance();
+
+        Date endOfDay = calendar.getTime();
+
+        // StartOfDay = 2 days ago
+        calendar.add(Calendar.DAY_OF_YEAR, -2);
+        calendar.set(Calendar.HOUR_OF_DAY, 0);
+        calendar.set(Calendar.MINUTE, 0);
+        calendar.set(Calendar.SECOND, 0);
+        calendar.set(Calendar.MILLISECOND, 0);
+        Date startOfDay = calendar.getTime();
+
+        // Get end of 2 days ago
+
         //Fetch the preferences
         db.collection("users")
                 .document(userId)
@@ -123,6 +140,8 @@ public class RemindersFragment extends Fragment {
                         db.collection("users")
                                 .document(Objects.requireNonNull(userId))  // Point to the specific user document
                                 .collection("reminders")  // Fetch from the "reminders" subcollection of that user
+                                .whereGreaterThanOrEqualTo("timestamp", startOfDay)
+                                .whereLessThanOrEqualTo("timestamp", endOfDay)
                                 .addSnapshotListener((querySnapshot, queryError) -> {
 
                                     if (queryError != null) {

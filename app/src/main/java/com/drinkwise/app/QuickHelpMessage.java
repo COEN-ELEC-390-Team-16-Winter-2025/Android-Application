@@ -16,11 +16,11 @@ public class QuickHelpMessage {
 
         // message based on count
         if(count == 1){
-            this.message = "Please, check in on me.";
+            this.message = "Please, check in on me. \n\nSent from DrinkWise";
         } else if (count == 2 || count == 3) {
-            this.message = "I'm not okay.";
+            this.message = "I'm not okay. \n\nSent from DrinkWise";
         } else if (count >= 4 && count <= 6) {
-            this.message = "Need help NOW";
+            this.message = "Need help NOW \n\nSent from DrinkWise";
         } else {
             this.message = "";
         }
