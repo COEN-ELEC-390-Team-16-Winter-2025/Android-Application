@@ -48,6 +48,8 @@ import java.util.ArrayList;
 public class TransitActivity extends AppCompatActivity implements OnMapReadyCallback {
 
     private static final String TAG = "TransitActivity";
+
+    //needed for access to google maps api
     private static final String API_KEY = "AIzaSyDNqAmUya8Zkt3YO9kts3a9D-dAgY67sAI";
     private static final String uberClientID = "3ilDPXY3GKbN3JLLzEIjUVt7h4L1z_ZX";
 
@@ -185,8 +187,11 @@ public class TransitActivity extends AppCompatActivity implements OnMapReadyCall
         requestQueue.add(jsonObjectRequest);
     }
     public void fetchCurrentLocation(double destinationLat, double destinationLong, String mode){
+
+
         FusedLocationProviderClient fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
 
+        //Need to get permission for location
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
                 ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
 

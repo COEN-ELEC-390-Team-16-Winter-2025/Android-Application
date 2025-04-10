@@ -4,20 +4,20 @@
     <!-- Base Colors -->
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
-    <color name="button_orange">#E59947</color> <!-- Citrus vibe -->
-    <color name="bone">#DED4C7</color> <!-- Light neutral (stone / bone tone) -->
+    <color name="button_orange">#E59947</color>
+    <color name="bone">#DED4C7</color> <!-- Light neutral-->
     <color name="green">#338533</color> <!-- Botanical green -->
     <color name="red">#FF0000</color> <!-- Emergency red -->
-    <color name="dark_brown">#4E3629</color> <!-- Classic wood tone (think oak barrel) -->
+    <color name="dark_brown">#4E3629</color> <!-- Classic wood-->
 
     <!-- Background Colors -->
     <color name="background_color_light">#FFFFFF</color> <!-- Clean, light -->
     <color name="background_color_dark">#121212</color> <!-- Deep contrast -->
 
     <!-- BAC Level Colors (status indicators) -->
-    <color name="safe_color">#338533</color> <!-- Green for safe, matches botanical theme -->
-    <color name="caution_color">#E59947</color> <!-- Orange, keeping your existing citrus pop -->
-    <color name="danger_color">#F44336</color> <!-- Danger red stays the same -->
+    <color name="safe_color">#338533</color> <!-- Green for safe -->
+    <color name="caution_color">#E59947</color> <!-- Orange,-->
+    <color name="danger_color">#F44336</color> <!-- Danger red -->
 
     <!-- Text Colors -->
     <color name="text_color_light">#000000</color>
@@ -26,9 +26,9 @@
     <color name="secondary_text_color_dark">#BDBDBD</color>
 
     <!-- Button Colors -->
-    <color name="button_background_color">#6BA292</color> <!-- Replaces purple with fresh botanical green -->
+    <color name="button_background_color">#6BA292</color> <!-- Replaces purple with green -->
     <color name="button_text_color">#FFFFFF</color> <!-- White text for clarity -->
-    <color name="quick_help_background_color">#FF5252</color> <!-- Alert red, appropriate for emergency/help -->
+    <color name="quick_help_background_color">#FF5252</color> <!-- Alert red, emergency/help -->
     <color name="quick_help_text_color">#FFFFFF</color>
 
     <!-- Progress Bar Colors -->
@@ -44,19 +44,19 @@
     <color name="icon_color_dark">#DED4C7</color> <!-- Bone color for icons on dark background -->
 
     <!-- General Background Color -->
-    <color name="background_color">#FFFFFF</color> <!-- Or a darker option if needed -->
+    <color name="background_color">#FFFFFF</color>
 
     <!-- BAC Section Background -->
-    <color name="bac_background_color">#FAFAFA</color> <!-- Or something like #E8F5E9 for a greenish background -->
+    <color name="bac_background_color">#FAFAFA</color>
 
     <!-- BAC Text Color -->
-    <color name="bac_text_color">#000000</color> <!-- Black or another clear color depending on your theme -->
+    <color name="bac_text_color">#000000</color>
 
     <!-- BAC Status Text Color -->
-    <color name="bac_status_color">#E59947</color> <!-- Citrus caution color, or use safe/danger color conditionally -->
+    <color name="bac_status_color">#E59947</color>
 
     <!-- Alcohol Section Background -->
-    <color name="alcohol_background_color">#DED4C7</color> <!-- Bone or another neutral for contrast -->
+    <color name="alcohol_background_color">#DED4C7</color>
 
 
         <!-- Original Colors -->

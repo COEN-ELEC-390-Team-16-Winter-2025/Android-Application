@@ -14,7 +14,6 @@
         <!-- Color of the date circle (selected date) -->
         <item name="colorOnPrimary">@color/dark_brown</item> <!-- Text color inside the selected circle -->
 
-        <!-- Optional: text colors for the header title text and other stuff -->
         <item name="android:textColorPrimary">@color/dark_brown</item> <!-- Title text in the header -->
     </style>
 
@@ -61,6 +60,13 @@
         <item name="android:textColor">#6A6666</item>
         <item name="android:textColorHighlight">#33000000</item>
     </style>
+
+    <style name="CustomTabTextAppearance" parent="TextAppearance.Design.Tab">
+        <item name="android:textSize">13sp</item>
+        <item name="android:textColor">#6A4E3D</item>
+        <item name="textAllCaps">false</item>
+    </style>
+
 
 
     holo_green_dark

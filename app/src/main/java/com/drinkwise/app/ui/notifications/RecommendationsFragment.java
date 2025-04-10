@@ -59,12 +59,12 @@ public class RecommendationsFragment extends Fragment {
 
         return root;
     }
-
-    @Override
-    public void onPause() {
-        super.onPause();
-        readRec();
-    }
+    //The on pause method would cause the notification to stop being displayed when going back to it
+//    @Override
+//    public void onPause() {
+//        super.onPause();
+//        readRec();
+//    }
 
     private void readRec() {
         String userId = FirebaseAuth.getInstance().getCurrentUser().getUid();

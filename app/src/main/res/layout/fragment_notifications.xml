@@ -8,10 +8,13 @@
     tools:context=".ui.notifications.NotificationsFragment">
 
     <com.google.android.material.tabs.TabLayout
-        android:paddingTop="80dp"
         android:id="@+id/tabLayout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        app:tabTextAppearance="@style/CustomTabTextAppearance"
+        app:tabTextColor="#6A4E3D"
+        app:tabSelectedTextColor="#E38B29"
+        app:tabIndicatorColor="#E38B29"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"

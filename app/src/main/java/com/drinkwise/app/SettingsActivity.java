@@ -51,8 +51,8 @@ public class SettingsActivity extends AppCompatActivity {
     private String TAG = "Settings Activity";
     //User's information variables
     private String userName;
-    private long userHeight;
-    private long userWeight;
+    private double userHeight;
+    private double userWeight;
     private boolean isMetric;
     private String birthday;
 
@@ -323,8 +323,8 @@ public class SettingsActivity extends AppCompatActivity {
         });
 
         save_physical_information.setOnClickListener(v -> {
-            userWeight = Long.parseLong(weight_edit_text.getText().toString());
-            userHeight = Long.parseLong(height_edit_text.getText().toString());
+            userWeight = Double.parseDouble(weight_edit_text.getText().toString());
+            userHeight = Double.parseDouble(height_edit_text.getText().toString());
 
             store_user_information(userName, birthday, userHeight, userWeight, isMetric);
 
@@ -364,22 +364,6 @@ public class SettingsActivity extends AppCompatActivity {
             emergency_contact_layout.setVisibility(TextView.GONE);
         });
 
-        // Load and handle the reminders toggle
-//        loadReminderPreference();
-//        reminders_switch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-//            @Override
-//            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-//                saveReminderPreference(isChecked);
-//                if (!isChecked) {
-//                    // Stop reminders if disabled
-//                    Log.d("ReminderTesting", "Reminders have been disabled.");
-//                    ReminderManager.getInstance(SettingsActivity.this).stopReminders();
-//                } else {
-//                    Log.d("ReminderTesting", "Reminders have been enabled.");
-//                }
-//            }
-//        });
-      
         //Updates firestore preferences when recommendation switch is changed
         recommendations_switch.setOnCheckedChangeListener((buttonView, isChecked) -> {
             if(isChecked){
@@ -432,6 +416,318 @@ public class SettingsActivity extends AppCompatActivity {
 
     }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+        ActionBar actionBar = getSupportActionBar();
+        if (actionBar != null) {
+            actionBar.setDisplayShowCustomEnabled(true);
+            actionBar.setCustomView(R.layout.custom_actionbar_title);
+            TextView title = actionBar.getCustomView().findViewById(R.id.action_bar_title);
+            title.setText("Settings");
+
+            // Hide the Info and Profile icons
+            ImageButton infoButton = actionBar.getCustomView().findViewById(R.id.info_button);
+            ImageButton profileButton = actionBar.getCustomView().findViewById(R.id.profile_icon);
+
+            // Set the custom back arrow on the right side without disturbing the title's position
+            actionBar.setDisplayHomeAsUpEnabled(true);  // Enable the back button
+            actionBar.setHomeAsUpIndicator(R.drawable.arrow_settings);  // Set your custom dark brown arrow
+
+            infoButton.setVisibility(View.GONE);
+            profileButton.setVisibility(View.GONE);
+        }
+
+        setupUI(); //Initializes UI components
+        loadImage(profile_picture);
+        //Fetches users information from firestore, edit the corresponding textview and edit texts
+        fetchUserInformation((userName, userHeight, userWeight, isMetric, birthday) -> {
+
+            username_textview.setText(userName);
+            name_edit_text.setText(userName);
+
+            if(!isMetric){
+                height_edit_text.setText(userHeight + " ft");
+                weight_edit_text.setText(userWeight + " lb");
+            }
+            else{
+                height_edit_text.setText(userHeight + " cm");
+                weight_edit_text.setText(userWeight + " kg");
+            }
+
+            birthday_edit_text.setText(birthday);
+
+        });
+
+        //Fetches the users home address and fills the corresponding fields
+        fetchHomeAddress(((address_line1, city1, province1, postal_code1, country1) -> {
+            address_line_edit_text.setText(address_line);
+            city_edit_text.setText(city);
+            province_edit_text.setText(province);
+            postal_code_edit_text.setText(postal_code);
+            country_edit_text.setText(country);
+        }));
+
+        //Fetches the users preferences and edit the switches accordingly
+        fetchPreferences((recommendations, alerts, reminders, quickHelp) -> {
+            recommendations_switch.setChecked(recommendations);
+            alerts_switch.setChecked(alerts);
+            reminders_switch.setChecked(reminders);
+            quick_help_switch.setChecked(quickHelp);
+        });
+
+        setupRecyclerView();
+
+        profile_picture.setOnClickListener(v -> {
+            @SuppressLint("IntentReset") Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+            intent.setType("image/*");
+            launchGallery.launch(intent);
+        });
+
+        //Toggles visibility of save profile information button when clicking on edit
+        edit_profile_information.setOnClickListener(v -> {
+            if(save_profile_information.getVisibility() == TextView.GONE){
+                save_profile_information.setVisibility(TextView.VISIBLE);
+                name_edit_text.setText("");
+                birthday_edit_text.setText("");
+                name_edit_text.setEnabled(true);
+                birthday_edit_text.setEnabled(true);
+
+            }
+            else{
+                save_profile_information.setVisibility(TextView.GONE);
+                name_edit_text.setText(userName);
+                birthday_edit_text.setText(birthday);
+                name_edit_text.setEnabled(false);
+                birthday_edit_text.setEnabled(false);
+            }
+        });
+
+        //Toggles visibility of save physical information button when clicking on edit
+        edit_physical_information.setOnClickListener(v -> {
+            if(save_physical_information.getVisibility() == TextView.GONE){
+                save_physical_information.setVisibility(TextView.VISIBLE);
+                height_edit_text.setText("");
+                weight_edit_text.setText("");
+                height_edit_text.setEnabled(true);
+                weight_edit_text.setEnabled(true);
+            }
+            else{
+                save_physical_information.setVisibility(TextView.GONE);
+
+                if(!isMetric){
+                    height_edit_text.setText(userHeight+ " ft");
+                    weight_edit_text.setText(userWeight+ " lb");
+                }
+                else{
+                    height_edit_text.setText(userHeight+ " cm");
+                    weight_edit_text.setText(userWeight+ " kg");
+                }
+
+                height_edit_text.setEnabled(false);
+                weight_edit_text.setEnabled(false);
+            }
+        });
+
+        edit_password.setOnClickListener(v -> {
+            if(save_password.getVisibility() == TextView.GONE){
+                save_password.setVisibility(TextView.VISIBLE);
+                current_password.setEnabled(true);
+                new_password.setEnabled(true);
+                confirm_password.setEnabled(true);
+            }
+            else{
+                save_password.setVisibility(TextView.GONE);
+                current_password.setEnabled(false);
+                new_password.setEnabled(false);
+                confirm_password.setEnabled(false);
+                current_password.setText("");
+                new_password.setText("");
+                confirm_password.setText("");
+            }
+        });
+
+        save_password.setOnClickListener(v -> {
+            currentPass = current_password.getText().toString();
+            newPass = new_password.getText().toString();
+            confirmPass = confirm_password.getText().toString();
+
+            if(currentPass.isEmpty() || newPass.isEmpty() || confirmPass.isEmpty()){
+                Toast.makeText(this, "Please, fill out all fields!", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            if(!newPass.equals(confirmPass)){
+                Toast.makeText(this, "Passwords do not match!", Toast.LENGTH_SHORT).show();
+            }
+            else{
+                reauthenticateUserAndChangePass(currentPass, newPass);
+            }
+        });
+
+        //Displays the save home address button and enables the home address edit text fields upon clicking on edit
+        edit_home_address.setOnClickListener(v -> {
+            if(save_home_address.getVisibility() == View.GONE){
+                save_home_address.setVisibility(View.VISIBLE);
+                address_line_edit_text.setEnabled(true);
+                city_edit_text.setEnabled(true);
+                province_edit_text.setEnabled(true);
+                postal_code_edit_text.setEnabled(true);
+                country_edit_text.setEnabled(true);
+            }
+            else{
+                save_home_address.setVisibility(View.GONE);
+                address_line_edit_text.setEnabled(false);
+                city_edit_text.setEnabled(false);
+                province_edit_text.setEnabled(false);
+                postal_code_edit_text.setEnabled(false);
+                country_edit_text.setEnabled(false);
+            }
+        });
+
+        save_home_address.setOnClickListener(v -> {
+
+            address_line = address_line_edit_text.getText().toString();
+            city = city_edit_text.getText().toString();
+            province = province_edit_text.getText().toString();
+            postal_code = postal_code_edit_text.getText().toString();
+            country = country_edit_text.getText().toString();
+
+            store_home_address(address_line, city, province, postal_code, country);
+
+            address_line_edit_text.setText(address_line);
+            address_line_edit_text.setEnabled(false);
+            city_edit_text.setText(country);
+            city_edit_text.setEnabled(false);
+            province_edit_text.setText(province);
+            province_edit_text.setEnabled(false);
+            postal_code_edit_text.setText(postal_code);
+            postal_code_edit_text.setEnabled(false);
+            country_edit_text.setText(country);
+            country_edit_text.setEnabled(false);
+
+        });
+
+        //Toggles visibility of add_emergency_contact_layout
+        add_emergency_contact.setOnClickListener(v -> {
+            if(emergency_contact_layout.getVisibility() == TextView.GONE){
+                emergency_contact_layout.setVisibility(TextView.VISIBLE);
+            }
+            else {
+                emergency_contact_layout.setVisibility(TextView.GONE);
+            }
+        });
+
+        save_profile_information.setOnClickListener(v -> {
+
+            userName = name_edit_text.getText().toString();
+            birthday = birthday_edit_text.getText().toString();
+
+            store_user_information(userName, birthday, userHeight, userWeight, isMetric);
+
+            name_edit_text.setEnabled(false);
+            name_edit_text.setText(userName);
+            birthday_edit_text.setEnabled(false);
+            birthday_edit_text.setText(birthday);
+            username_textview.setText(userName);
+
+            save_profile_information.setVisibility(TextView.GONE);
+        });
+
+        save_physical_information.setOnClickListener(v -> {
+            userWeight = Double.parseDouble(weight_edit_text.getText().toString());
+            userHeight = Double.parseDouble(height_edit_text.getText().toString());
+
+            store_user_information(userName, birthday, userHeight, userWeight, isMetric);
+
+            height_edit_text.setEnabled(false);
+            weight_edit_text.setEnabled(false);
+
+            if(!isMetric){
+                height_edit_text.setText(userHeight+ " ft");
+                weight_edit_text.setText(userWeight+ " lb");
+            }
+            else{
+                height_edit_text.setText(userHeight+ " cm");
+                weight_edit_text.setText(userWeight+ " kg");
+            }
+
+            save_physical_information.setVisibility(TextView.GONE);
+        });
+
+        save_emergency_contact.setOnClickListener(v -> {
+            contact_name = emergency_contact_name.getText().toString();
+            contact_phone_no = emergency_contact_phone_no.getText().toString();
+            contact_email = emergency_contact_email.getText().toString();
+            contact_relationship = emergency_contact_relationship.getText().toString();
+
+            if(contact_name.isEmpty() || contact_phone_no.isEmpty() || contact_email.isEmpty() || contact_relationship.isEmpty()){
+                Toast.makeText(this, "Please, fill out all fields", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            store_emergency_contact(contact_name, contact_phone_no, contact_email, contact_relationship);
+
+            emergency_contact_name.setText(" ");
+            emergency_contact_phone_no.setText(" ");
+            emergency_contact_email.setText(" ");
+            emergency_contact_relationship.setText(" ");
+
+            emergency_contact_layout.setVisibility(TextView.GONE);
+        });
+
+        //Updates firestore preferences when recommendation switch is changed
+        recommendations_switch.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            if(isChecked){
+                recommendations = true;
+                Log.d(TAG, "Recommendations toggled: " + isChecked);
+                storePreferences(recommendations, alerts, reminders, quickHelp);
+            }
+            else{
+                recommendations = false;
+                storePreferences(recommendations, alerts, reminders, quickHelp);
+            }
+        });
+
+        //Updates firestore preferences when alerts switch is changed
+        alerts_switch.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            if(isChecked){
+                alerts = true;
+                Log.d(TAG, "Alerts toggled: " + isChecked);
+                storePreferences(recommendations, alerts, reminders, quickHelp);
+            }
+            else{
+                alerts = false;
+                storePreferences(recommendations, alerts, reminders, quickHelp);
+            }
+        });
+
+        //Updates firestore preferences when reminders switch is changed
+        reminders_switch.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            if(isChecked){
+                reminders = true;
+                Log.d(TAG, "Reminders toggled: " + isChecked);
+                storePreferences(recommendations, alerts, reminders, quickHelp);
+            }
+            else{
+                reminders = false;
+                storePreferences(recommendations, alerts, reminders, quickHelp);
+            }
+        });
+
+        quick_help_switch.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            if(isChecked){
+                quickHelp = true;
+                storePreferences(recommendations, alerts, reminders, quickHelp);
+            }
+            else{
+                quickHelp = false;
+                storePreferences(recommendations, alerts, reminders, quickHelp);
+            }
+        });
+
+    }
 
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
@@ -483,7 +779,9 @@ public class SettingsActivity extends AppCompatActivity {
         db = FirebaseFirestore.getInstance();
         String userID = FirebaseAuth.getInstance().getCurrentUser().getUid();
 
-        db.collection("users").document(userID).get()
+        db.collection("users")
+                .document(userID)
+                .get()
                 .addOnSuccessListener(documentSnapshot -> {
                     if (documentSnapshot.exists()) {
                         String imageUrl = documentSnapshot.getString("profile_pic_url");
@@ -494,7 +792,7 @@ public class SettingsActivity extends AppCompatActivity {
                     }
                 })
                 .addOnFailureListener(e ->
-                        Toast.makeText(this, "Error loading image: " + e.getMessage(), Toast.LENGTH_SHORT).show());
+                        Log.d(TAG, "Error loading image" + e));
     }
     //This function fetches all the user's information from firestore and stores them in their respective variables
     public void fetchUserInformation(onDataFetched callback){
@@ -766,7 +1064,7 @@ public class SettingsActivity extends AppCompatActivity {
                         Log.d("Firestore", "Failed to add an emergency contact" + e));
     }
 
-    public void store_user_information(String name, String birthday, long height, long weight, boolean isMetric){
+    public void store_user_information(String name, String birthday, double height, double weight, boolean isMetric){
 
         Map<String,Object> profile_information = new HashMap<>();
 
@@ -900,7 +1198,7 @@ public class SettingsActivity extends AppCompatActivity {
     }
 
     public interface onDataFetched{
-        void Fetched(String userName, long userHeight, long userWeight, boolean isMetric, String birthday);
+        void Fetched(String userName, double userHeight, double userWeight, boolean isMetric, String birthday);
     }
 
     //Interface used for the callback for fetching of emergency contacts. Fetching is asynchronous so need to wait for the data to be fetched before proceeding
