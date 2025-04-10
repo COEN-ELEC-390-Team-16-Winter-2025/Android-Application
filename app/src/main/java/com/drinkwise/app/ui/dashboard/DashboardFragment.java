@@ -1587,7 +1587,7 @@ public class DashboardFragment extends Fragment {
             emergencyContacts = contacts;
             EmergencyContactAdapter emergencyContactAdapter = new EmergencyContactAdapter(emergencyContacts, contact -> {
 
-                if(quickHelpCounter < 7){
+                if(quickHelpCounter <= 4){
                     QuickHelpMessage message = new QuickHelpMessage(quickHelpCounter);
                     textEmergencyContact(contact.getPhone_no(), message.getMessage());
                 }

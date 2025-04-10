@@ -59,7 +59,6 @@ public class TransitActivity extends AppCompatActivity implements OnMapReadyCall
 
     //Home Address related variables
     private String address_line, city, province, postal_code, country;
-    private boolean isWalking, isTakingTransit, isTakingRide;
 
     //Google Map Related Variables
     private GoogleMap gMap;
@@ -123,7 +122,7 @@ public class TransitActivity extends AppCompatActivity implements OnMapReadyCall
                 .document("Home_Address")
                 .addSnapshotListener((value, error) -> {
                     if(error != null){
-                        Log.d(TAG, "Error fetching data" + error);
+                        Log.d(TAG, "Error fetcgit ing data" + error);
                     }
 
                     if(value != null && value.exists()){
@@ -161,18 +160,23 @@ public class TransitActivity extends AppCompatActivity implements OnMapReadyCall
         String url = "https://maps.googleapis.com/maps/api/geocode/json?address="
                 + Uri.encode(address) + "&key=" + API_KEY;
 
+        //Instantiates a requestQueue using volley
         RequestQueue requestQueue = Volley.newRequestQueue(this);
+
+        //Http request: GET
         JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, url, null, response -> {
             try{
 
                 JSONArray result = response.getJSONArray("results");
 
-
+                //extracts the latitude and longitude from the result
                 double homeLat = result.getJSONObject(0).getJSONObject("geometry").getJSONObject("location").getDouble("lat");
                 double homeLong = result.getJSONObject(0).getJSONObject("geometry").getJSONObject("location").getDouble("lng");
 
                 fetchCurrentLocation(homeLat, homeLong, mode);
 
+
+                //error handling
                 Log.d(TAG, "Home Latitude: "+homeLat+" Home Longitude: "+homeLong);
             } catch (Exception e) {
                 Log.d(TAG, "Error fetching the latitude and longitude" + e);
@@ -184,27 +188,31 @@ public class TransitActivity extends AppCompatActivity implements OnMapReadyCall
                 }
         );
 
+        //add jsonobjectrequest to request queue to get executed
         requestQueue.add(jsonObjectRequest);
     }
     public void fetchCurrentLocation(double destinationLat, double destinationLong, String mode){
 
-
+        //fused location provider to get current location
         FusedLocationProviderClient fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
 
         //Need to get permission for location
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
                 ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
 
-            // Request location permission
+            // Request location permission if permission is not granted
             ActivityCompat.requestPermissions(this,
                     new String[]{Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION},
                     1001);
             return;
         }
 
+
+        //gets last location
         fusedLocationProviderClient.getLastLocation()
                 .addOnSuccessListener(location -> {
 
+                    //fetches the latitude and longitude
                     double currentLat = location.getLatitude();
                     double currentLong = location.getLongitude();
 
@@ -235,15 +243,22 @@ public class TransitActivity extends AppCompatActivity implements OnMapReadyCall
         JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, url, null,
                 response -> {
                     try {
+
+                        //fetches all the routes from the response
                         JSONArray routes = response.getJSONArray("routes");
                         if (routes.length() == 0) {
                             Log.e("Directions", "No walking route found.");
                             return;
                         }
 
+
+                        //takes the first route (the fastest one)
                         JSONObject route = routes.getJSONObject(0);
 
+
+                        //extracts the legs (waypoints)
                         JSONArray legs = route.getJSONArray("legs");
+                        //takes the first leg (contains the full route)
                         JSONObject leg = legs.getJSONObject(0);
 
                         String distance = leg.getJSONObject("distance").getString("text");
@@ -251,17 +266,23 @@ public class TransitActivity extends AppCompatActivity implements OnMapReadyCall
 
                         Log.d(TAG, "Distance: "+distance+" Duration:"+duration);
 
+                        //extracts the steps (turns of the route)
                         JSONArray steps = leg.getJSONArray("steps");
+
                         ArrayList<LatLng> path = new ArrayList<>();
                         for(int i = 0; i<steps.length(); i++){
+
+                            //extracts the polyline from the steps and adds it to the path
                             String polyline = steps.getJSONObject(i).getJSONObject("polyline").getString("points");
                             path.addAll(PolyUtil.decode(polyline));
 
                         }
 
                         PolylineOptions polylineOptions = new PolylineOptions().addAll(path).color(Color.BLUE).width(10);
+                        //adds markers at the start and end to the map
                         gMap.addMarker(new MarkerOptions().position(new LatLng(currentLat, currentLong)).title("Start"));
                         gMap.addMarker(new MarkerOptions().position(new LatLng(destinationLat, destinationLong)).title("Arrival"));
+                        //adds polyline route to the map
                         gMap.addPolyline(polylineOptions);
 
                     } catch (Exception e) {

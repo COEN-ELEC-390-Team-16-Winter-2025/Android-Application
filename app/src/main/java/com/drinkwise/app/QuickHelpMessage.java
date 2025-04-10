@@ -8,7 +8,6 @@ public class QuickHelpMessage {
     // The message text determined by the count
     private String message;
     // reference to an EmergencyContact
-    private EmergencyContact contact;
 
     // constructor
     public QuickHelpMessage(int count) {
@@ -19,7 +18,7 @@ public class QuickHelpMessage {
             this.message = "Please, check in on me. \n\nSent from DrinkWise";
         } else if (count == 2 || count == 3) {
             this.message = "I'm not okay. \n\nSent from DrinkWise";
-        } else if (count >= 4 && count <= 6) {
+        } else if (count == 4) {
             this.message = "Need help NOW \n\nSent from DrinkWise";
         } else {
             this.message = "";
