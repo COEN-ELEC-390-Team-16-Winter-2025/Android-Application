@@ -100,4 +100,8 @@ public class ReminderItem implements NotificationItem {
     public void setEscalation(String escalation) {
         this.escalation = escalation;
     }
+
+    public int getInterval() {
+        return intervalMinutes;
+    }
 }

@@ -136,6 +136,7 @@ public class RemindersFragment extends Fragment {
                                             // Convert the document to a ReminderItem object
                                             ReminderItem reminderItem = document.toObject(ReminderItem.class);
                                             reminderItem.setId(document.getId());
+
                                             reminderList.add(reminderItem);
                                             if(reminderItem.getResolved() == null || !reminderItem.getResolved()) {
                                                 unreadCount++;

@@ -2,6 +2,7 @@ package com.drinkwise.app.ui.notifications;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -103,21 +104,39 @@ public class NotifAdapter extends RecyclerView.Adapter<NotifAdapter.NotifViewHol
         public abstract void bind(NotificationItem item);
     }
 
+
     public static class ReminderViewHolder extends NotifViewHolder {
-        TextView reminderMessage, reminderTimestamp, reminderTypeTextView;
+        TextView reminderMessage, reminderTimestamp, reminderTypeTextView, escalationTextView, intervalTextView;
 
         public ReminderViewHolder(@NonNull View itemView) {
             super(itemView);
             reminderMessage = itemView.findViewById(R.id.reminderMessageTextView);
             reminderTimestamp = itemView.findViewById(R.id.reminderTimestampTextView);
             reminderTypeTextView = itemView.findViewById(R.id.reminderTypeTextView);
+            escalationTextView = itemView.findViewById(R.id.reminderEscalationTextView);
+            intervalTextView = itemView.findViewById(R.id.reminderIntervalTextView);
         }
 
         @Override
-        public void bind(NotificationItem reminder) {
+        public void bind(NotificationItem reminderTemp) {
+            // Ensure this is actually a ReminderItem before casting
+            if (!(reminderTemp instanceof ReminderItem)) return;
+
+            ReminderItem reminder = (ReminderItem) reminderTemp;
+
+            Log.d("ReminderViewHolder", "Reminder: " + reminder.getMessage() +
+                    " | Interval: " + reminder.getInterval() +
+                    " | Escalation: " + reminder.getEscalation() +
+                    " | Timestamp: " + (reminder.getTimestamp() != null ? reminder.getTimestamp().toDate().toString() : "null"));
+
+
             reminderMessage.setText(reminder.getMessage());
             SimpleDateFormat sdf = new SimpleDateFormat("dd MMM yyyy, hh:mm a", Locale.getDefault());
             reminderTimestamp.setText(sdf.format(reminder.getTimestamp().toDate()));
+            intervalTextView.setText("Interval: " + String.valueOf(reminder.getInterval()) + " minutes" );
+            escalationTextView.setText("Escalation: " + String.valueOf(reminder.getEscalation()));
+
+
         }
     }
 
