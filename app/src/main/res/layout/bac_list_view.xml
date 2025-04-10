@@ -45,20 +45,20 @@
     <TextView
         android:id="@+id/bac_date"
         android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:text="Date:"
-    android:textColor="@color/black"
-    android:textSize="20sp"
-    android:layout_marginBottom="8dp" />
+        android:layout_height="wrap_content"
+        android:text="Date:"
+        android:textColor="@color/black"
+        android:textSize="20sp"
+        android:layout_marginBottom="8dp" />
 
     <!-- Time TextView -->
     <TextView
         android:id="@+id/bac_time"
         android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:text="Time:"
-    android:textColor="@color/black"
-    android:textSize="20sp"
-    android:layout_marginBottom="8dp" />
+        android:layout_height="wrap_content"
+        android:text="Time:"
+        android:textColor="@color/black"
+        android:textSize="20sp"
+        android:layout_marginBottom="8dp" />
 
 </LinearLayout>

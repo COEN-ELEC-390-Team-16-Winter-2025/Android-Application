@@ -14,7 +14,6 @@
         <!-- Color of the date circle (selected date) -->
         <item name="colorOnPrimary">@color/dark_brown</item> <!-- Text color inside the selected circle -->
 
-        <!-- Optional: text colors for the header title text and other stuff -->
         <item name="android:textColorPrimary">@color/dark_brown</item> <!-- Title text in the header -->
     </style>
 
