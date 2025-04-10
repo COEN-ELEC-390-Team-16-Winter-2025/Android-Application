@@ -212,7 +212,8 @@
                         android:textSize="16sp"
                         android:textColor="#333333"
                         android:theme="@style/EditTextStyle"
-                        android:enabled="false"/>
+                        android:enabled="false"
+                        android:digits="0123456789."/>
                 </LinearLayout>
 
                 <LinearLayout
@@ -234,7 +235,8 @@
                         android:textSize="16sp"
                         android:textColor="#333333"
                         android:theme="@style/EditTextStyle"
-                        android:enabled="false"/>
+                        android:enabled="false"
+                        android:digits="0123456789."/>
                 </LinearLayout>
 
                 <Button
