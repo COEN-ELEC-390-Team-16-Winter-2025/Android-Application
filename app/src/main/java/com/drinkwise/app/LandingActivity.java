@@ -15,10 +15,12 @@ public class LandingActivity extends AppCompatActivity {
         setContentView(R.layout.activity_landing);
         Button getStartedButton = findViewById(R.id.getStartedButton);
         getStartedButton.setOnClickListener(v -> {
+            // Save a flag in SharedPreferences indicating the user is no longer a first-time user
             SharedPreferences preferences = getSharedPreferences("AppPrefs", MODE_PRIVATE);
             SharedPreferences.Editor editor = preferences.edit();
             editor.putBoolean("isFirstTime", false);
             editor.apply();
+
             startActivity(new Intent(LandingActivity.this, SignUpActivity.class));
             finish();
         });

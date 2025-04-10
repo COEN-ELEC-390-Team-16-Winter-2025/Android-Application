@@ -44,6 +44,32 @@ import android.content.pm.ServiceInfo;
 
 import android.content.Intent;
 import android.Manifest;
+
+
+
+/*
+ * Notification Handling in This Class:
+ *
+ * 1. **Hardcoded (Local) Notifications**:
+ *    - These notifications are triggered by internal app events or database changes.
+ *    - Examples include reminders, alerts, and drink recommendations.
+ *    - Notifications are built and shown locally using methods like `sendNotification()`, `sendAlertNotification()`, and `sendReminderNotification()`.
+ *    - No external services are needed for these notifications to be triggered.
+ *
+ * 2. **Remote (FCM) Notifications**:
+ *    - FCM (Firebase Cloud Messaging) is used to receive notifications sent from external servers (such as alerts or updates from a backend).
+ *    - When a remote message is received (via `onMessageReceived()`), the notification is processed and displayed locally using similar notification methods.
+ *    - This allows the app to react to external events and alert the user even when the app is in the background.
+ *
+ * 3. **Why Use Both?**:
+ *    - **Local notifications** are used for in-app events and immediate responses based on user actions or database updates.
+ *    - **Remote notifications** allow the app to receive updates from the server or backend and notify the user when external events occur (e.g., new alerts or server-triggered reminders).
+ *
+ * The combination of local and remote notification handling enables the app to manage notifications both internally and externally, ensuring that users stay informed in real-time.
+ */
+
+
+
 public class MyFirebaseMessagingService extends FirebaseMessagingService {
     private static final String TAG = "FCM_DEBUG";
     private static final String CHANNEL_ID = "drinkwise_alerts_channel";
@@ -70,7 +96,7 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
     }
 
 
-
+    // for main. service had issue starting so had to force call
     public static void safeStart(Context context) {
         try {
             Intent intent = new Intent(context, MyFirebaseMessagingService.class);
@@ -83,21 +109,10 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
 
     @Override
     public void onDestroy() {
-//        if (recommendationListener != null) {
-//            recommendationListener.remove();
-//        }
-//        if (alertListener != null) {
-//            alertListener.remove();
-//
-//        }
-//
-//        if (reminderListener != null)
-//            reminderListener.remove();
-//            Log.d(TAG, "Reminder Listener destroyed");
-
         super.onDestroy();
     }
 
+     // define the channels and register themm with the system's notification manager
     private void createNotificationChannels() {
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -152,6 +167,8 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
         }
     }
 
+    // Set up a real-time listener to monitor
+    // checks for unresolved recommendations (resolved when closed)
     private void setupRecommendationListener() {
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
         if (user == null) {
@@ -180,6 +197,7 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
                 });
     }
 
+    // Handles a new recommendation, updates its status, and sends a notification to the user
     private void handleNewRecommendation(DocumentSnapshot doc) {
 
         NotificationManager manager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
@@ -210,6 +228,7 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
                 });
     }
 
+    // Set up a listener for new safety alerts, updates their status, and triggers notifications for unresolved alerts.
     private void setupAlertListener() {
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
         if (user == null) {
@@ -247,6 +266,7 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
 
     }
 
+    // Handle new alerts by marking it as resolved and triggering a notification based on alert details.
     private void handleNewAlert(DocumentSnapshot doc) {
         Log.d(TAG, "NEW ALERT DETECTED: " + doc.getData());
 
@@ -266,6 +286,7 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
                 });
     }
 
+    // Set up listener for active reminders and handles new reminders when they are added.
     private void setupReminderListener() {
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
         if (user == null) {
@@ -298,6 +319,7 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
         Log.d(TAG, "REMINDER LISTENER INITIALIZED for user: " + user.getUid());
     }
 
+    // Handle new reminders by displaying a notification and marking it as completed in the database.
     private void handleNewReminder(DocumentSnapshot doc) {
         Log.d(TAG, "NEW REMINDER DETECTED: " + doc.getData());
 
@@ -324,6 +346,8 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
                 .addOnFailureListener(e -> Log.e(TAG, "Failed to update reminder status", e));
     }
 
+    // Sends a reminder notification with a title, message, and escalation level
+    // The notification is displayed as in apps notifs but does not drop down when ap is open (only sound in this case)
     private void sendReminderNotification(String title, String message, String escalation) {
         if (TextUtils.isEmpty(message)) return;
 
@@ -352,12 +376,7 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
                     .setContentIntent(pendingIntent)
                     .setVibrate(new long[]{0, 250, 250, 250})
                     .setSound(Settings.System.DEFAULT_NOTIFICATION_URI)
-                    .setFullScreenIntent(pendingIntent, true); // THIS IS CRUCIAL FOR POP-UPS
-
-            // For Android 13+ we need to specify the notification type
-//            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-//                builder.setFlag(Notification.FLAG_INSISTENT, true);
-//            }
+                    .setFullScreenIntent(pendingIntent, true); // NEEDED FOR POP-UPS
 
             // Show notification with unique ID
             int notificationId = (int) System.currentTimeMillis();
@@ -370,7 +389,7 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
         }
     }
 
-
+    // Builds a formatted alert message
     private String buildAlertMessage(String message, String safetyLevel, Double bacValue) {
         StringBuilder builder = new StringBuilder();
         if (message != null) {
@@ -385,6 +404,9 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
         return builder.toString();
     }
 
+    // Send a notification with the provided title and message
+    // check for duplicate messages are not sent consecutively
+    // The notification opens the MainActivity when tapped, and it automatically cancels once the user interacts with it.
     private void sendNotification(String title, String message) {
         if (TextUtils.isEmpty(message) || message.equals(lastNotificationMessage)) {
             return;
@@ -416,6 +438,11 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
         }
     }
 
+
+
+    // Send an alert notification
+    // Depending on the escalation level, the notification may have different colors and vibration patterns
+    // Critical alerts trigger a full-screen notification and direct the user to the MainActivity with a flag to display alerts
 
     private void sendAlertNotification(String title, String message, String escalationLevel) {
         if (TextUtils.isEmpty(message)) return;
@@ -465,6 +492,9 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
     }
 
 
+    // triggered when a message is received from Firebase Cloud Messaging.
+    // checks if the message contains data and handles different types of messages (recommendation or alert) accordingly.
+    // It also sends a notification if the message contains a notification payload.
     @Override
     public void onMessageReceived(@NonNull RemoteMessage remoteMessage) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -493,6 +523,7 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
         }
     }
 
+    // Handle and send a recommendation notification based on remote data.
     private void handleRemoteRecommendation(Map<String, String> data) {
         String title = data.get("title");
         String message = data.get("message");
@@ -510,6 +541,7 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
         );
     }
 
+    // Handle and send a alert notification based on remote data.
     private void handleRemoteAlert(Map<String, String> data) {
         String title = data.get("title");
         String message = data.get("message");

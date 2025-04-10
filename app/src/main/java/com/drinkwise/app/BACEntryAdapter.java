@@ -50,7 +50,6 @@ public class BACEntryAdapter extends RecyclerView.Adapter<BACEntryAdapter.BACVie
                 String.format(Locale.getDefault(), "%.2f%%", entry.getBac())
         );
 
-        // example : "Safe", "Impaired"
         String zone = entry.getStatus();
         holder.zoneIndicatorTextView.setText(zone);
 
@@ -98,7 +97,7 @@ public class BACEntryAdapter extends RecyclerView.Adapter<BACEntryAdapter.BACVie
 
     // method to format BACEntry's date and time into a displayable string.
     private String formatEntryDate(BACEntry entry) {
-        String rawDateTime = entry.getDate() + " " + entry.getTime(); // for example "2025-03-14 22:36:39"
+        String rawDateTime = entry.getDate() + " " + entry.getTime();
         Log.d("DATE_FORMAT_DEBUG", "Raw Date-Time: " + rawDateTime);
 
         try {
@@ -140,14 +139,4 @@ public class BACEntryAdapter extends RecyclerView.Adapter<BACEntryAdapter.BACVie
         }
     }
 
-    // method to determine the zone based on a BAC value, isn't being used for the moment
-    private String getZoneForBac(double bac) {
-        if (bac < 0.03) {
-            return "Safe";
-        } else if (bac < 0.08) {
-            return "Caution";
-        } else {
-            return "Danger";
-        }
-    }
 }
