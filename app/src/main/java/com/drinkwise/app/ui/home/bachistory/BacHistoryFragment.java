@@ -108,6 +108,7 @@ public class BacHistoryFragment extends Fragment {
         return view;
     }
 
+    // Sort the BAC entries based on the selected sort option
     private List<BACEntry> sortBACEntries(List<BACEntry> entries, SortOption sortOption) {
         Log.d(TAG, "Sorting entries by: " + sortOption.name());
         switch (sortOption) {
@@ -127,6 +128,7 @@ public class BacHistoryFragment extends Fragment {
         return entries;
     }
 
+    // Class for filtering BAC entries based on various criteria
     public static class BACFilter {
         private String timePeriod;
         private Date startDate;
@@ -143,9 +145,12 @@ public class BacHistoryFragment extends Fragment {
         public void setStatus(String status) { this.status = status; }
     }
 
+    // Filter the BAC entries based on the specified filter criteria
     private List<BACEntry> filterBACEntries(List<BACEntry> entries, BACFilter filter) {
         Log.d(TAG, "Filtering entries");
         List<BACEntry> filteredEntries = new ArrayList<>();
+
+        // Loop through each BAC entry and check if it matches the filter criteria
         for (BACEntry entry : entries) {
             boolean matches = true;
 
@@ -181,6 +186,7 @@ public class BacHistoryFragment extends Fragment {
         return filteredEntries;
     }
 
+    // Load BAC entries from the Firestore database
     private void loadBacHistory() {
         Log.d(TAG, "Loading BAC history");
         FirebaseFirestore db = FirebaseFirestore.getInstance();
@@ -249,6 +255,7 @@ public class BacHistoryFragment extends Fragment {
                 .addOnFailureListener(e -> Log.e(TAG, "Error getting BAC history", e));
     }
 
+    // Retrieves the current user's ID from Firebase Authentication
     private String getCurrentUserId() {
         FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
         String userId = currentUser != null ? currentUser.getUid() : null;
@@ -256,6 +263,7 @@ public class BacHistoryFragment extends Fragment {
         return userId;
     }
 
+    // Displays a dialog to allow the user to select a sorting option for BAC entries
     private void showSortDialog() {
         Log.d(TAG, "Showing sort dialog");
 
@@ -273,6 +281,7 @@ public class BacHistoryFragment extends Fragment {
                 .show();
     }
 
+    // Displays a dialog to allow the user to filter BAC entries by time period, status, and custom date range
     private void showFilterDialog() {
         Log.d(TAG, "Showing filter dialog");
 
@@ -359,8 +368,7 @@ public class BacHistoryFragment extends Fragment {
     }
 
 
-
-
+    // Returns the selected time period from the radio group (Today, This Week, This Month, Custom)
     private String getSelectedTimePeriod(RadioGroup group) {
         int selectedId = group.getCheckedRadioButtonId();
         Log.d(TAG, "Selected RadioButton ID: " + selectedId);
@@ -378,6 +386,7 @@ public class BacHistoryFragment extends Fragment {
         return null;
     }
 
+    // Checks if the given timestamp is from today
     private boolean isToday(Timestamp timestamp) {
         Calendar today = Calendar.getInstance();
         Calendar ts = Calendar.getInstance();
@@ -414,6 +423,8 @@ public class BacHistoryFragment extends Fragment {
         return !entryDate.before(startDate) && !entryDate.after(endDate);
     }
 
+    // Applies the search query on BAC entries and updates the list
+    // search only status right now
     private void applyFiltersAndSearch() {
         String query = searchBar.getText().toString().trim();
         Log.d(TAG, "Applying search: " + query);

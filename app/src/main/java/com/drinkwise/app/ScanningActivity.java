@@ -48,7 +48,7 @@ import androidx.appcompat.app.ActionBar;
 public class ScanningActivity extends AppCompatActivity {
 
     private static final String TAG = "ScanningActivity";
-    private static final String BLUNO_NAME = "Bluno";  // Change if needed
+    private static final String BLUNO_NAME = "Bluno";
     private static final UUID BLUNO_SERVICE_UUID = UUID.fromString("0000dfb0-0000-1000-8000-00805f9b34fb");
     private static final UUID BLUNO_CHARACTERISTIC_UUID = UUID.fromString("0000dfb1-0000-1000-8000-00805f9b34fb");
     private static final UUID CCCD_UUID = UUID.fromString("00002902-0000-1000-8000-00805f9b34fb");
@@ -171,31 +171,43 @@ public class ScanningActivity extends AppCompatActivity {
         return null;
     }
 
+    // Callback that handles all Bluetooth GATT events
     private final BluetoothGattCallback mGattCallback = new BluetoothGattCallback() {
+        // Called when connection state changes
         @SuppressLint("MissingPermission")
         @Override
         public void onConnectionStateChange(BluetoothGatt gatt, int status, int newState) {
             if (newState == BluetoothProfile.STATE_CONNECTED) {
                 Log.d(TAG, "Connected to Bluno!");
+                // Once connected, start discovering services
                 gatt.discoverServices();
             } else if (newState == BluetoothProfile.STATE_DISCONNECTED) {
                 Log.e(TAG, "Disconnected from Bluno. Attempting reconnect...");
+                // Retry connection after delay if disconnected
                 handler.postDelayed(() -> connectToBluno(), 3000);
             }
         }
 
+        // Called when GATT services are discovered
         @SuppressLint("MissingPermission")
         @Override
         public void onServicesDiscovered(BluetoothGatt gatt, int status) {
             if (status == BluetoothGatt.GATT_SUCCESS) {
                 Log.d(TAG, "Services discovered.");
+
+                // Try to get the Bluno custom service using its UUID
                 BluetoothGattService blunoService = gatt.getService(BLUNO_SERVICE_UUID);
                 if (blunoService != null) {
+                    // Try to get the characteristic used to communicate with Bluno
                     BluetoothGattCharacteristic blunoCharacteristic = blunoService.getCharacteristic(BLUNO_CHARACTERISTIC_UUID);
                     if (blunoCharacteristic != null) {
+                        // Enable notifications on this characteristic
                         gatt.setCharacteristicNotification(blunoCharacteristic, true);
+
+                        // Get the Client Characteristic Configuration Descriptor (CCCD)
                         BluetoothGattDescriptor descriptor = blunoCharacteristic.getDescriptor(CCCD_UUID);
                         if (descriptor != null) {
+                            // Write value to CCCD to enable notifications
                             descriptor.setValue(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE);
                             gatt.writeDescriptor(descriptor);
                         } else {
@@ -212,8 +224,10 @@ public class ScanningActivity extends AppCompatActivity {
             }
         }
 
+        // Buffer for partial BLE messages
         private final StringBuilder receivedDataBuffer = new StringBuilder();
 
+        // Called when new data is received from Bluno via notification
         @SuppressLint("SetTextI18n")
         @Override
         public void onCharacteristicChanged(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic) {
@@ -253,20 +267,32 @@ public class ScanningActivity extends AppCompatActivity {
 
                     Log.d(TAG, "Full BAC Result: " + completeMessage); // Log full message
                 }
+
+                // Once 20 readings are collected and if in LATEST_BAC mode
                 if(count == 20 && MODE_LATEST_BAC){
+                    // Use the highest of the 20 readings
                     bac_readings  = readings.stream().max(Double::compare).get();
+
+                    // Create entries for storage
                     BACEntry bacEntry = new BACEntry(bac_readings, Timestamp.now());
                     Alert alert = new Alert(bac_readings, Timestamp.now());
+
+                    // Save BAC entry and alert
                     storeBAC(bacEntry);
                     storeAlert(alert);
-                    count++;
+
+                    count++; // Prevents re-triggering this block
+
+                    // Format for Intent
                     String bac_reading = String.format(Locale.US,"%.2f", bac_readings);
+
+                    // Launch MainActivity with result and dashboard intent
                     Intent intent = new Intent(ScanningActivity.this, MainActivity.class);
                     intent.putExtra("latest_bac_entry", bac_reading);
                     intent.putExtra("toDashboard", true);
                     intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
                     startActivity(intent);
-                    finish();
+                    finish(); // Finish scanning activity
                 }
             }
         }
