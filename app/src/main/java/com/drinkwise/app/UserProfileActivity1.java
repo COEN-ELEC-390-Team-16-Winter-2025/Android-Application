@@ -114,7 +114,7 @@ public class UserProfileActivity1 extends AppCompatActivity {
                 return false;
             }
         } else {
-            // Imperial - example: 1.6 ft to ~8.2 ft, 4.4 lb to 661 lb
+            // Imperial - example: 1.6 ft to 8.2 ft, 4.4 lb to 661 lb
             if (height < 1.6f || height > 8.2f) {
                 editTextHeight.setError("Height must be between 1.6 ft and 8.2 ft");
                 editTextHeight.requestFocus();

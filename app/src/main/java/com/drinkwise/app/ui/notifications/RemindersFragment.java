@@ -89,7 +89,7 @@ public class RemindersFragment extends Fragment {
 
         // Get end of 2 days ago
 
-        //Fetch the preferences
+        //get preferences
         db.collection("users")
                 .document(userId)
                 .collection("profile")
@@ -110,10 +110,10 @@ public class RemindersFragment extends Fragment {
                         Log.d("RemindersFragment", "Reminders are disabled");
                     } else {
 
-                        //Fetch the reminders
+                        //get the reminders
                         db.collection("users")
                                 .document(Objects.requireNonNull(userId))  // Point to the specific user document
-                                .collection("reminders")  // Fetch from the "reminders" subcollection of that user
+                                .collection("reminders")  // collect from the "reminders" collection of that user
                                 .whereGreaterThanOrEqualTo("timestamp", startOfDay)
                                 .whereLessThanOrEqualTo("timestamp", endOfDay)
                                 .addSnapshotListener((querySnapshot, queryError) -> {
@@ -126,7 +126,7 @@ public class RemindersFragment extends Fragment {
                                         reminderList.clear();
                                         int unreadCount = 0;
                                         for (QueryDocumentSnapshot document : querySnapshot) {
-                                            // Convert the document to a ReminderItem object
+                                            // ReminderItem object
                                             ReminderItem reminderItem = document.toObject(ReminderItem.class);
                                             reminderItem.setId(document.getId());
 
