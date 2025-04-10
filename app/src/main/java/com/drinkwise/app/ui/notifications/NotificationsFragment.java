@@ -58,27 +58,28 @@ public class NotificationsFragment extends Fragment {
                                 documentSnapshot.getBoolean("Recommendations") : true;
                         boolean showReminders = documentSnapshot.getBoolean("Reminders") != null ?
                                 documentSnapshot.getBoolean("Reminders") : true;
-                       // boolean showAlerts = documentSnapshot.getBoolean("Alerts") != null ?
-                          //      documentSnapshot.getBoolean("Alerts") : true;
+                        boolean showAlerts = documentSnapshot.getBoolean("Alerts") != null ?
+                                documentSnapshot.getBoolean("Alerts") : true;
 
-                        //setupViewPager(viewPager, showReminders, showRecommendations, showAlerts);
-                        setupViewPager(viewPager, showReminders, showRecommendations);
+
+
+                        setupViewPager(viewPager, showReminders, showRecommendations, showAlerts);
                         tabLayout.setupWithViewPager(viewPager);
                     })
                     .addOnFailureListener(e -> {
                         Log.e("NotificationsFragment", "Error fetching preferences: ", e);
-                        setupViewPager(viewPager, true, true);
+                        setupViewPager(viewPager, true, true, true);
                         tabLayout.setupWithViewPager(viewPager);
                     });
         } else {
-            setupViewPager(viewPager, true, true);
+            setupViewPager(viewPager, true, true, true);
             tabLayout.setupWithViewPager(viewPager);
         }
         return root;
     }
 
     //private void setupViewPager(ViewPager viewPager, boolean showReminders, boolean showRecommendations, boolean showAlerts)
-    private void setupViewPager(ViewPager viewPager, boolean showReminders, boolean showRecommendations) {
+    private void setupViewPager(ViewPager viewPager, boolean showReminders, boolean showRecommendations,  boolean showAlerts) {
         NotificationsPagerAdapter adapter = new NotificationsPagerAdapter(getChildFragmentManager());
 
         RemindersFragment remindersFragment =  new RemindersFragment();
@@ -91,16 +92,20 @@ public class NotificationsFragment extends Fragment {
         recArgs.putBoolean("showRecommendations", showRecommendations);
         recommendationsFragment.setArguments(recArgs);
 
-        //AlertFragment alertsFragment =  new AlertsFragment();
-        //Bundle alertArgs = new Bundle();
-        //alertArgs.putBoolean("showAlerts", showAlerts);
-        //AlertFragment.setArguments(AlertArgs);
+
+        AlertsFragment alertFragment =  new AlertsFragment();
+        Bundle alertArgs = new Bundle();
+        alertArgs.putBoolean("showAlerts", showAlerts);
+        alertFragment.setArguments(alertArgs);
 
 
-        //add the reminders and recommendations fragment
+
+
+
         adapter.addFragment(remindersFragment, "Reminders");
         adapter.addFragment(recommendationsFragment, "Recommendations");
-       // adapter.addFragment(new AlertFragment(), "Alerts");
+        adapter.addFragment(new AlertsFragment(), "Alerts");
+
 
         viewPager.setAdapter(adapter);
     }
